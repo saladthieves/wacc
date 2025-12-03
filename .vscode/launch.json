@@ -1,0 +1,49 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Compiler (Ninja)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-ninja-debug"
+        },
+        {
+            "name": "Launch Compiler (Makefiles)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-makefiles-debug"
+        },
+        {
+            "name": "Clean Launch Compiler (Ninja)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-ninja-debug-clean"
+        },
+        {
+            "name": "Clean Launch Compiler (Makefiles)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-makefiles-debug-clean"
+        },
+        {
+            "name": "Run Compiler",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+        }
+    ]
+}

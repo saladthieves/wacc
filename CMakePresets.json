@@ -1,0 +1,103 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "config",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+                "CMAKE_CXX_STANDARD": "23",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "EXECUTABLE_OUTPUT_PATH": "${sourceDir}/build/"
+            }
+        },
+        {
+            "name": "config-ninja",
+            "inherits": "config",
+            "generator": "Ninja",
+            "hidden": true
+        },
+        {
+            "name": "config-makefiles",
+            "inherits": "config",
+            "generator": "Unix Makefiles",
+            "hidden": true
+        },
+        {
+            "name": "config-ninja-debug",
+            "displayName": "Ninja Debug Config",
+            "description": "Config for Ninja generator debug builds.",
+            "inherits": "config-ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "config-ninja-release",
+            "displayName": "Ninja Release Config",
+            "description": "Config for Ninja generator release builds.",
+            "inherits": "config-ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "config-makefiles-debug",
+            "displayName": "Makefiles Debug Config",
+            "description": "Config for Makefiles generator debug builds.",
+            "inherits": "config-makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "config-makefiles-release",
+            "displayName": "Makefiles Release Config",
+            "description": "Config for Makefiles generator release builds.",
+            "inherits": "config-makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-ninja-debug",
+            "displayName": "Build Ninja Debug",
+            "description": "Builds the compiler in debug mode with Ninja.",
+            "configurePreset": "config-ninja-debug",
+            "targets": [
+                "compiler"
+            ]
+        },
+        {
+            "name": "build-ninja-release",
+            "displayName": "Build Ninja Release",
+            "description": "Builds the compiler in release mode with Ninja.",
+            "configurePreset": "config-ninja-release",
+            "targets": [
+                "compiler"
+            ]
+        },
+        {
+            "name": "build-makefiles-debug",
+            "displayName": "Build Makefiles Debug",
+            "description": "Builds the compiler in debug mode with Makefiles.",
+            "configurePreset": "config-makefiles-debug",
+            "targets": [
+                "compiler"
+            ]
+        },
+        {
+            "name": "build-makefiles-release",
+            "displayName": "Build Makefiles Release",
+            "description": "Builds the compiler in release mode with Makefiles.",
+            "configurePreset": "config-makefiles-release",
+            "targets": [
+                "compiler"
+            ]
+        }
+    ]
+}

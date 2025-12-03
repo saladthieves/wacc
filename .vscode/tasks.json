@@ -1,0 +1,121 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "config-ninja-debug",
+            "detail": "Runs cmake with the config-ninja-debug preset",
+            "command": "cmake",
+            "group": "build",
+            "args": [
+                "--preset",
+                "config-ninja-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "config-ninja-debug-clean",
+            "detail": "Runs clean and cmake with the config-ninja-debug preset",
+            "command": "cmake",
+            "group": "build",
+            "args": [
+                "--preset",
+                "config-ninja-debug"
+            ],
+            "dependsOn": [
+                "clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "build-ninja-debug",
+            "detail": "Builds the compiler with Ninja in debug mode.",
+            "command": "cmake",
+            "group": "build",
+            "args": [
+                "--build",
+                "build",
+                "--preset",
+                "build-ninja-debug"
+            ],
+            "dependsOn": [
+                "config-ninja-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "build-ninja-debug-clean",
+            "detail": "Cleans and builds the compiler with Ninja in debug mode.",
+            "group": "build",
+            "dependsOn": [
+                "clean",
+                "build-ninja-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "config-makefiles-debug",
+            "detail": "Runs cmake with the config-makefiles-debug preset",
+            "command": "cmake",
+            "group": "build",
+            "args": [
+                "--preset",
+                "config-makefiles-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "config-makefiles-debug-clean",
+            "detail": "Runs clean and cmake with the config-makefiles-debug preset",
+            "command": "cmake",
+            "group": "build",
+            "args": [
+                "--preset",
+                "config-makefiles-debug"
+            ],
+            "dependsOn": [
+                "clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "build-makefiles-debug",
+            "detail": "Builds the compiler with Makefiles in debug mode.",
+            "command": "cmake",
+            "group": "build",
+            "args": [
+                "--build",
+                "build",
+                "--preset",
+                "build-makefiles-debug"
+            ],
+            "dependsOn": [
+                "config-makefiles-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "build-makefiles-debug-clean",
+            "detail": "Cleans and builds the compiler with Makefiles in debug mode.",
+            "group": "build",
+            "dependsOn": [
+                "clean",
+                "build-makefiles-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "clean",
+            "detail": "Removes all build binaries and cache files.",
+            "group": "build",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "build/CMakeCache.txt",
+                "build/CMakeFiles",
+                "build/compiler",
+                "build/testing",
+            ]
+        }
+    ]
+}

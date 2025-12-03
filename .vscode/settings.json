@@ -1,0 +1,9 @@
+{
+    "compilerBinaryName": "compiler",
+    "testingBinaryName": "testing",
+    "cSpell.words": [
+        "makefiles",
+        "Sandler",
+        "wacc"
+    ]
+}
