@@ -9,4 +9,8 @@ project(
     LANGUAGES CXX
 )
 
+add_subdirectory(source/util)
+add_subdirectory(source/driver)
 add_subdirectory(source)
+
+add_subdirectory(test)

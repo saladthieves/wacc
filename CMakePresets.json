@@ -98,6 +98,15 @@
             "targets": [
                 "compiler"
             ]
+        },
+        {
+            "name": "build-testing",
+            "displayName": "Build Unit Tests",
+            "description": "Builds unit tests",
+            "configurePreset": "config-ninja-debug",
+            "targets": [
+                "testing"
+            ]
         }
     ]
 }

@@ -6,7 +6,12 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
-            "args": [],
+            "args": [
+                "--lex",
+                "--parse",
+                "--codegen",
+                "sample/file.c"
+            ],
             "internalConsoleOptions": "neverOpen",
             "preLaunchTask": "build-ninja-debug"
         },
@@ -18,6 +23,24 @@
             "args": [],
             "internalConsoleOptions": "neverOpen",
             "preLaunchTask": "build-makefiles-debug"
+        },
+        {
+            "name": "Launch Tests",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:testingBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-testing"
+        },
+        {
+            "name": "Clean Launch Tests",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:testingBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-testing-clean"
         },
         {
             "name": "Clean Launch Compiler (Ninja)",

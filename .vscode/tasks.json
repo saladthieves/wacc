@@ -5,8 +5,8 @@
             "type": "shell",
             "label": "config-ninja-debug",
             "detail": "Runs cmake with the config-ninja-debug preset",
-            "command": "cmake",
             "group": "build",
+            "command": "cmake",
             "args": [
                 "--preset",
                 "config-ninja-debug"
@@ -16,8 +16,8 @@
             "type": "shell",
             "label": "config-ninja-debug-clean",
             "detail": "Runs clean and cmake with the config-ninja-debug preset",
-            "command": "cmake",
             "group": "build",
+            "command": "cmake",
             "args": [
                 "--preset",
                 "config-ninja-debug"
@@ -28,10 +28,36 @@
         },
         {
             "type": "shell",
+            "label": "build-testing",
+            "detail": "Builds unit tests",
+            "group": "test",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "build",
+                "--preset",
+                "build-testing"
+            ],
+            "dependsOn": [
+                "config-ninja-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "build-testing-clean",
+            "detail": "Cleans and builds unit tests",
+            "group": "test",
+            "dependsOn": [
+                "clean",
+                "build-testing"
+            ]
+        },
+        {
+            "type": "shell",
             "label": "build-ninja-debug",
             "detail": "Builds the compiler with Ninja in debug mode.",
-            "command": "cmake",
             "group": "build",
+            "command": "cmake",
             "args": [
                 "--build",
                 "build",
@@ -67,8 +93,8 @@
             "type": "shell",
             "label": "config-makefiles-debug-clean",
             "detail": "Runs clean and cmake with the config-makefiles-debug preset",
-            "command": "cmake",
             "group": "build",
+            "command": "cmake",
             "args": [
                 "--preset",
                 "config-makefiles-debug"
@@ -81,8 +107,8 @@
             "type": "shell",
             "label": "build-makefiles-debug",
             "detail": "Builds the compiler with Makefiles in debug mode.",
-            "command": "cmake",
             "group": "build",
+            "command": "cmake",
             "args": [
                 "--build",
                 "build",
