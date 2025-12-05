@@ -10,6 +10,7 @@ project(
 )
 
 add_subdirectory(source/util)
+add_subdirectory(source/core)
 add_subdirectory(source/driver)
 add_subdirectory(source)
 

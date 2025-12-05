@@ -1,5 +1,5 @@
 #include "compiler.hpp"
-#include "cmd.hpp"
+#include "lexer.hpp"
 #include "utils.hpp"
 
 #include <filesystem>
@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 namespace wacc::driver {
-std::string runCompiler(const std::string& preprocessed, const DriverArgs& args) {
+void runCompiler(const std::string& preprocessed, const DriverArgs& args) {
     if (!std::filesystem::exists(preprocessed)) {
         auto message =
             std::format("The provided preprocessed file does not exist: [{}]",
@@ -19,23 +19,19 @@ std::string runCompiler(const std::string& preprocessed, const DriverArgs& args)
         throw std::runtime_error("The preprocessed file must end in .i");
     }
 
-    auto info = utils::getFileInfo(preprocessed);
+    const auto content = utils::readFile(preprocessed);
 
-    auto output = std::filesystem::path{info.parent};
-    output /= std::format("{}.{}", info.stem, "s");
-
-    auto result = utils::runCommand(
-        args.compiler, {"-S", "-O", "-fno-asynchronous-unwind-tables",
-                        "-fcf-protection=none", preprocessed, "-o", output});
-
-    if (!result.success) {
-        auto message = std::format("Running [{}] failed: [exitCode: {}]",
-                                   result.command, result.exitCode);
-        throw std::runtime_error(message);
+    const auto info = utils::getFileInfo(args.path);
+    auto sourcePath = std::filesystem::path{args.path};
+    auto directory = std::filesystem::directory_iterator{info.parent};
+    for (auto& file : directory) {
+        const auto& filePath = file.path();
+        if (filePath != sourcePath) {
+            std::filesystem::remove(filePath);
+        }
     }
 
-    std::filesystem::remove(preprocessed);
-
-    return output;
+    auto lexer = core::lex::Lexer{content};
+    lexer.scan();
 }
 } // namespace wacc::driver

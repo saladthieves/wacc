@@ -1,4 +1,7 @@
 {
+     "todo-tree.highlights.defaultHighlight": {
+        "background": "#12520a"
+    },
     "compilerBinaryName": "compiler",
     "testingBinaryName": "testing",
     "cSpell.words": [

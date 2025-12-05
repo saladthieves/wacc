@@ -24,7 +24,7 @@ TEST(ArgsTest, throwOnEmptyArgs) {
     }
 
     // ASSERT
-    ASSERT_TRUE(!error.empty());
+    ASSERT_FALSE(error.empty());
     ASSERT_TRUE(error.contains("driver arguments"));
 }
 
@@ -41,7 +41,7 @@ TEST(ArgsTest, throwOnNoPath) {
     }
 
     // ASSERT
-    ASSERT_TRUE(!error.empty());
+    ASSERT_FALSE(error.empty());
     ASSERT_TRUE(error.contains("source path provided"));
     ASSERT_TRUE(args.empty());
 }
@@ -59,7 +59,7 @@ TEST(ArgsTest, throwOnMultiplePaths) {
     }
 
     // ASSERT
-    ASSERT_TRUE(!error.empty());
+    ASSERT_FALSE(error.empty());
     ASSERT_TRUE(error.contains("than one source path"));
     ASSERT_EQ(args.size(), 2);
 }

@@ -14,5 +14,7 @@ public:
 };
 
 FileInfo getFileInfo(const std::string& path);
+
+std::string readFile(const std::string& path);
 } // namespace utils
 } // namespace wacc

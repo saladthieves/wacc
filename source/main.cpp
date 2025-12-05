@@ -1,6 +1,7 @@
 #include "driver.hpp"
 #include "log.hpp"
 
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,8 @@ int main(int argc, const char* argv[]) {
         driver::runDriver(args);
     } catch (const std::exception& exception) {
         log::e("{}", exception.what());
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

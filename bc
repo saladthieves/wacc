@@ -1,0 +1,14 @@
+#! /bin/zsh
+
+CONFIG="config-ninja-debug"
+echo "1/3 ⏳ - Configuring $CONFIG..."
+cmake --preset $CONFIG
+echo " → ✅ - Done"
+
+echo "2/3 🛠️ - Building compiler target..."
+cmake --build build --target compiler
+echo " → ✅ - Done"
+
+echo "3/3 ➡️ - Copying compiler binary..."
+cp build/compiler $DEV_HOME/cpp/wacc
+echo " → ✅ - Done"
