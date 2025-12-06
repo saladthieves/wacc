@@ -30,21 +30,28 @@ using AstProgPtr = std::unique_ptr<AstProg>;
 
 namespace {
 using Token = token::Token;
-}
+constexpr auto INDENT = "   ";
+} // namespace
 
 // AstNode
 class AstNode {
 public:
+    virtual std::string format(unsigned level) const = 0;
     virtual ~AstNode() = default;
 };
 
 // AstExpr
-class AstExpr : public AstNode {};
+class AstExpr : public AstNode {
+public:
+    virtual std::string format(unsigned level) const = 0;
+};
 
 // AstInt
 class AstInt final : public AstExpr {
 public:
     AstInt(Token token, int value);
+
+    virtual std::string format(unsigned level) const override;
 
     Token token;
     int value;
@@ -55,17 +62,24 @@ class AstIdent final : public AstNode {
 public:
     AstIdent(Token token, std::string_view value);
 
+    virtual std::string format(unsigned level) const override;
+
     Token token;
     std::string_view value;
 };
 
 // AstStmt
-class AstStmt : public AstNode {};
+class AstStmt : public AstNode {
+public:
+    virtual std::string format(unsigned level) const = 0;
+};
 
 // AstReturn
 class AstReturn : public AstStmt {
 public:
     AstReturn(AstExprPtr expression);
+
+    virtual std::string format(unsigned level) const override;
 
     AstExprPtr expression;
 };
@@ -74,6 +88,8 @@ public:
 class AstFun : public AstNode {
 public:
     AstFun(AstIdentPtr name, AstStmtPtr body);
+
+    virtual std::string format(unsigned level) const override;
 
     AstIdentPtr name;
     AstStmtPtr body;
@@ -84,8 +100,14 @@ class AstProg : public AstNode {
 public:
     AstProg(AstFunPtr function);
 
+    virtual std::string format(unsigned level) const override;
+
     AstFunPtr function;
 };
+
+namespace {
+std::string indent(int level = 0);
+}
 
 } // namespace ast
 } // namespace core
