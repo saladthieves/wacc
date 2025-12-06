@@ -15,7 +15,7 @@ public:
     using Iter = std::string_view::iterator;
     using ConstIter = std::string_view::const_iterator;
     using Tokens = std::vector<token::Token>;
-    using TokensPtr = std::unique_ptr<std::vector<token::Token>>;
+    using TokensPtr = std::unique_ptr<Tokens>;
 
     Lexer(std::string_view source);
 
@@ -58,10 +58,9 @@ private:
 
     [[noreturn]] void fail(std::string_view message);
 
-    ConstIter begin;
-    ConstIter end;
     Iter current;
     Iter next;
+    ConstIter end;
 
     unsigned int line;
 

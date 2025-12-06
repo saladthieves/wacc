@@ -9,8 +9,8 @@
 
 namespace wacc::core::lex {
 Lexer::Lexer(std::string_view source) :
-    begin{source.cbegin()}, end{source.cend()}, current{source.begin()},
-    next{source.begin()}, line{1}, tokens{std::make_unique<Tokens>()} {
+    current{source.begin()}, next{source.begin()}, end{source.cend()}, line{1},
+    tokens{std::make_unique<Tokens>()} {
 }
 
 auto Lexer::scan() -> TokensPtr {

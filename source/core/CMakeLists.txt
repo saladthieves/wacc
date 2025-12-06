@@ -4,7 +4,9 @@ add_library(${TARGET})
 
 target_sources(${TARGET}
     PRIVATE
+        ast.cpp
         lexer.cpp
+        parser.cpp
         token.cpp
     
     PUBLIC
