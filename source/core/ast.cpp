@@ -5,6 +5,7 @@
 
 namespace wacc::core::ast {
 
+// TODO: Cleanup the formatting code
 namespace {
 std::string indent(unsigned level) {
     std::string output = "";

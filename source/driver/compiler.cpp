@@ -1,5 +1,7 @@
 #include "compiler.hpp"
 #include "lexer.hpp"
+#include "parser.hpp"
+#include "generator.hpp"
 #include "utils.hpp"
 
 #include <filesystem>
@@ -32,6 +34,12 @@ void runCompiler(const std::string& preprocessed, const DriverArgs& args) {
     }
 
     auto lexer = core::lex::Lexer{content};
-    lexer.scan();
+    auto tokens = lexer.scan();
+    
+    auto parser = core::parse::Parser{std::move(tokens)};
+    auto ast = parser.parse();
+
+    auto generator = core::gen::Generator{std::move(ast)};
+    generator.generate();
 }
 } // namespace wacc::driver

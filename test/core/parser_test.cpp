@@ -1,4 +1,3 @@
-#include "ast.hpp"
 #include "formatting.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
@@ -50,15 +49,15 @@ TEST(ParserTest, parseThrowOnEmpty) {
 TEST(ParserTest, parseInvalidProgram) {
     // ARRANGE
     const auto tests = vector<tuple<string, TokenType, TokenType>>{
-        {"15",                          KEYWORD_INT,    CONSTANT_INT},
-        {"int ;",                       IDENTIFIER,     SEMICOLON   },
-        {"int main",                    OPEN_PAREN,     END         },
-        {"int main ()",                 KEYWORD_VOID,   CLOSE_PAREN },
-        {"int main (void)}",            OPEN_BRACE,     CLOSE_BRACE },
-        {"int main (void){}",           KEYWORD_RETURN, CLOSE_BRACE },
-        {"int main (void){ 15; }",      KEYWORD_RETURN, CONSTANT_INT},
-        {"int main (void){ return; }",  CONSTANT_INT,   SEMICOLON   },
-        {"int main (void){ return 42}", SEMICOLON,      CLOSE_BRACE },
+        {"15",                          KEYWORD_INT,           CONSTANT_INT},
+        {"int ;",                       TokenType::IDENTIFIER, SEMICOLON   },
+        {"int main",                    OPEN_PAREN,            END         },
+        {"int main ()",                 KEYWORD_VOID,          CLOSE_PAREN },
+        {"int main (void)}",            OPEN_BRACE,            CLOSE_BRACE },
+        {"int main (void){}",           KEYWORD_RETURN,        CLOSE_BRACE },
+        {"int main (void){ 15; }",      KEYWORD_RETURN,        CONSTANT_INT},
+        {"int main (void){ return; }",  CONSTANT_INT,          SEMICOLON   },
+        {"int main (void){ return 42}", SEMICOLON,             CLOSE_BRACE },
     };
 
     for (const auto& test : tests) {

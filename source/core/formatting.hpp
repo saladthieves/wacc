@@ -1,9 +1,14 @@
+#pragma once
+
+#include "ast.hpp"
 #include "token.hpp"
 
 #include <format>
 
 namespace std {
+namespace {
 using wacc::core::token::TokenType;
+} // namespace
 
 template <>
 class formatter<TokenType> {
@@ -35,4 +40,35 @@ public:
         return std::format_to(context.out(), "{}", value);
     }
 };
+
+namespace {
+using wacc::core::ast::AstNodeType;
+}
+
+template <>
+class formatter<AstNodeType> {
+public:
+    constexpr auto parse(format_parse_context& context) {
+        return context.begin();
+    }
+
+    auto format(const AstNodeType& type, format_context& context) const {
+        std::string value{};
+
+        switch (type) {
+            using enum AstNodeType;
+            case EXPRESSION: value = "EXPRESSION"; break;
+            case INTEGER:    value = "INTEGER"; break;
+            case IDENTIFIER: value = "IDENTIFIER"; break;
+            case STATEMENT:  value = "STATEMENT"; break;
+            case RETURN:     value = "RETURN"; break;
+            case FUNCTION:   value = "FUNCTION"; break;
+            case PROGRAM:    value = "PROGRAM"; break;
+            default:         throw std::format_error("Unhandled ast::AstNodeType enum");
+        }
+
+        return std::format_to(context.out(), "{}", value);
+    }
+};
+
 } // namespace std
