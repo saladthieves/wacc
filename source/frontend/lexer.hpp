@@ -2,13 +2,10 @@
 
 #include "token.hpp"
 
-#include <cctype>
-#include <memory>
-#include <string_view>
 #include <vector>
 
 namespace wacc {
-namespace core {
+namespace front {
 namespace lex {
 class Lexer {
 public:
@@ -56,16 +53,18 @@ private:
 
     void scanNumberConstant();
 
+    // TODO: Make sure function takes in format args directly
     [[noreturn]] void fail(std::string_view message);
 
     Iter current;
     Iter next;
     ConstIter end;
 
+    // TODO: Add missing values to keep track of current line segments
     unsigned int line;
 
     TokensPtr tokens;
 };
 } // namespace lex
-} // namespace core
+} // namespace front
 } // namespace wacc

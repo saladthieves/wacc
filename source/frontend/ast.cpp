@@ -3,11 +3,11 @@
 #include <format>
 #include <string>
 
-namespace wacc::core::ast {
-
-// TODO: Cleanup the formatting code
+namespace wacc::front::ast {
+// TODO: Move formatting code to a visitor pattern.
 namespace {
 std::string indent(unsigned level) {
+
     std::string output = "";
     for (auto i = 0; i < level; ++i) output += INDENT;
     return output;
@@ -77,6 +77,4 @@ std::string AstProg::format(unsigned level) const {
 
     return output;
 }
-
-// namespace
-} // namespace wacc::core::ast
+} // namespace wacc::front::ast

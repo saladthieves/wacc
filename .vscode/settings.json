@@ -5,6 +5,8 @@
     "compilerBinaryName": "compiler",
     "testingBinaryName": "testing",
     "cSpell.words": [
+        "asmast",
+        "asmgen",
         "makefiles",
         "Sandler",
         "wacc"

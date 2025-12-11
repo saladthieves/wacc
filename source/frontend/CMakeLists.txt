@@ -1,12 +1,10 @@
-set(TARGET core)
+set(TARGET frontend)
 
 add_library(${TARGET})
 
 target_sources(${TARGET}
     PRIVATE
-        assembly.cpp
         ast.cpp
-        generator.cpp
         lexer.cpp
         parser.cpp
         token.cpp

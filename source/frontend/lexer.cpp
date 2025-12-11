@@ -1,13 +1,8 @@
 #include "lexer.hpp"
-#include "token.hpp"
 
-#include <cctype>
 #include <format>
-#include <memory>
-#include <print>
-#include <stdexcept>
 
-namespace wacc::core::lex {
+namespace wacc::front::lex {
 Lexer::Lexer(std::string_view source) :
     current{source.begin()}, next{source.begin()}, end{source.cend()}, line{1},
     tokens{std::make_unique<Tokens>()} {
@@ -105,5 +100,4 @@ void Lexer::scanNumberConstant() {
         std::format("LexerError:\n  line: {}\n  message: {}", line, message);
     throw std::runtime_error(output);
 }
-
-} // namespace wacc::core::lex
+} // namespace wacc::front::lex

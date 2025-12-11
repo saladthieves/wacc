@@ -1,14 +1,58 @@
 #pragma once
 
-#include "ast.hpp"
-#include "token.hpp"
-
 #include <format>
+#include <map>
+#include <string_view>
+
+namespace wacc {
+namespace front {
+namespace token {
+enum class TokenType : unsigned int {
+    // clang-format off
+    KEYWORD_INT = 1,
+    KEYWORD_VOID,
+    KEYWORD_RETURN,
+
+    IDENTIFIER,
+    
+    OPEN_PAREN, CLOSE_PAREN,
+    OPEN_BRACE, CLOSE_BRACE,
+
+    CONSTANT_INT,
+
+    SEMICOLON,
+    // clang-format on
+
+    INVALID_TOKEN,
+    END
+};
+
+class Token {
+public:
+    TokenType type{};
+    // TODO: Add missing values to keep track of current line segments
+    unsigned int line{0};
+    std::string_view value{};
+};
+
+class Keywords {
+public:
+    using Words = std::map<std::string_view, TokenType>;
+    using Entry = std::pair<bool, TokenType>;
+
+    static Entry getKeyword(std::string_view value);
+
+private:
+    static const Words words;
+};
+} // namespace token
+} // namespace front
+} // namespace wacc
 
 namespace std {
 namespace {
-using wacc::core::token::TokenType;
-} // namespace
+using wacc::front::token::TokenType;
+}
 
 template <>
 class formatter<TokenType> {
@@ -40,35 +84,4 @@ public:
         return std::format_to(context.out(), "{}", value);
     }
 };
-
-namespace {
-using wacc::core::ast::AstNodeType;
-}
-
-template <>
-class formatter<AstNodeType> {
-public:
-    constexpr auto parse(format_parse_context& context) {
-        return context.begin();
-    }
-
-    auto format(const AstNodeType& type, format_context& context) const {
-        std::string value{};
-
-        switch (type) {
-            using enum AstNodeType;
-            case EXPRESSION: value = "EXPRESSION"; break;
-            case INTEGER:    value = "INTEGER"; break;
-            case IDENTIFIER: value = "IDENTIFIER"; break;
-            case STATEMENT:  value = "STATEMENT"; break;
-            case RETURN:     value = "RETURN"; break;
-            case FUNCTION:   value = "FUNCTION"; break;
-            case PROGRAM:    value = "PROGRAM"; break;
-            default:         throw std::format_error("Unhandled ast::AstNodeType enum");
-        }
-
-        return std::format_to(context.out(), "{}", value);
-    }
-};
-
 } // namespace std

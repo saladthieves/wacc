@@ -3,11 +3,10 @@
 #include "ast.hpp"
 #include "token.hpp"
 
-#include <memory>
 #include <vector>
 
 namespace wacc {
-namespace core {
+namespace front {
 namespace parse {
 class Parser {
     using Token = token::Token;
@@ -19,6 +18,7 @@ class Parser {
 public:
     Parser(TokensPtr ptr);
 
+    // TODO: Return an AstTree object instead.
     ast::AstNodePtr parse();
 
 private:
@@ -50,6 +50,7 @@ private:
 
     const Token& expect(const TokenType& type);
 
+    // TODO: Make sure function takes in format args directly
     [[noreturn]] void fail(std::string_view message);
 
     TokensPtr tokens;
@@ -58,6 +59,6 @@ private:
     ConstIter next;
     ConstIter end;
 };
-} // namespace parse
-} // namespace core
+}
+} // namespace front
 } // namespace wacc

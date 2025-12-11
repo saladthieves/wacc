@@ -1,13 +1,11 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <vector>
 
 namespace wacc {
-namespace core {
-namespace assembly {
-
+namespace back {
+namespace ast {
 // Forward declarations
 class AsmNode;
 class AsmOperand;
@@ -78,6 +76,6 @@ public:
 
     AsmFunPtr function;
 };
-} // namespace assembly
-} // namespace core
+} // namespace asmast
+} // namespace back
 } // namespace wacc

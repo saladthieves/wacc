@@ -1,6 +1,6 @@
-#include "assembly.hpp"
+#include "asm_ast.hpp"
 
-namespace wacc::core::assembly {
+namespace wacc::back::ast {
 // AsmImm
 AsmImm::AsmImm(int value) : value{value} {
 }
@@ -23,5 +23,4 @@ AsmFun::AsmFun(std::string name, AsmInstrPtrs instructions) :
 // AsmProg
 AsmProg::AsmProg(AsmFunPtr function) : function{std::move(function)} {
 }
-
-} // namespace wacc::core::assembly
+} // namespace wacc::asmast

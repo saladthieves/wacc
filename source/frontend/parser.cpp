@@ -1,12 +1,8 @@
 #include "parser.hpp"
-#include "ast.hpp"
-#include "formatting.hpp"
 
 #include <format>
-#include <stdexcept>
-#include <string>
 
-namespace wacc::core::parse {
+namespace wacc::front::parse {
 Parser::Parser(TokensPtr ptr) :
     tokens{std::move(ptr)}, current{tokens->cbegin()}, next{tokens->cbegin()},
     end{tokens->cbegin()} {
@@ -93,8 +89,7 @@ auto Parser::expect(const TokenType& type) -> const Token& {
         return token;
     }
 
-    auto message =
-        std::format("Expected [{}] but got [{}].", type, token.type);
+    auto message = std::format("Expected [{}] but got [{}].", type, token.type);
     fail(message);
 }
 
@@ -102,4 +97,4 @@ auto Parser::expect(const TokenType& type) -> const Token& {
     auto output = std::format("ParserError:\n  message: {}", message);
     throw std::runtime_error(output);
 }
-} // namespace wacc::core::parse
+} // namespace wacc::front::parse

@@ -1,6 +1,6 @@
 #include "token.hpp"
 
-namespace wacc::core::token {
+namespace wacc::front::token {
 const Keywords::Words Keywords::words = {
     {"int",    TokenType::KEYWORD_INT   },
     {"return", TokenType::KEYWORD_RETURN},
@@ -15,4 +15,4 @@ auto Keywords::getKeyword(std::string_view value) -> Entry {
         return {true, result->second};
     }
 }
-} // namespace wacc::core::token
+} // namespace wacc::front::token
