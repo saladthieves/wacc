@@ -1,7 +1,5 @@
 #include "lexer.hpp"
 
-#include <format>
-
 namespace wacc::front::lex {
 Lexer::Lexer(std::string_view source) :
     current{source.begin()}, next{source.begin()}, end{source.cend()}, line{1},
@@ -29,9 +27,7 @@ auto Lexer::scan() -> TokensPtr {
             case '}': makeToken(CLOSE_BRACE); break;
             case ';': makeToken(SEMICOLON); break;
 
-            default: {
-                fail(std::format("Unexpected token character: [{}]", c));
-            }
+            default: fail("Unexpected token character: [{}]", c);
         }
     }
 
@@ -89,15 +85,9 @@ void Lexer::scanNumberConstant() {
 
     const char& c = peekNext();
     if (isAlpha(c)) {
-        fail(std::format("Unexpected character in number constant: [{}]", c));
+        fail("Unexpected character in number constant: [{}]", c);
     }
 
     makeToken(token::TokenType::CONSTANT_INT);
-}
-
-[[noreturn]] void Lexer::fail(std::string_view message) {
-    auto output =
-        std::format("LexerError:\n  line: {}\n  message: {}", line, message);
-    throw std::runtime_error(output);
 }
 } // namespace wacc::front::lex

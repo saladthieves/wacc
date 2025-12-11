@@ -1,7 +1,5 @@
 #include "parser.hpp"
 
-#include <format>
-
 namespace wacc::front::parse {
 Parser::Parser(TokensPtr ptr) :
     tokens{std::move(ptr)}, current{tokens->cbegin()}, next{tokens->cbegin()},
@@ -74,9 +72,7 @@ auto Parser::expect(std::initializer_list<const TokenType> types)
             continue;
         }
 
-        auto message = std::format("Expected [{}] but got [{}] instead", type,
-                                   token->type);
-        fail(message);
+        fail("Expected [{}] but got [{}] instead", type, token->type);
     }
 
     return *token;
@@ -89,12 +85,6 @@ auto Parser::expect(const TokenType& type) -> const Token& {
         return token;
     }
 
-    auto message = std::format("Expected [{}] but got [{}].", type, token.type);
-    fail(message);
-}
-
-[[noreturn]] void Parser::fail(std::string_view message) {
-    auto output = std::format("ParserError:\n  message: {}", message);
-    throw std::runtime_error(output);
+    fail("Expected [{}] but got [{}].", type, token.type);
 }
 } // namespace wacc::front::parse

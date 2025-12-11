@@ -111,4 +111,7 @@ TEST(ParserTest, parseProgram) {
     auto returnExpression = as<AstInt>(functionBody->expression);
     ASSERT_EQ(returnExpression->token.type, CONSTANT_INT);
     ASSERT_TRUE(returnExpression->value == 42);
+
+    std::println("{}", node);
 }
+

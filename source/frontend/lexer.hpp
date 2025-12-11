@@ -53,8 +53,12 @@ private:
 
     void scanNumberConstant();
 
-    // TODO: Make sure function takes in format args directly
-    [[noreturn]] void fail(std::string_view message);
+    template <typename... T>
+    [[noreturn]] void fail(std::format_string<T...> str = "",
+                           T&&... args) const {
+        auto message = std::format(str, std::forward<T>(args)...);
+        throw std::runtime_error(std::format("LexerError:\n  message: {}", message));
+    }
 
     Iter current;
     Iter next;

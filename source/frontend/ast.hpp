@@ -115,11 +115,6 @@ public:
 
     AstFunPtr function;
 };
-
-namespace {
-// TODO: Remove after reformatting
-std::string indent(int level = 0);
-} // namespace
 } // namespace ast
 } // namespace front
 } // namespace wacc
