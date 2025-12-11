@@ -1,4 +1,3 @@
-#include "formatting.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "test_utils.hpp"
@@ -12,14 +11,14 @@
 #include <tuple>
 #include <vector>
 
-using enum wacc::core::token::TokenType;
-using wacc::core::lex::Lexer;
-using wacc::core::parse::Parser;
-using wacc::core::token::Token;
-using wacc::core::token::TokenType;
+using enum wacc::front::token::TokenType;
+using wacc::front::lex::Lexer;
+using wacc::front::parse::Parser;
+using wacc::front::token::Token;
+using wacc::front::token::TokenType;
 using wacc::test::utils::as;
 
-using namespace wacc::core::ast;
+using namespace wacc::front::ast;
 
 using std::make_unique;
 using std::string;

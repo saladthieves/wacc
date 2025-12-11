@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-using enum wacc::core::token::TokenType;
-using wacc::core::lex::Lexer;
-using wacc::core::token::Token;
-using wacc::core::token::TokenType;
+using enum wacc::front::token::TokenType;
+using wacc::front::lex::Lexer;
+using wacc::front::token::Token;
+using wacc::front::token::TokenType;
 
 using std::pair;
 using std::string;
