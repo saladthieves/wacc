@@ -1,13 +1,13 @@
 #include "parser.hpp"
 
 namespace wacc::front::parse {
-Parser::Parser(TokensPtr ptr) :
-    tokens{std::move(ptr)}, current{tokens->cbegin()}, next{tokens->cbegin()},
-    end{tokens->cbegin()} {
+Parser::Parser(ast::AstTree ptr) :
+    tree{std::move(ptr)}, current{tree.root->cbegin()},
+    next{tree.root->cbegin()}, end{tree.root->cbegin()} {
 }
 
 ast::AstNodePtr Parser::parse() {
-    if (tokens->empty()) {
+    if (!tree.root || tree.root->empty()) {
         fail("No tokens found");
     }
 
@@ -72,7 +72,7 @@ auto Parser::expect(std::initializer_list<const TokenType> types)
             continue;
         }
 
-        fail("Expected [{}] but got [{}] instead", type, token->type);
+        fail("Expected [{}] but got [{}] instead:", type, token->type);
     }
 
     return *token;
@@ -85,6 +85,6 @@ auto Parser::expect(const TokenType& type) -> const Token& {
         return token;
     }
 
-    fail("Expected [{}] but got [{}].", type, token.type);
+    fail("Expected [{}] but got [{}] instead:", type, token.type);
 }
 } // namespace wacc::front::parse

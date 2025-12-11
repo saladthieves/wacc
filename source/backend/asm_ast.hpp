@@ -6,6 +6,17 @@
 namespace wacc {
 namespace back {
 namespace ast {
+enum class AsmNodeType : unsigned {
+    OPERAND = 1,
+    OP_IMM,
+    OP_REG,
+    INSTRUCTION,
+    INSTR_MOV,
+    INSTR_RET,
+    FUNCTION,
+    PROGRAM,
+};
+
 // Forward declarations
 class AsmNode;
 class AsmOperand;
@@ -29,41 +40,66 @@ using AsmFunPtr = std::unique_ptr<AsmFun>;
 using AsmProgPtr = std::unique_ptr<AsmProg>;
 using AsmInstrPtrs = std::vector<AsmInstrPtr>;
 
-class AsmNode {};
+namespace {
+using enum AsmNodeType;
+}
+
+class AsmNode {
+public:
+    virtual AsmNodeType type() const = 0;
+};
 
 // AsmOperand
-class AsmOperand : public AsmNode {};
+class AsmOperand : public AsmNode {
+public:
+    virtual AsmNodeType type() const override { return OPERAND; };
+};
 
 // AsmImm
 class AsmImm : public AsmOperand {
 public:
     AsmImm(int value);
 
+    virtual AsmNodeType type() const override { return OP_IMM; };
+
     int value;
 };
 
 // AsmReg
-class AsmReg : public AsmOperand {};
+class AsmReg : public AsmOperand {
+public:
+    virtual AsmNodeType type() const override { return OP_REG; };
+};
 
 // AsmInstr
-class AsmInstr : public AsmNode {};
+class AsmInstr : public AsmNode {
+public:
+    virtual AsmNodeType type() const override { return INSTRUCTION; };
+};
 
 // AsmMov
 class AsmMov : public AsmInstr {
 public:
     AsmMov(AsmOperandPtr src, AsmOperandPtr dest);
 
+    virtual AsmNodeType type() const override { return INSTR_MOV; };
+
     AsmOperandPtr src;
     AsmOperandPtr dest;
 };
 
 // AsmRet
-class AsmRet : public AsmInstr {};
+class AsmRet : public AsmInstr {
+public:
+    virtual AsmNodeType type() const override { return INSTR_RET; };
+};
 
 // AsmFun
 class AsmFun : public AsmNode {
 public:
     AsmFun(std::string name, AsmInstrPtrs instructions);
+
+    virtual AsmNodeType type() const override { return FUNCTION; };
 
     std::string name;
     AsmInstrPtrs instructions;
@@ -74,8 +110,10 @@ class AsmProg : public AsmNode {
 public:
     AsmProg(AsmFunPtr function);
 
+    virtual AsmNodeType type() const override { return PROGRAM; };
+
     AsmFunPtr function;
 };
-} // namespace asmast
+} // namespace ast
 } // namespace back
 } // namespace wacc

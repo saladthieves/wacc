@@ -2,6 +2,7 @@
 
 #include "ast.hpp"
 #include "token.hpp"
+#include "utils.hpp"
 
 #include <vector>
 
@@ -16,7 +17,7 @@ class Parser {
     using ConstIter = Tokens::const_iterator;
 
 public:
-    Parser(TokensPtr ptr);
+    Parser(ast::AstTree ptr);
 
     // TODO: Return an AstTree object instead.
     ast::AstNodePtr parse();
@@ -53,12 +54,21 @@ private:
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
                            T&&... args) const {
-        auto message = std::format(str, std::forward<T>(args)...);
+        std::string decorated{};
+        if (!tree.root->empty()) {
+            const auto lineStart = tree.begin + current->lineStart;
+            const auto lineStop = tree.begin + current->lineStop;
+            const auto line = std::string_view{lineStart, lineStop};
+            decorated = utils::decorate(current->lineNo, line, current->offset,
+                                        current->value);
+        }
+        const auto message = std::format(str, std::forward<T>(args)...);
+
         throw std::runtime_error(
-            std::format("ParserError:\n  message: {}", message));
+            std::format("ParserError: {}\n{}", message, decorated));
     }
 
-    TokensPtr tokens;
+    ast::AstTree tree;
 
     ConstIter current;
     ConstIter next;

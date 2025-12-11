@@ -3,12 +3,13 @@
 #include "token.hpp"
 
 #include <format>
+#include <vector>
 
 namespace wacc {
 namespace front {
 namespace ast {
-enum class AstNodeType {
-    EXPRESSION,
+enum class AstNodeType : unsigned {
+    EXPRESSION = 1,
     INTEGER,
     IDENTIFIER,
     STATEMENT,
@@ -115,6 +116,20 @@ public:
 
     AstFunPtr function;
 };
+
+// AstTree
+class AstTree {
+    using ConstIter = std::string_view::const_iterator;
+    using Tokens = std::vector<token::Token>;
+    using TokensPtr = std::unique_ptr<Tokens>;
+
+public:
+    AstTree(ConstIter begin, ConstIter end, TokensPtr root);
+
+    ConstIter begin;
+    ConstIter end;
+    TokensPtr root;
+};
 } // namespace ast
 } // namespace front
 } // namespace wacc
@@ -163,9 +178,9 @@ public:
     }
 
     auto format(const AstNodePtr& ptr, format_context& context) const {
-        const auto indent = [](unsigned level) {
+        const auto indent = [](unsigned level) -> std::string {
             std::string output = "";
-            for (auto i = 0; i < level; ++i) output += " ";
+            for (auto i = 0; i < level; ++i) output += "  ";
             return output;
         };
 

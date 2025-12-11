@@ -7,7 +7,7 @@
 namespace wacc {
 namespace front {
 namespace token {
-enum class TokenType : unsigned int {
+enum class TokenType : unsigned {
     // clang-format off
     KEYWORD_INT = 1,
     KEYWORD_VOID,
@@ -30,8 +30,10 @@ enum class TokenType : unsigned int {
 class Token {
 public:
     TokenType type{};
-    // TODO: Add missing values to keep track of current line segments
-    unsigned int line{0};
+    unsigned int lineNo{1};
+    unsigned int lineStart{0};
+    unsigned int lineStop{0};
+    unsigned int offset{0};
     std::string_view value{};
 };
 

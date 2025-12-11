@@ -1,12 +1,15 @@
 #include "lexer.hpp"
+#include "ast.hpp"
+#include "token.hpp"
+#include "utils.hpp"
 
 namespace wacc::front::lex {
 Lexer::Lexer(std::string_view source) :
-    current{source.begin()}, next{source.begin()}, end{source.cend()}, line{1},
-    tokens{std::make_unique<Tokens>()} {
+    current{source.begin()}, next{source.begin()}, begin{source.cbegin()},
+    end{source.cend()}, tokens{std::make_unique<Tokens>()} {
 }
 
-auto Lexer::scan() -> TokensPtr {
+ast::AstTree Lexer::scan() {
     while (!isAtEnd()) {
         skipWhiteSpace();
         if (isAtEnd()) break;
@@ -33,15 +36,18 @@ auto Lexer::scan() -> TokensPtr {
 
     makeEndToken();
 
-    return std::move(tokens);
+    return ast::AstTree{begin, end, std::move(tokens)};
 }
 
 void Lexer::skipWhiteSpace() {
     while (!isAtEnd()) {
         const char& c = peekNext();
         if (std::isspace(c)) {
-            if (c == '\n') ++line;
             advance();
+            if (c == '\n') {
+                ++lineNo;
+                lineStart = next - begin;
+            }
             continue;
         } else {
             break;
@@ -52,8 +58,18 @@ void Lexer::skipWhiteSpace() {
 }
 
 void Lexer::makeToken(token::TokenType type) {
-    tokens->emplace_back(type, line, std::string_view{current, next});
+    const auto lineStop = utils::getLineStop(next, begin, end);
+    const auto offset = current - (begin + lineStart);
+    tokens->emplace_back(type, lineNo, lineStart, lineStop, offset,
+                         std::string_view{current, next});
     sync();
+}
+
+void Lexer::makeEndToken() {
+    const auto lineStop = utils::getLineStop(next, begin, end);
+    const auto offset = current - (begin + lineStart);
+    tokens->emplace_back(token::TokenType::END, lineNo, lineStart, lineStop,
+                         offset, "END");
 }
 
 void Lexer::scanContent() {

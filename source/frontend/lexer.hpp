@@ -1,6 +1,8 @@
 #pragma once
 
+#include "ast.hpp"
 #include "token.hpp"
+#include "utils.hpp"
 
 #include <vector>
 
@@ -16,7 +18,7 @@ public:
 
     Lexer(std::string_view source);
 
-    TokensPtr scan();
+    ast::AstTree scan();
 
 private:
     bool isAtEnd() const { return next == end; }
@@ -43,9 +45,7 @@ private:
 
     void makeToken(token::TokenType type);
 
-    void makeEndToken() {
-        tokens->emplace_back(token::TokenType::END, line, "END");
-    }
+    void makeEndToken();
 
     void scanContent();
 
@@ -56,18 +56,27 @@ private:
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
                            T&&... args) const {
-        auto message = std::format(str, std::forward<T>(args)...);
-        throw std::runtime_error(std::format("LexerError:\n  message: {}", message));
+        const auto lineStop = utils::getLineStop(next, begin, end);
+        const auto line = std::string_view{begin + lineStart, begin + lineStop};
+        const auto offset = current - (begin + lineStart);
+        const auto value = std::string_view{current, next};
+        const auto decorated = utils::decorate(lineNo, line, offset, value);
+        
+        const auto message = std::format(str, std::forward<T>(args)...);
+
+        throw std::runtime_error(
+            std::format("LexerError: {}:\n{}", message, decorated));
     }
 
     Iter current;
     Iter next;
+    ConstIter begin;
     ConstIter end;
 
-    // TODO: Add missing values to keep track of current line segments
-    unsigned int line;
-
     TokensPtr tokens;
+
+    unsigned int lineNo{1};
+    unsigned int lineStart{0};
 };
 } // namespace lex
 } // namespace front

@@ -20,12 +20,13 @@ TEST(LexerTest, scanEmpty) {
     auto lexer = Lexer{source};
 
     // ACT
-    auto tokens = *lexer.scan();
+    auto tree = lexer.scan();
 
     // ASSERT
+    auto tokens = *tree.root;
     ASSERT_FALSE(tokens.empty());
     ASSERT_EQ(tokens.front().type, END);
-    ASSERT_EQ(tokens.front().line, 1);
+    ASSERT_EQ(tokens.front().lineNo, 1);
     ASSERT_TRUE(tokens.front().value == "END");
 }
 
@@ -35,12 +36,13 @@ TEST(LexerTest, scanEmptyText) {
     auto lexer = Lexer{source};
 
     // ACT
-    auto tokens = *lexer.scan();
+    auto tree = lexer.scan();
 
     // ASSERT
+    auto tokens = *tree.root;
     ASSERT_FALSE(tokens.empty());
     ASSERT_EQ(tokens.front().type, END);
-    ASSERT_EQ(tokens.front().line, 1);
+    ASSERT_EQ(tokens.front().lineNo, 1);
     ASSERT_TRUE(tokens.front().value == "END");
 }
 
@@ -56,16 +58,17 @@ TEST(LexerTest, scanNumberConstant) {
     for (const auto& test : tests) {
         // ACT
         auto lexer = Lexer{test.first};
-        auto tokens = *lexer.scan();
+        auto tree = lexer.scan();
 
         // ASSERT
+        auto tokens = *tree.root;
         ASSERT_EQ(tokens.size(), 2);
 
-        ASSERT_EQ(tokens.front().line, 1);
+        ASSERT_EQ(tokens.front().lineNo, 1);
         ASSERT_EQ(tokens.front().type, CONSTANT_INT);
         ASSERT_TRUE(tokens.front().value == test.second);
 
-        ASSERT_EQ(tokens.back().line, 1);
+        ASSERT_EQ(tokens.back().lineNo, 1);
         ASSERT_EQ(tokens.back().type, END);
         ASSERT_TRUE(tokens.back().value == "END");
     }
@@ -82,7 +85,7 @@ TEST(LexerTest, scanNumberConstantInvalidAlpha) {
         string error{};
 
         try {
-            *lexer.scan();
+            lexer.scan();
         } catch (const std::runtime_error& ex) {
             error = ex.what();
         }
@@ -103,7 +106,7 @@ TEST(LexerTest, scanNumberConstantInvalidChar) {
         string error{};
 
         try {
-            *lexer.scan();
+            lexer.scan();
         } catch (const std::runtime_error& ex) {
             error = ex.what();
         }
@@ -128,16 +131,17 @@ TEST(LexerTest, scanIdentifier) {
     for (const auto& test : tests) {
         // ACT
         auto lexer = Lexer{test.first};
-        auto tokens = *lexer.scan();
+        auto tree = lexer.scan();
 
         // ASSERT
+        auto tokens = *tree.root;
         ASSERT_EQ(tokens.size(), 2);
 
-        ASSERT_EQ(tokens.front().line, 1);
+        ASSERT_EQ(tokens.front().lineNo, 1);
         ASSERT_EQ(tokens.front().type, IDENTIFIER);
         ASSERT_TRUE(tokens.front().value == test.second);
 
-        ASSERT_EQ(tokens.back().line, 1);
+        ASSERT_EQ(tokens.back().lineNo, 1);
         ASSERT_EQ(tokens.back().type, END);
         ASSERT_TRUE(tokens.back().value == "END");
     }
@@ -154,7 +158,7 @@ TEST(LexerTest, scanIdentifierInvalid) {
 
         // ACT
         try {
-            *lexer.scan();
+            lexer.scan();
         } catch (const std::runtime_error& ex) {
             error = ex.what();
         }
@@ -177,16 +181,17 @@ TEST(LexerTest, scanKeywords) {
         auto lexer = Lexer{test.first};
         string error{};
 
-        auto tokens = *lexer.scan();
+        auto tree = lexer.scan();
 
         // ASSERT
+        auto tokens = *tree.root;
         ASSERT_EQ(tokens.size(), 2);
 
-        ASSERT_EQ(tokens.front().line, 1);
+        ASSERT_EQ(tokens.front().lineNo, 1);
         ASSERT_EQ(tokens.front().type, test.second);
         ASSERT_TRUE(tokens.front().value == test.first);
 
-        ASSERT_EQ(tokens.back().line, 1);
+        ASSERT_EQ(tokens.back().lineNo, 1);
         ASSERT_EQ(tokens.back().type, END);
         ASSERT_TRUE(tokens.back().value == "END");
     }
@@ -205,16 +210,17 @@ TEST(LexerTest, scanKeywordsInvalid) {
         auto lexer = Lexer{test};
         string error{};
 
-        auto tokens = *lexer.scan();
+        auto tree = lexer.scan();
 
         // ASSERT
+        auto tokens = *tree.root;
         ASSERT_EQ(tokens.size(), 2);
 
-        ASSERT_EQ(tokens.front().line, 1);
+        ASSERT_EQ(tokens.front().lineNo, 1);
         ASSERT_EQ(tokens.front().type, IDENTIFIER);
         ASSERT_TRUE(tokens.front().value == test);
 
-        ASSERT_EQ(tokens.back().line, 1);
+        ASSERT_EQ(tokens.back().lineNo, 1);
         ASSERT_EQ(tokens.back().type, END);
         ASSERT_TRUE(tokens.back().value == "END");
     }
@@ -235,16 +241,17 @@ TEST(LexerTest, scanSingleToken) {
         auto lexer = Lexer{test.first};
         string error{};
 
-        auto tokens = *lexer.scan();
+        auto tree = lexer.scan();
 
         // ASSERT
+        auto tokens = *tree.root;
         ASSERT_EQ(tokens.size(), 2);
 
-        ASSERT_EQ(tokens.front().line, 1);
+        ASSERT_EQ(tokens.front().lineNo, 1);
         ASSERT_EQ(tokens.front().type, test.second);
         ASSERT_TRUE(tokens.front().value == test.first);
 
-        ASSERT_EQ(tokens.back().line, 1);
+        ASSERT_EQ(tokens.back().lineNo, 1);
         ASSERT_EQ(tokens.back().type, END);
         ASSERT_TRUE(tokens.back().value == "END");
     }
@@ -260,7 +267,7 @@ TEST(LexerTest, scanSingleTokenInvalid) {
         string error{};
 
         try {
-            *lexer.scan();
+            lexer.scan();
         } catch (const std::runtime_error& ex) {
             error = ex.what();
         }
@@ -273,8 +280,8 @@ TEST(LexerTest, scanSingleTokenInvalid) {
 
 TEST(LexerTest, scanSource) {
     // ARRANGE
-    const auto source = 
-    R"(int main(void) {
+    const auto source =
+        R"(int main(void) {
         return 42;
     })";
 
@@ -284,14 +291,16 @@ TEST(LexerTest, scanSource) {
 
     // ACT
     try {
-        tokens = *lexer.scan();
+        auto tree = lexer.scan();
+        tokens = *tree.root;
     } catch (const std::runtime_error& ex) {
         error = ex.what();
     }
 
     const auto check = [](auto& token, const auto& type, const auto& value,
-                          const auto& line) {
-        return token.type == type && token.value == value && token.line == line;
+                          const auto& lineNo) {
+        return token.type == type && token.value == value &&
+               token.lineNo == lineNo;
     };
 
     // ASSERT

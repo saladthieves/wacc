@@ -23,4 +23,9 @@ AstFun::AstFun(AstIdentPtr name, AstStmtPtr body) :
 // AstProg
 AstProg::AstProg(AstFunPtr function) : function{std::move(function)} {
 }
+
+// AstTree
+AstTree::AstTree(ConstIter begin, ConstIter end, TokensPtr root) :
+    begin{begin}, end{end}, root{std::move(root)} {
+}
 } // namespace wacc::front::ast

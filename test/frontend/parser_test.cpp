@@ -1,3 +1,4 @@
+#include "ast.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "test_utils.hpp"
@@ -20,17 +21,20 @@ using wacc::test::utils::as;
 
 using namespace wacc::front::ast;
 
-using std::make_unique;
 using std::string;
 using std::tuple;
 using std::vector;
+using std::string_view;
+using std::make_unique;
 
 using Tokens = vector<Token>;
 
 TEST(ParserTest, parseThrowOnEmpty) {
     // ARRANGE
-    auto tokens = make_unique<Tokens>();
-    auto parser = Parser{std::move(tokens)};
+    auto source = std::string_view{""};
+    auto root = make_unique<Tokens>() ;
+    auto tree = AstTree{source.cbegin(), source.cend(), std::move(root)};
+    auto parser = Parser{std::move(tree)};
     string error{};
 
     // ACT
@@ -114,4 +118,3 @@ TEST(ParserTest, parseProgram) {
 
     std::println("{}", node);
 }
-
