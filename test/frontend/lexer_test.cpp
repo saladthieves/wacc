@@ -20,10 +20,10 @@ TEST(LexerTest, scanEmpty) {
     auto lexer = Lexer{source};
 
     // ACT
-    auto tree = lexer.scan();
+    auto result = lexer.scan();
 
     // ASSERT
-    auto tokens = *tree.root;
+    auto tokens = *result.root;
     ASSERT_FALSE(tokens.empty());
     ASSERT_EQ(tokens.front().type, END);
     ASSERT_EQ(tokens.front().lineNo, 1);
@@ -36,10 +36,10 @@ TEST(LexerTest, scanEmptyText) {
     auto lexer = Lexer{source};
 
     // ACT
-    auto tree = lexer.scan();
+    auto result = lexer.scan();
 
     // ASSERT
-    auto tokens = *tree.root;
+    auto tokens = *result.root;
     ASSERT_FALSE(tokens.empty());
     ASSERT_EQ(tokens.front().type, END);
     ASSERT_EQ(tokens.front().lineNo, 1);
@@ -58,10 +58,10 @@ TEST(LexerTest, scanNumberConstant) {
     for (const auto& test : tests) {
         // ACT
         auto lexer = Lexer{test.first};
-        auto tree = lexer.scan();
+        auto result = lexer.scan();
 
         // ASSERT
-        auto tokens = *tree.root;
+        auto tokens = *result.root;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -131,10 +131,10 @@ TEST(LexerTest, scanIdentifier) {
     for (const auto& test : tests) {
         // ACT
         auto lexer = Lexer{test.first};
-        auto tree = lexer.scan();
+        auto result = lexer.scan();
 
         // ASSERT
-        auto tokens = *tree.root;
+        auto tokens = *result.root;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -181,10 +181,10 @@ TEST(LexerTest, scanKeywords) {
         auto lexer = Lexer{test.first};
         string error{};
 
-        auto tree = lexer.scan();
+        auto result = lexer.scan();
 
         // ASSERT
-        auto tokens = *tree.root;
+        auto tokens = *result.root;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -210,10 +210,10 @@ TEST(LexerTest, scanKeywordsInvalid) {
         auto lexer = Lexer{test};
         string error{};
 
-        auto tree = lexer.scan();
+        auto result = lexer.scan();
 
         // ASSERT
-        auto tokens = *tree.root;
+        auto tokens = *result.root;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -241,10 +241,10 @@ TEST(LexerTest, scanSingleToken) {
         auto lexer = Lexer{test.first};
         string error{};
 
-        auto tree = lexer.scan();
+        auto result = lexer.scan();
 
         // ASSERT
-        auto tokens = *tree.root;
+        auto tokens = *result.root;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -291,8 +291,8 @@ TEST(LexerTest, scanSource) {
 
     // ACT
     try {
-        auto tree = lexer.scan();
-        tokens = *tree.root;
+        auto result = lexer.scan();
+        tokens = *result.root;
     } catch (const std::runtime_error& ex) {
         error = ex.what();
     }

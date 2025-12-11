@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ast.hpp"
 #include "token.hpp"
 #include "utils.hpp"
 
@@ -9,6 +8,7 @@
 namespace wacc {
 namespace front {
 namespace lex {
+
 class Lexer {
 public:
     using Iter = std::string_view::iterator;
@@ -16,9 +16,16 @@ public:
     using Tokens = std::vector<token::Token>;
     using TokensPtr = std::unique_ptr<Tokens>;
 
+    class Result {
+    public:
+        ConstIter begin;
+        ConstIter end;
+        TokensPtr root;
+    };
+
     Lexer(std::string_view source);
 
-    ast::AstTree scan();
+    Result scan();
 
 private:
     bool isAtEnd() const { return next == end; }
@@ -61,7 +68,7 @@ private:
         const auto offset = current - (begin + lineStart);
         const auto value = std::string_view{current, next};
         const auto decorated = utils::decorate(lineNo, line, offset, value);
-        
+
         const auto message = std::format(str, std::forward<T>(args)...);
 
         throw std::runtime_error(

@@ -33,8 +33,8 @@ TEST(ParserTest, parseThrowOnEmpty) {
     // ARRANGE
     auto source = std::string_view{""};
     auto root = make_unique<Tokens>() ;
-    auto tree = AstTree{source.cbegin(), source.cend(), std::move(root)};
-    auto parser = Parser{std::move(tree)};
+    auto result = Lexer::Result{source.cbegin(), source.cend(), std::move(root)};
+    auto parser = Parser{std::move(result)};
     string error{};
 
     // ACT

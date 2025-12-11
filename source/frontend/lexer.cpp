@@ -1,5 +1,4 @@
 #include "lexer.hpp"
-#include "ast.hpp"
 #include "token.hpp"
 #include "utils.hpp"
 
@@ -9,7 +8,7 @@ Lexer::Lexer(std::string_view source) :
     end{source.cend()}, tokens{std::make_unique<Tokens>()} {
 }
 
-ast::AstTree Lexer::scan() {
+Lexer::Result Lexer::scan() {
     while (!isAtEnd()) {
         skipWhiteSpace();
         if (isAtEnd()) break;
@@ -36,7 +35,7 @@ ast::AstTree Lexer::scan() {
 
     makeEndToken();
 
-    return ast::AstTree{begin, end, std::move(tokens)};
+    return {begin, end, std::move(tokens)};
 }
 
 void Lexer::skipWhiteSpace() {
