@@ -1,5 +1,7 @@
 #include "compiler.hpp"
+#include "asm_emit.hpp"
 #include "asm_gen.hpp"
+#include "asm_writer.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "source.hpp"
@@ -10,7 +12,16 @@
 #include <stdexcept>
 
 namespace wacc::driver {
-void runCompiler(const std::string& preprocessed, const DriverArgs& args) {
+namespace {
+using back::emit::AsmEmitter;
+using back::gen::AsmGenerator;
+using back::write::AsmWriter;
+using front::lex::Lexer;
+using front::parse::Parser;
+using front::src::Source;
+} // namespace
+
+std::string runCompiler(const std::string& preprocessed, const DriverArgs& args) {
     if (!std::filesystem::exists(preprocessed)) {
         auto message =
             std::format("The provided preprocessed file does not exist: [{}]",
@@ -24,24 +35,26 @@ void runCompiler(const std::string& preprocessed, const DriverArgs& args) {
 
     const auto content = utils::readFile(preprocessed);
 
-    const auto info = utils::getFileInfo(args.path);
-    auto sourcePath = std::filesystem::path{args.path};
-    auto directory = std::filesystem::directory_iterator{info.parent};
-    for (auto& file : directory) {
-        const auto& filePath = file.path();
-        if (filePath != sourcePath) {
-            std::filesystem::remove(filePath);
-        }
-    }
-
-    auto source = front::src::Source{content};
-    auto lexer = front::lex::Lexer{source};
+    auto source = Source{content};
+    auto lexer = Lexer{source};
     auto tokens = lexer.scan();
 
-    auto parser = front::parse::Parser{std::move(tokens), source};
+    auto parser = Parser{std::move(tokens), source};
     auto ast = parser.parse();
 
-    auto generator = back::gen::AsmGenerator{std::move(ast)};
-    generator.generate();
+    auto generator = AsmGenerator{std::move(ast)};
+    auto asmAst = generator.generate();
+
+    auto emitter = AsmEmitter{std::move(asmAst), utils::Platform{}};
+    auto lines = emitter.emit();
+
+    const auto info = utils::getFileInfo(args.path);
+    auto output = std::filesystem::path{info.parent};
+    output /= std::format("{}.{}", info.stem, "s");
+
+    auto writer = AsmWriter{std::move(lines), output};
+    writer.write();
+
+    return output;
 }
 } // namespace wacc::driver

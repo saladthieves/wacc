@@ -28,7 +28,5 @@ void runAssembler(const std::string& assembly, const DriverArgs& args) {
                                    result.command, result.exitCode);
         throw std::runtime_error(message);
     }
-
-    std::filesystem::remove(assembly);
 }
 } // namespace wacc::driver

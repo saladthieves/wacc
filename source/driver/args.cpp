@@ -1,5 +1,4 @@
 #include "args.hpp"
-#include <algorithm>
 #include <stdexcept>
 #include <vector>
 
@@ -22,6 +21,7 @@ DriverArgs parseDriverArgs(std::vector<std::string>& args) {
     const bool lex = assign(FLAG_LEX);
     const bool parse = assign(FLAG_PARSE);
     const bool codegen = assign(FLAG_CODEGEN);
+    const bool cleanUp = assign(FLAG_CLEANUP);
 
     if (args.empty()) {
         throw std::runtime_error("No source path provided.");
@@ -31,6 +31,6 @@ DriverArgs parseDriverArgs(std::vector<std::string>& args) {
         throw std::runtime_error("More than one source path provided.");
     }
 
-    return {lex, parse, codegen, *args.begin()};
+    return {lex, parse, codegen, cleanUp, *args.begin()};
 }
 } // namespace wacc::driver

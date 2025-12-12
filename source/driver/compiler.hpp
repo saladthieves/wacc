@@ -6,6 +6,7 @@
 
 namespace wacc {
 namespace driver {
-void runCompiler(const std::string& preprocessed, const DriverArgs& args);
+std::string runCompiler(const std::string& preprocessed,
+                        const DriverArgs& args);
 }
 } // namespace wacc

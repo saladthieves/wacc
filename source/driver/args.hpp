@@ -11,6 +11,7 @@ using namespace std::string_literals;
 constexpr auto FLAG_LEX = "--lex"s;
 constexpr auto FLAG_PARSE = "--parse"s;
 constexpr auto FLAG_CODEGEN = "--codegen"s;
+constexpr auto FLAG_CLEANUP = "--cleanup";
 constexpr auto COMPILER_CLANG = "clang";
 constexpr auto COMPILER_GCC = "gcc";
 } // namespace
@@ -20,6 +21,7 @@ public:
     bool lex{false};
     bool parse{false};
     bool codegen{false};
+    bool cleanUp{true};
     std::string path{""};
     std::string compiler{COMPILER_CLANG};
 };

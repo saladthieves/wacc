@@ -16,6 +16,21 @@
             "preLaunchTask": "build-ninja-debug"
         },
         {
+            "name": "Launch Compiler (Ninja-Cleanup)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
+            "args": [
+                "--lex",
+                "--parse",
+                "--codegen",
+                "--cleanup",
+                "sample/file.c"
+            ],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-ninja-debug"
+        },
+        {
             "name": "Launch Compiler (Makefiles)",
             "type": "lldb",
             "request": "launch",
