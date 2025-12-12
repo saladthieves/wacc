@@ -1,9 +1,8 @@
 #pragma once
 
 #include "ast.hpp"
-#include "lexer.hpp"
+#include "source.hpp"
 #include "token.hpp"
-#include "utils.hpp"
 
 #include <vector>
 
@@ -18,9 +17,8 @@ class Parser {
     using ConstIter = Tokens::const_iterator;
 
 public:
-    Parser(lex::Lexer::Result res);
+    Parser(TokensPtr ptr, src::Source source);
 
-    // TODO: Return an AstTree object instead.
     ast::AstNodePtr parse();
 
 private:
@@ -56,12 +54,8 @@ private:
     [[noreturn]] void fail(std::format_string<T...> str = "",
                            T&&... args) const {
         std::string decorated{};
-        if (!result.root->empty()) {
-            const auto lineStart = result.begin + current->lineStart;
-            const auto lineStop = result.begin + current->lineStop;
-            const auto line = std::string_view{lineStart, lineStop};
-            decorated = utils::decorate(current->lineNo, line, current->offset,
-                                        current->value);
+        if (!tokens->empty()) {
+            decorated = src.decorate(*current);
         }
         const auto message = std::format(str, std::forward<T>(args)...);
 
@@ -69,8 +63,9 @@ private:
             std::format("ParserError: {}\n{}", message, decorated));
     }
 
-    lex::Lexer::Result result;
+    TokensPtr tokens;
 
+    src::Source src;
     ConstIter current;
     ConstIter next;
     ConstIter end;

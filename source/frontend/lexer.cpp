@@ -1,14 +1,15 @@
 #include "lexer.hpp"
+#include "source.hpp"
 #include "token.hpp"
 #include "utils.hpp"
 
 namespace wacc::front::lex {
-Lexer::Lexer(std::string_view source) :
-    current{source.begin()}, next{source.begin()}, begin{source.cbegin()},
-    end{source.cend()}, tokens{std::make_unique<Tokens>()} {
+Lexer::Lexer(src::Source source) :
+    src{source}, current{src.cbegin()}, next{src.cbegin()}, begin{src.cbegin()},
+    end{src.cend()}, tokens{std::make_unique<Tokens>()} {
 }
 
-Lexer::Result Lexer::scan() {
+Lexer::TokensPtr Lexer::scan() {
     while (!isAtEnd()) {
         skipWhiteSpace();
         if (isAtEnd()) break;
@@ -35,7 +36,7 @@ Lexer::Result Lexer::scan() {
 
     makeEndToken();
 
-    return {begin, end, std::move(tokens)};
+    return std::move(tokens);
 }
 
 void Lexer::skipWhiteSpace() {

@@ -1,6 +1,7 @@
 #include "compiler.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
+#include "source.hpp"
 #include "utils.hpp"
 
 #include <filesystem>
@@ -32,10 +33,11 @@ void runCompiler(const std::string& preprocessed, const DriverArgs& args) {
         }
     }
 
-    auto lexer = front::lex::Lexer{content};
+    auto source = front::src::Source{content};
+    auto lexer = front::lex::Lexer{source};
     auto tokens = lexer.scan();
 
-    auto parser = front::parse::Parser{std::move(tokens)};
+    auto parser = front::parse::Parser{std::move(tokens), source};
     auto ast = parser.parse();
 }
 } // namespace wacc::driver

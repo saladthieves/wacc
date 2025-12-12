@@ -1,4 +1,5 @@
 #include "lexer.hpp"
+#include "source.hpp"
 #include "token.hpp"
 
 #include <gtest/gtest.h>
@@ -7,6 +8,7 @@
 
 using enum wacc::front::token::TokenType;
 using wacc::front::lex::Lexer;
+using wacc::front::src::Source;
 using wacc::front::token::Token;
 using wacc::front::token::TokenType;
 
@@ -17,13 +19,13 @@ using std::vector;
 TEST(LexerTest, scanEmpty) {
     // ARRANGE
     const auto source = "";
-    auto lexer = Lexer{source};
+    auto lexer = Lexer{Source{source}};
 
     // ACT
-    auto result = lexer.scan();
+    auto ptr = lexer.scan();
 
     // ASSERT
-    auto tokens = *result.root;
+    auto tokens = *ptr;
     ASSERT_FALSE(tokens.empty());
     ASSERT_EQ(tokens.front().type, END);
     ASSERT_EQ(tokens.front().lineNo, 1);
@@ -33,13 +35,13 @@ TEST(LexerTest, scanEmpty) {
 TEST(LexerTest, scanEmptyText) {
     // ARRANGE
     const auto source = "           ";
-    auto lexer = Lexer{source};
+    auto lexer = Lexer{Source{source}};
 
     // ACT
-    auto result = lexer.scan();
+    auto ptr = lexer.scan();
 
     // ASSERT
-    auto tokens = *result.root;
+    auto tokens = *ptr;
     ASSERT_FALSE(tokens.empty());
     ASSERT_EQ(tokens.front().type, END);
     ASSERT_EQ(tokens.front().lineNo, 1);
@@ -57,11 +59,11 @@ TEST(LexerTest, scanNumberConstant) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{test.first};
-        auto result = lexer.scan();
+        auto lexer = Lexer{Source{test.first}};
+        auto ptr = lexer.scan();
 
         // ASSERT
-        auto tokens = *result.root;
+        auto tokens = *ptr;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -81,7 +83,7 @@ TEST(LexerTest, scanNumberConstantInvalidAlpha) {
 
     for (const auto& source : tests) {
         // ACT
-        auto lexer = Lexer{source};
+        auto lexer = Lexer{Source{source}};
         string error{};
 
         try {
@@ -102,7 +104,7 @@ TEST(LexerTest, scanNumberConstantInvalidChar) {
 
     for (const auto& source : tests) {
         // ACT
-        auto lexer = Lexer{source};
+        auto lexer = Lexer{Source{source}};
         string error{};
 
         try {
@@ -130,11 +132,11 @@ TEST(LexerTest, scanIdentifier) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{test.first};
-        auto result = lexer.scan();
+        auto lexer = Lexer{Source{test.first}};
+        auto ptr = lexer.scan();
 
         // ASSERT
-        auto tokens = *result.root;
+        auto tokens = *ptr;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -153,7 +155,7 @@ TEST(LexerTest, scanIdentifierInvalid) {
                                 "noun`s",  "adv'",   "sha``e!"};
 
     for (const auto& source : tests) {
-        auto lexer = Lexer{source};
+        auto lexer = Lexer{Source{source}};
         string error{};
 
         // ACT
@@ -178,13 +180,13 @@ TEST(LexerTest, scanKeywords) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{test.first};
+        auto lexer = Lexer{Source{test.first}};
         string error{};
 
-        auto result = lexer.scan();
+        auto ptr = lexer.scan();
 
         // ASSERT
-        auto tokens = *result.root;
+        auto tokens = *ptr;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -207,13 +209,13 @@ TEST(LexerTest, scanKeywordsInvalid) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{test};
+        auto lexer = Lexer{Source{test}};
         string error{};
 
-        auto result = lexer.scan();
+        auto ptr = lexer.scan();
 
         // ASSERT
-        auto tokens = *result.root;
+        auto tokens = *ptr;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -238,13 +240,13 @@ TEST(LexerTest, scanSingleToken) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{test.first};
+        auto lexer = Lexer{Source{test.first}};
         string error{};
 
-        auto result = lexer.scan();
+        auto ptr = lexer.scan();
 
         // ASSERT
-        auto tokens = *result.root;
+        auto tokens = *ptr;
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
@@ -263,7 +265,7 @@ TEST(LexerTest, scanSingleTokenInvalid) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{test};
+        auto lexer = Lexer{Source{test}};
         string error{};
 
         try {
@@ -285,14 +287,13 @@ TEST(LexerTest, scanSource) {
         return 42;
     })";
 
-    auto lexer = Lexer{source};
+    auto lexer = Lexer{Source{source}};
     string error{};
     vector<Token> tokens;
 
     // ACT
     try {
-        auto result = lexer.scan();
-        tokens = *result.root;
+        tokens = *lexer.scan();
     } catch (const std::runtime_error& ex) {
         error = ex.what();
     }

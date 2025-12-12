@@ -1,6 +1,7 @@
 #include "ast.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
+#include "source.hpp"
 #include "test_utils.hpp"
 #include "token.hpp"
 
@@ -15,26 +16,26 @@
 using enum wacc::front::token::TokenType;
 using wacc::front::lex::Lexer;
 using wacc::front::parse::Parser;
+using wacc::front::src::Source;
 using wacc::front::token::Token;
 using wacc::front::token::TokenType;
 using wacc::test::utils::as;
 
 using namespace wacc::front::ast;
 
+using std::make_unique;
 using std::string;
+using std::string_view;
 using std::tuple;
 using std::vector;
-using std::string_view;
-using std::make_unique;
 
 using Tokens = vector<Token>;
 
 TEST(ParserTest, parseThrowOnEmpty) {
     // ARRANGE
     auto source = std::string_view{""};
-    auto root = make_unique<Tokens>() ;
-    auto result = Lexer::Result{source.cbegin(), source.cend(), std::move(root)};
-    auto parser = Parser{std::move(result)};
+    auto ptr = make_unique<Tokens>();
+    auto parser = Parser{std::move(ptr), Source{source}};
     string error{};
 
     // ACT
@@ -65,11 +66,10 @@ TEST(ParserTest, parseInvalidProgram) {
 
     for (const auto& test : tests) {
         // ACT
-        auto source = std::get<0>(test);
+        auto source = Source{std::get<0>(test)};
 
         auto lexer = Lexer{source};
-        auto tokens = lexer.scan();
-        auto parser = Parser{std::move(tokens)};
+        auto parser = Parser{lexer.scan(), source};
         string error{};
 
         try {
@@ -97,15 +97,14 @@ TEST(ParserTest, parseProgram) {
         return 42;
     }
     )";
-    auto lexer = Lexer{source};
-    auto tokens = lexer.scan();
-    auto parser = Parser{std::move(tokens)};
+    auto lexer = Lexer{Source{source}};
+    auto parser = Parser{lexer.scan(), Source{source}};
 
     // ACT
-    auto node = parser.parse();
+    auto ptr = parser.parse();
 
     // ASSERT
-    auto program = as<AstProg>(node);
+    auto program = as<AstProg>(ptr);
 
     auto function = as<AstFun>(program->function);
     auto functionName = as<AstIdent>(function->name);
@@ -116,5 +115,5 @@ TEST(ParserTest, parseProgram) {
     ASSERT_EQ(returnExpression->token.type, CONSTANT_INT);
     ASSERT_TRUE(returnExpression->value == 42);
 
-    std::println("{}", node);
+    std::println("{}", ptr);
 }

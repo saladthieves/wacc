@@ -1,14 +1,15 @@
 #include "parser.hpp"
-#include "lexer.hpp"
+#include "ast.hpp"
+#include "source.hpp"
 
 namespace wacc::front::parse {
-Parser::Parser(lex::Lexer::Result res) :
-    result{std::move(res)}, current{result.root->cbegin()},
-    next{result.root->cbegin()}, end{result.root->cbegin()} {
+Parser::Parser(TokensPtr ptr, src::Source source) :
+    tokens{std::move(ptr)}, src{source}, current{tokens->cbegin()},
+    next{tokens->cbegin()}, end{tokens->cbegin()} {
 }
 
 ast::AstNodePtr Parser::parse() {
-    if (!result.root || result.root->empty()) {
+    if (!tokens || tokens->empty()) {
         fail("No tokens found");
     }
 

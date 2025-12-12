@@ -7,6 +7,7 @@ target_sources(${TARGET}
         ast.cpp
         lexer.cpp
         parser.cpp
+        source.cpp
         token.cpp
     
     PUBLIC
