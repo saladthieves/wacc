@@ -5,6 +5,7 @@ add_library(${TARGET})
 target_sources(${TARGET}
     PRIVATE
         asm_ast.cpp
+        asm_emit.cpp
         asm_gen.cpp
     
     PUBLIC

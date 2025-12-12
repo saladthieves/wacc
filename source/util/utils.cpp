@@ -49,4 +49,18 @@ unsigned int getLineStop(ConstIter next, ConstIter begin, ConstIter end) {
     while ((iter != end) && (*iter != '\n')) ++iter;
     return iter - begin;
 }
+
+// Platform
+Platform::Platform() {
+#ifdef WACC_HOST_MACOS
+    type = PlatformType::MACOS;
+#elif defined(WACC_HOST_LINUX)
+    type = PlatformType::LINUX;
+#else
+    type = PlatformType::UNKNOWN;
+#endif
+}
+
+Platform::Platform(PlatformType type) : type{type} {
+}
 } // namespace wacc::utils

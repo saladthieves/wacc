@@ -21,6 +21,7 @@ public:
 
     AsmNodePtr generate() const;
 
+private:
     AsmProgPtr genForAstProg(const AstProg& obj) const;
 
     AsmFunPtr genForAstFun(const AstFun& obj) const;
@@ -44,7 +45,6 @@ public:
         throw std::runtime_error(std::format("AsmGeneratorError: {}", message));
     }
 
-private:
     AstNodePtr ast;
 };
 } // namespace gen

@@ -6,6 +6,7 @@ add_executable(${TARGET})
 
 target_sources(${TARGET}
     PRIVATE
+        backend/asm_emit_test.cpp
         backend/asm_gen_test.cpp
         frontend/lexer_test.cpp
         frontend/parser_test.cpp

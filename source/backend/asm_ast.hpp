@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <memory>
 #include <vector>
 
@@ -47,7 +48,7 @@ using enum AsmNodeType;
 class AsmNode {
 public:
     virtual AsmNodeType type() const = 0;
-    
+
     virtual ~AsmNode() = default;
 };
 
@@ -119,3 +120,38 @@ public:
 } // namespace ast
 } // namespace back
 } // namespace wacc
+
+namespace std {
+namespace {
+using wacc::back::ast::AsmNodeType;
+}
+
+template <>
+class formatter<AsmNodeType> {
+public:
+    constexpr auto parse(format_parse_context& context) {
+        return context.begin();
+    }
+
+    auto format(const AsmNodeType& type, format_context& context) const {
+        std::string value{};
+
+        switch (type) {
+            using enum AsmNodeType;
+            case OPERAND:     value = "OPERAND"; break;
+            case OP_IMM:      value = "OP_IMM"; break;
+            case OP_REG:      value = "OP_REG"; break;
+            case INSTRUCTION: value = "INSTRUCTION"; break;
+            case INSTR_MOV:   value = "INSTR_MOV"; break;
+            case INSTR_RET:   value = "INSTR_RET"; break;
+            case FUNCTION:    value = "FUNCTION"; break;
+            case PROGRAM:     value = "PROGRAM"; break;
+            default:
+                throw std::format_error(
+                    "Unhandled back::ast::AsmNodeType enum");
+        }
+
+        return std::format_to(context.out(), "{}", value);
+    }
+};
+} // namespace std

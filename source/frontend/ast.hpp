@@ -159,7 +159,7 @@ public:
             case RETURN:     value = "RETURN"; break;
             case FUNCTION:   value = "FUNCTION"; break;
             case PROGRAM:    value = "PROGRAM"; break;
-            default:         throw std::format_error("Unhandled ast::AstNodeType enum");
+            default:         throw std::format_error("Unhandled front::ast::AstNodeType enum");
         }
 
         return std::format_to(context.out(), "{}", value);

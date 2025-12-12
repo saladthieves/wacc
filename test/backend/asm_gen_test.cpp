@@ -13,7 +13,7 @@ using wacc::front::parse::Parser;
 using wacc::front::src::Source;
 using wacc::test::utils::as;
 
-TEST(AsmGenerator, generate) {
+TEST(AsmGeneratorTest, generate) {
     // ARRANGE
     const auto src =
         R"(
