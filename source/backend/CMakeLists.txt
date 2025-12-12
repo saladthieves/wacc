@@ -7,6 +7,7 @@ target_sources(${TARGET}
         asm_ast.cpp
         asm_emit.cpp
         asm_gen.cpp
+        asm_writer.cpp
     
     PUBLIC
         FILE_SET HEADERS
