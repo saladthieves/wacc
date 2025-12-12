@@ -4,10 +4,12 @@ enable_testing()
 
 add_executable(${TARGET})
 
+# TODO: Split tests
 target_sources(${TARGET}
     PRIVATE
         backend/asm_emit_test.cpp
         backend/asm_gen_test.cpp
+        backend/asm_writer_test.cpp
         frontend/lexer_test.cpp
         frontend/parser_test.cpp
         driver/args_test.cpp

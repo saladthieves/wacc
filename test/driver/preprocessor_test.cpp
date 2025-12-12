@@ -5,9 +5,14 @@
 
 #include "args.hpp"
 #include "preprocessor.hpp"
+#include "test_utils.hpp"
 
 using wacc::driver::DriverArgs;
 using wacc::driver::runPreprocessor;
+using wacc::test::utils::samples::cleanUpSamples;
+
+using wacc::test::utils::samples::rootFolder;
+using wacc::test::utils::samples::sampleSource;
 
 using std::string;
 using std::filesystem::exists;
@@ -15,17 +20,8 @@ using std::filesystem::exists;
 class PreprocessorTest : public testing::Test {
 protected:
     static void TearDownTestSuite() {
-        auto directory = std::filesystem::directory_iterator{testSampleRoot};
-        for (auto& file : directory) {
-            const string& path = file.path();
-            if (path.ends_with(".i")) {
-                std::filesystem::remove(path);
-            }
-        }
+        cleanUpSamples([](const auto& path) { return path.ends_with(".i"); });
     }
-
-    static constexpr string testSampleRoot = "test/test_sample";
-    string testSourceFile = std::format("{}/test_file.c", testSampleRoot);
 };
 
 TEST_F(PreprocessorTest, throwOnEmptyPath) {
@@ -47,7 +43,7 @@ TEST_F(PreprocessorTest, throwOnEmptyPath) {
 TEST_F(PreprocessorTest, throwOnNonExistentFile) {
     // ARRANGE
     const auto args =
-        DriverArgs{false, false, false, "test/test_sample/invalid.c"};
+        DriverArgs{false, false, false, false, "test/test_sample/invalid.c"};
     string error{};
 
     // ACT
@@ -63,7 +59,7 @@ TEST_F(PreprocessorTest, throwOnNonExistentFile) {
 
 TEST_F(PreprocessorTest, throwOnInvalidExtension) {
     // ARRANGE
-    const auto args = DriverArgs{false, false, false, testSampleRoot};
+    const auto args = DriverArgs{false, false, false, false, rootFolder};
     string error{};
 
     // ACT
@@ -79,8 +75,8 @@ TEST_F(PreprocessorTest, throwOnInvalidExtension) {
 
 TEST_F(PreprocessorTest, throwOnInvalidCompiler) {
     // ARRANGE
-    const auto args =
-        DriverArgs{false, false, false, testSourceFile, "unknown-compiler"};
+    const auto args = DriverArgs{false, false,        false,
+                                 false, sampleSource, "unknown-compiler"};
     string error{};
 
     // ACT
@@ -97,7 +93,8 @@ TEST_F(PreprocessorTest, throwOnInvalidCompiler) {
 
 TEST_F(PreprocessorTest, runPreprocessorGcc) {
     // ARRANGE
-    const auto args = DriverArgs{false, false, false, testSourceFile, "gcc"};
+    const auto args =
+        DriverArgs{false, false, false, false, sampleSource, "gcc"};
     string error{};
     string outputFile{};
     // ACT
@@ -109,14 +106,15 @@ TEST_F(PreprocessorTest, runPreprocessorGcc) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(exists(testSourceFile));
+    ASSERT_TRUE(exists(sampleSource));
     ASSERT_TRUE(exists(outputFile));
     ASSERT_TRUE(outputFile.ends_with(".i"));
 }
 
 TEST_F(PreprocessorTest, runPreprocessorClang) {
     // ARRANGE
-    const auto args = DriverArgs{false, false, false, testSourceFile, "clang"};
+    const auto args =
+        DriverArgs{false, false, false, false, sampleSource, "clang"};
     string error{};
     string outputFile{};
 
@@ -129,6 +127,6 @@ TEST_F(PreprocessorTest, runPreprocessorClang) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(exists(testSourceFile));
+    ASSERT_TRUE(exists(sampleSource));
     ASSERT_TRUE(outputFile.ends_with(".i"));
 }

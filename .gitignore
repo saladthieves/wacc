@@ -47,3 +47,8 @@ build/
 *.exe
 *.out
 *.app
+
+# wacc output files
+sample/file
+sample/file.i
+sample/file.s

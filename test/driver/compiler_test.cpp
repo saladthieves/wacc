@@ -1,32 +1,28 @@
 #include "args.hpp"
 #include "compiler.hpp"
+#include "test_utils.hpp"
 
-#include <filesystem>
 #include <gtest/gtest.h>
 
 using wacc::driver::DriverArgs;
 using wacc::driver::runCompiler;
+
+using wacc::test::utils::samples::cleanUpSamples;
+using wacc::test::utils::samples::rootFolder;
+using wacc::test::utils::samples::sampleSource;
 
 using std::string;
 
 class CompilerTest : public testing::Test {
 protected:
     static void TearDownTestSuite() {
-        auto directory = std::filesystem::directory_iterator{testSampleRoot};
-        for (auto& file : directory) {
-            const string& path = file.path();
-            if (path.ends_with(".i") || path.ends_with(".s")) {
-                std::filesystem::remove(path);
-            }
-        }
+        cleanUpSamples([](const auto& path) {
+            return path.ends_with(".i") || path.ends_with(".s");
+        });
     }
 
-    static constexpr string testSampleRoot = "test/test_sample";
-    string testSourceFile = std::format("{}/test_file.c", testSampleRoot);
-    string testPrepFile = std::format("{}/test_file.i", testSampleRoot);
-
-    DriverArgs gccArgs{false, false, false, testSourceFile, "gcc"};
-    DriverArgs clangArgs{false, false, false, testSourceFile, "clang"};
+    DriverArgs gccArgs{false, false, false, false, sampleSource, "gcc"};
+    DriverArgs clangArgs{false, false, false, false, sampleSource, "clang"};
 };
 
 TEST_F(CompilerTest, throwOnEmpty) {
@@ -66,7 +62,7 @@ TEST_F(CompilerTest, throwOnNonExistentFile) {
 TEST_F(CompilerTest, throwOnInvalidExtension) {
     // ARRANGE
     const auto args = DriverArgs{};
-    string preprocessed{testSampleRoot};
+    string preprocessed{rootFolder};
     string error{};
 
     // ACT
