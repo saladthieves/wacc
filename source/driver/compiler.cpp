@@ -1,4 +1,5 @@
 #include "compiler.hpp"
+#include "asm_gen.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "source.hpp"
@@ -39,5 +40,8 @@ void runCompiler(const std::string& preprocessed, const DriverArgs& args) {
 
     auto parser = front::parse::Parser{std::move(tokens), source};
     auto ast = parser.parse();
+
+    auto generator = back::gen::AsmGenerator{std::move(ast)};
+    generator.generate();
 }
 } // namespace wacc::driver

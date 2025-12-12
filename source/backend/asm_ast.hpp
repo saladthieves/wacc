@@ -47,6 +47,8 @@ using enum AsmNodeType;
 class AsmNode {
 public:
     virtual AsmNodeType type() const = 0;
+    
+    virtual ~AsmNode() = default;
 };
 
 // AsmOperand

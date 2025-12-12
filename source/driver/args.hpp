@@ -7,7 +7,7 @@ namespace wacc {
 namespace driver {
 namespace {
 using namespace std::string_literals;
-
+// TODO: Implement flags functionality
 constexpr auto FLAG_LEX = "--lex"s;
 constexpr auto FLAG_PARSE = "--parse"s;
 constexpr auto FLAG_CODEGEN = "--codegen"s;
