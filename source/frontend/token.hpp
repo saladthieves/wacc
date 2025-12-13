@@ -27,7 +27,6 @@ enum class TokenType : unsigned {
     END
 };
 
-// TODO: Add tests for new attributes
 class Token {
 public:
     TokenType type{};

@@ -17,10 +17,6 @@ FileInfo getFileInfo(const std::string& path);
 
 std::string readFile(const std::string& path);
 
-// TODO: Remove after implementation in front::src::Source class.
-std::string decorate(unsigned int lineNo, std::string_view line,
-                     unsigned int offset, std::string_view value);
-
 namespace {
 using ConstIter = std::string_view::const_iterator;
 }

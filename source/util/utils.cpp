@@ -1,7 +1,6 @@
 #include "utils.hpp"
 
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <sstream>
 
@@ -24,23 +23,6 @@ std::string readFile(const std::string& path) {
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
-}
-
-std::string decorate(unsigned int lineNo, std::string_view line,
-                     unsigned int offset, std::string_view value) {
-    constexpr char c = '^';
-
-    auto output = std::format("Line [{}]: ", lineNo);
-    const auto prefixLength = output.length();
-
-    output += std::format("{}\n", line);
-    const auto totalLength = output.length();
-
-    output += std::string(offset + prefixLength, ' ');
-    output += std::string(value.length(), c);
-    output += '\n';
-
-    return output;
 }
 
 unsigned int getLineStop(ConstIter next, ConstIter begin, ConstIter end) {
