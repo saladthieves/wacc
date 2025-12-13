@@ -6,8 +6,13 @@
 
 namespace wacc {
 namespace driver {
-// TODO: Add missing successful tests
-std::string runCompiler(const std::string& preprocessed,
+class CompilerResult {
+public:
+    bool proceed{false};
+    std::string path{};
+};
+
+CompilerResult runCompiler(const std::string& preprocessed,
                         const DriverArgs& args);
 } // namespace driver
 } // namespace wacc

@@ -21,7 +21,8 @@ using front::parse::Parser;
 using front::src::Source;
 } // namespace
 
-std::string runCompiler(const std::string& preprocessed, const DriverArgs& args) {
+CompilerResult runCompiler(const std::string& preprocessed,
+                           const DriverArgs& args) {
     if (!std::filesystem::exists(preprocessed)) {
         auto message =
             std::format("The provided preprocessed file does not exist: [{}]",
@@ -39,11 +40,17 @@ std::string runCompiler(const std::string& preprocessed, const DriverArgs& args)
     auto lexer = Lexer{source};
     auto tokens = lexer.scan();
 
+    if (args.lex) return {false};
+
     auto parser = Parser{std::move(tokens), source};
     auto ast = parser.parse();
 
+    if (args.parse) return {false};
+
     auto generator = AsmGenerator{std::move(ast)};
     auto asmAst = generator.generate();
+
+    if (args.codegen) return {false};
 
     auto emitter = AsmEmitter{std::move(asmAst), utils::Platform{}};
     auto lines = emitter.emit();
@@ -55,6 +62,6 @@ std::string runCompiler(const std::string& preprocessed, const DriverArgs& args)
     auto writer = AsmWriter{std::move(lines), output};
     writer.write();
 
-    return output;
+    return {true, output};
 }
 } // namespace wacc::driver

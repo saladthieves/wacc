@@ -8,7 +8,6 @@ namespace driver {
 namespace {
 using namespace std::string_literals;
 /*
-TODO: Implement flags functionality
 TODO: Write tests for flags functionality
     --lex       - Run lexer only.
     --parse     - Run lexer + parser only.
@@ -36,7 +35,6 @@ public:
     std::string compiler{COMPILER_CLANG};
 };
 
-// TODO: Update tests with --cleanup flag
 DriverArgs parseDriverArgs(std::vector<std::string>& args);
 } // namespace driver
 } // namespace wacc

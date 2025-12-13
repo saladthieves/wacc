@@ -18,8 +18,11 @@ void runDriver(std::vector<std::string>& arguments) {
 
     try {
         const auto preprocessed = runPreprocessor(args);
-        const auto assembly = runCompiler(preprocessed, args);
-        runAssembler(assembly, args);
+        const auto [proceed, assembly] = runCompiler(preprocessed, args);
+        
+        if (proceed) {
+            runAssembler(assembly, args);
+        }
 
         cleanUp(args, false);
     } catch (const std::runtime_error& ex) {

@@ -2,14 +2,20 @@
 #include "compiler.hpp"
 #include "test_utils.hpp"
 
+#include <filesystem>
+#include <fstream>
 #include <gtest/gtest.h>
+#include <stdexcept>
 
 using wacc::driver::DriverArgs;
+using wacc::driver::CompilerResult;
 using wacc::driver::runCompiler;
 
 using wacc::test::utils::samples::cleanUpSamples;
-using wacc::test::utils::samples::rootFolder;
 using wacc::test::utils::samples::sampleSource;
+using wacc::test::utils::samples::samplePrep;
+using wacc::test::utils::samples::sampleAsm;
+using wacc::test::utils::samples::sampleCode;
 
 using std::string;
 
@@ -21,57 +27,122 @@ protected:
         });
     }
 
-    DriverArgs gccArgs{false, false, false, false, sampleSource, "gcc"};
-    DriverArgs clangArgs{false, false, false, false, sampleSource, "clang"};
-};
-
-TEST_F(CompilerTest, throwOnEmpty) {
-    // ARRANGE
-    const auto args = DriverArgs{};
-    string preprocessed{};
-    string error{};
-
-    // ACT
-    try {
-        runCompiler(preprocessed, args);
-    } catch (const std::runtime_error& ex) {
-        error = ex.what();
+    void writeToPrepFile(const string& data) {
+        std::ofstream file{samplePrep};
+        file << data;
+        file.close();
     }
 
-    // ASSERT
-    ASSERT_TRUE(error.contains("preprocessed file does not exist:"));
-}
+    DriverArgs sampleArgs{false, false, false, false, sampleSource, "gcc"};
+};
 
 TEST_F(CompilerTest, throwOnNonExistentFile) {
     // ARRANGE
-    const auto args = DriverArgs{};
-    string preprocessed{"invalid/file.c"};
+    const auto preprocessed = "invalid.file";
     string error{};
 
     // ACT
     try {
-        runCompiler(preprocessed, args);
+        runCompiler(preprocessed, sampleArgs);
     } catch (const std::runtime_error& ex) {
         error = ex.what();
     }
 
     // ASSERT
-    ASSERT_TRUE(error.contains("preprocessed file does not exist:"));
+    ASSERT_TRUE(error.contains("provided preprocessed file"));
+    ASSERT_TRUE(error.contains("does not exist: "));
 }
 
 TEST_F(CompilerTest, throwOnInvalidExtension) {
     // ARRANGE
-    const auto args = DriverArgs{};
-    string preprocessed{rootFolder};
+    const auto preprocessed = sampleSource;
     string error{};
 
     // ACT
     try {
-        runCompiler(preprocessed, args);
+        runCompiler(preprocessed, sampleArgs);
     } catch (const std::runtime_error& ex) {
         error = ex.what();
     }
 
     // ASSERT
+    ASSERT_TRUE(error.contains("The preprocessed file"));
     ASSERT_TRUE(error.contains("must end in .i"));
+}
+
+TEST_F(CompilerTest, compileLexerOnly) {
+    // ARRANGE
+    auto args = DriverArgs{true, false, false, false, sampleSource};
+    string source = "main int void";
+    writeToPrepFile(source);
+    string error{};
+
+    // ACT
+    try {
+        runCompiler(samplePrep, args);
+    } catch (const std::runtime_error& ex) {
+        error = ex.what();
+    }
+
+    // ASSERT
+    ASSERT_TRUE(error.empty());
+}
+
+TEST_F(CompilerTest, compileParserOnly) {
+    // ARRANGE
+    auto args = DriverArgs{false, true, false, false, sampleSource};
+    writeToPrepFile(sampleCode);
+    string error{};
+
+    // ACT
+    try {
+        runCompiler(samplePrep, args);
+    } catch (const std::runtime_error& ex) {
+        error = ex.what();
+    }
+
+    // ASSERT
+    ASSERT_TRUE(error.empty());
+    ASSERT_FALSE(std::filesystem::exists(sampleAsm));
+}
+
+TEST_F(CompilerTest, compileCodegenOnly) {
+    // ARRANGE
+    auto args = DriverArgs{false, false, true, false, sampleSource};
+    writeToPrepFile(sampleCode);
+    string error{};
+
+    // ACT
+    try {
+        runCompiler(samplePrep, args);
+    } catch (const std::runtime_error& ex) {
+        error = ex.what();
+    }
+
+    // ASSERT
+    ASSERT_TRUE(error.empty());
+    ASSERT_FALSE(std::filesystem::exists(sampleAsm));
+}
+
+TEST_F(CompilerTest, compile) {
+    // ARRANGE
+    auto args = DriverArgs{false, false, false, false, sampleSource};
+    writeToPrepFile(sampleCode);
+    string error{};
+    CompilerResult result{};
+
+    // ACT
+    try {
+        result = runCompiler(samplePrep, args);
+    } catch (const std::runtime_error& ex) {
+        error = ex.what();
+    }
+
+    // ASSERT
+    ASSERT_TRUE(error.empty());
+    ASSERT_TRUE(std::filesystem::exists(sampleSource));
+    ASSERT_TRUE(std::filesystem::exists(samplePrep));
+    ASSERT_TRUE(std::filesystem::exists(sampleAsm));
+    ASSERT_TRUE(result.proceed);
+    ASSERT_TRUE(result.path == sampleAsm);
 }

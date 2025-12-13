@@ -20,6 +20,12 @@ static const auto rootFolder = std::format("{}/test_sample", root);
 static const auto sampleSource = std::format("{}/{}.{}", rootFolder, name, "c");
 static const auto samplePrep = std::format("{}/{}.{}", rootFolder, name, "i");
 static const auto sampleAsm = std::format("{}/{}.{}", rootFolder, name, "s");
+static constexpr auto sampleCode =
+    R"(
+int main(void) {
+    return 42;
+}
+)";
 
 void cleanUpSamples(std::function<bool(const std::string&)> condition);
 
@@ -32,7 +38,7 @@ inline constexpr T* as(auto& pointer) {
     }
 
     auto result = static_cast<T*>(pointer.get());
-    
+
     if (result == nullptr) {
         throw std::logic_error("Pointer is null after static_cast");
     }
