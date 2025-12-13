@@ -21,7 +21,7 @@ using std::vector;
 
 class AssemblerTest : public testing::Test {
 protected:
-    static void TearDownTestSuite() {
+    void TearDown() override {
         cleanUpSamples([](const auto& path) { return !path.ends_with(".c"); });
     }
 

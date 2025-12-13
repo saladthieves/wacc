@@ -21,7 +21,7 @@ using std::string;
 
 class CompilerTest : public testing::Test {
 protected:
-    static void TearDownTestSuite() {
+    void TearDown() override {
         cleanUpSamples([](const auto& path) {
             return path.ends_with(".i") || path.ends_with(".s");
         });

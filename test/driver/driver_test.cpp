@@ -18,7 +18,7 @@ using std::vector;
 
 class DriverTest : public testing::Test {
 protected:
-    static void TearDownTestSuite() {
+    void TearDown() override {
         cleanUpSamples([](const auto& path) { return !path.ends_with(".c"); });
     }
 };
