@@ -21,20 +21,18 @@ void runDriver(std::vector<std::string>& arguments) {
             runAssembler(assembly, args);
         }
 
-        cleanUp(args, false);
+        cleanUp(args, info, false);
     } catch (const std::runtime_error& ex) {
-        cleanUp(args, true);
+        cleanUp(args, info, true);
         throw ex;
     }
 }
 
-void cleanUp(const DriverArgs& args, bool failed) {
+void cleanUp(const DriverArgs& args, const utils::FileInfo& info, bool failed) {
     if (!args.cleanUp) return;
+    if (!std::filesystem::exists(info.path)) return;
 
-    const auto info = utils::getFileInfo(args.path);
-    auto source = std::filesystem::path{args.path};
-    if (!std::filesystem::exists(source)) return;
-
+    auto source = std::filesystem::path(info.path);
     auto directory = std::filesystem::directory_iterator{info.parent};
 
     for (auto& file : directory) {

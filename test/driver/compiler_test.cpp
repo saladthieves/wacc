@@ -145,5 +145,5 @@ TEST_F(CompilerTest, compile) {
     ASSERT_TRUE(std::filesystem::exists(samplePrep));
     ASSERT_TRUE(std::filesystem::exists(sampleAsm));
     ASSERT_TRUE(result.proceed);
-    ASSERT_TRUE(result.path == sampleAsm);
+    ASSERT_TRUE(result.path.ends_with(sampleAsm));
 }

@@ -18,6 +18,7 @@ using wacc::test::utils::samples::sampleSource;
 
 using std::string;
 using std::vector;
+using std::filesystem::absolute;
 
 class AssemblerTest : public testing::Test {
 protected:
@@ -60,7 +61,7 @@ TEST_F(AssemblerTest, throwOnInvalidPath) {
 
 TEST_F(AssemblerTest, throwOnInvalidExtension) {
     // ARRANGE
-    const auto assembly = sampleSource;
+    const auto assembly = absolute(sampleSource);
     auto args = DriverArgs{false, false, false, false, false, sampleSource};
     string error{};
 

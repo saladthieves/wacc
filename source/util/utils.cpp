@@ -6,14 +6,14 @@
 
 namespace wacc::utils {
 FileInfo getFileInfo(const std::string& path) {
-    auto file = std::filesystem::path{path};
+    auto file = std::filesystem::absolute(path);
     // clang-format off
     return {
         file.filename(),
         file.stem(),
         file.extension(),
         file.parent_path(),
-        path,
+        file.string(),
     };
     // clang-format on
 }
