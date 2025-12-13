@@ -4,32 +4,19 @@ enable_testing()
 
 add_executable(${TARGET})
 
-# TODO: Split tests
-target_sources(${TARGET}
-    PRIVATE
-        backend/asm_emit_test.cpp
-        backend/asm_gen_test.cpp
-        backend/asm_writer_test.cpp
-        frontend/lexer_test.cpp
-        frontend/parser_test.cpp
-        driver/args_test.cpp
-        driver/compiler_test.cpp
-        driver/preprocessor_test.cpp
-        util/cmd_test.cpp
-        util/utils_test.cpp
-)
-
 target_link_libraries(${TARGET}
     PRIVATE
-        driver
-        util
-        test-utils
-        frontend
-        backend
-        GTest::gtest_main
+        frontend-tests
+        backend-tests
+        driver-tests
+        util-tests
 )
 
+add_subdirectory(backend)
+add_subdirectory(driver)
+add_subdirectory(frontend)
 add_subdirectory(test_utils)
+add_subdirectory(util)
 
 include(GoogleTest)
 gtest_discover_tests(${TARGET})

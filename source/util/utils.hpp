@@ -17,6 +17,7 @@ FileInfo getFileInfo(const std::string& path);
 
 std::string readFile(const std::string& path);
 
+// TODO: Remove after implementation in front::src::Source class.
 std::string decorate(unsigned int lineNo, std::string_view line,
                      unsigned int offset, std::string_view value);
 
@@ -35,7 +36,7 @@ enum class PlatformType {
 class Platform {
 public:
     Platform();
-    
+
     Platform(PlatformType type);
 
     bool isMacOS() const { return type == PlatformType::MACOS; }

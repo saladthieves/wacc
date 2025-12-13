@@ -1,6 +1,5 @@
 #include "utils.hpp"
 
-#include <__ostream/print.h>
 #include <gtest/gtest.h>
 
 using wacc::utils::getFileInfo;
