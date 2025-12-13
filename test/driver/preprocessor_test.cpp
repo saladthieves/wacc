@@ -42,8 +42,8 @@ TEST_F(PreprocessorTest, throwOnEmptyPath) {
 
 TEST_F(PreprocessorTest, throwOnNonExistentFile) {
     // ARRANGE
-    const auto args =
-        DriverArgs{false, false, false, false, "test/test_sample/invalid.c"};
+    const auto args = DriverArgs{false, false, false,
+                                 false, false, "test/test_sample/invalid.c"};
     string error{};
 
     // ACT
@@ -59,7 +59,7 @@ TEST_F(PreprocessorTest, throwOnNonExistentFile) {
 
 TEST_F(PreprocessorTest, throwOnInvalidExtension) {
     // ARRANGE
-    const auto args = DriverArgs{false, false, false, false, rootFolder};
+    const auto args = DriverArgs{false, false, false, false, false, rootFolder};
     string error{};
 
     // ACT
@@ -75,8 +75,8 @@ TEST_F(PreprocessorTest, throwOnInvalidExtension) {
 
 TEST_F(PreprocessorTest, throwOnInvalidCompiler) {
     // ARRANGE
-    const auto args = DriverArgs{false, false,        false,
-                                 false, sampleSource, "unknown-compiler"};
+    const auto args = DriverArgs{
+        false, false, false, false, false, sampleSource, "unknown-compiler"};
     string error{};
 
     // ACT
@@ -94,7 +94,7 @@ TEST_F(PreprocessorTest, throwOnInvalidCompiler) {
 TEST_F(PreprocessorTest, runPreprocessorGcc) {
     // ARRANGE
     const auto args =
-        DriverArgs{false, false, false, false, sampleSource, "gcc"};
+        DriverArgs{false, false, false, false, false, sampleSource, "gcc"};
     string error{};
     string outputFile{};
     // ACT
@@ -114,7 +114,7 @@ TEST_F(PreprocessorTest, runPreprocessorGcc) {
 TEST_F(PreprocessorTest, runPreprocessorClang) {
     // ARRANGE
     const auto args =
-        DriverArgs{false, false, false, false, sampleSource, "clang"};
+        DriverArgs{false, false, false, false, false, sampleSource, "clang"};
     string error{};
     string outputFile{};
 

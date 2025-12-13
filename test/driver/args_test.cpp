@@ -40,6 +40,7 @@ TEST(ArgsTest, selectLex) {
     ASSERT_TRUE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
     ASSERT_FALSE(arguments.codegen);
+    ASSERT_FALSE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
     ASSERT_TRUE(arguments.path == "some-path");
 }
@@ -55,6 +56,7 @@ TEST(ArgsTest, selectParse) {
     ASSERT_FALSE(arguments.lex);
     ASSERT_TRUE(arguments.parse);
     ASSERT_FALSE(arguments.codegen);
+    ASSERT_FALSE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
     ASSERT_TRUE(arguments.path == "some-path");
 }
@@ -70,6 +72,23 @@ TEST(ArgsTest, selectCodegen) {
     ASSERT_FALSE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
     ASSERT_TRUE(arguments.codegen);
+    ASSERT_FALSE(arguments.special);
+    ASSERT_TRUE(arguments.cleanUp);
+    ASSERT_TRUE(arguments.path == "some-path");
+}
+
+TEST(ArgsTest, selectSpecial) {
+    // ARRANGE
+    auto args = vector<string>{"-S", "some-path"};
+
+    // ACT
+    const auto arguments = parseDriverArgs(args);
+
+    // ASSERT
+    ASSERT_FALSE(arguments.lex);
+    ASSERT_FALSE(arguments.parse);
+    ASSERT_FALSE(arguments.codegen);
+    ASSERT_TRUE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
     ASSERT_TRUE(arguments.path == "some-path");
 }
@@ -85,13 +104,14 @@ TEST(ArgsTest, selectSkipCleanup) {
     ASSERT_FALSE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
     ASSERT_FALSE(arguments.codegen);
+    ASSERT_FALSE(arguments.special);
     ASSERT_FALSE(arguments.cleanUp);
     ASSERT_TRUE(arguments.path == "some-path");
 }
 
 TEST(ArgsTest, throwOnMultipleFlagsSameKind) {
     // ARRANGE
-    auto args = vector<string>{"--lex", "--parse", "some-path"};
+    auto args = vector<string>{"--lex", "--parse", "-S", "some-path"};
     string error{};
 
     // ACT
@@ -124,6 +144,7 @@ TEST(ArgsTest, noThrowOnMultipleFlagsDifferentKind) {
     ASSERT_TRUE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
     ASSERT_FALSE(arguments.codegen);
+    ASSERT_FALSE(arguments.special);
     ASSERT_FALSE(arguments.cleanUp);
     ASSERT_TRUE(arguments.path == "some-path");
 }
@@ -173,6 +194,7 @@ TEST(ArgsTest, parseNoFlags) {
     ASSERT_FALSE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
     ASSERT_FALSE(arguments.codegen);
+    ASSERT_FALSE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
     ASSERT_STREQ(arguments.path.c_str(), "file.c");
     ASSERT_EQ(args.size(), 1);

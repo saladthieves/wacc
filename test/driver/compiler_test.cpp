@@ -7,15 +7,15 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 
-using wacc::driver::DriverArgs;
 using wacc::driver::CompilerResult;
+using wacc::driver::DriverArgs;
 using wacc::driver::runCompiler;
 
 using wacc::test::utils::samples::cleanUpSamples;
-using wacc::test::utils::samples::sampleSource;
-using wacc::test::utils::samples::samplePrep;
 using wacc::test::utils::samples::sampleAsm;
 using wacc::test::utils::samples::sampleCode;
+using wacc::test::utils::samples::samplePrep;
+using wacc::test::utils::samples::sampleSource;
 
 using std::string;
 
@@ -33,7 +33,8 @@ protected:
         file.close();
     }
 
-    DriverArgs sampleArgs{false, false, false, false, sampleSource, "gcc"};
+    DriverArgs sampleArgs{false, false,        false, false,
+                          false, sampleSource, "gcc"};
 };
 
 TEST_F(CompilerTest, throwOnNonExistentFile) {
@@ -72,7 +73,7 @@ TEST_F(CompilerTest, throwOnInvalidExtension) {
 
 TEST_F(CompilerTest, compileLexerOnly) {
     // ARRANGE
-    auto args = DriverArgs{true, false, false, false, sampleSource};
+    auto args = DriverArgs{true, false, false, false, false, sampleSource};
     string source = "main int void";
     writeToPrepFile(source);
     string error{};
@@ -90,7 +91,7 @@ TEST_F(CompilerTest, compileLexerOnly) {
 
 TEST_F(CompilerTest, compileParserOnly) {
     // ARRANGE
-    auto args = DriverArgs{false, true, false, false, sampleSource};
+    auto args = DriverArgs{false, true, false, false, false, sampleSource};
     writeToPrepFile(sampleCode);
     string error{};
 
@@ -108,7 +109,7 @@ TEST_F(CompilerTest, compileParserOnly) {
 
 TEST_F(CompilerTest, compileCodegenOnly) {
     // ARRANGE
-    auto args = DriverArgs{false, false, true, false, sampleSource};
+    auto args = DriverArgs{false, false, true, false, false, sampleSource};
     writeToPrepFile(sampleCode);
     string error{};
 
@@ -126,7 +127,7 @@ TEST_F(CompilerTest, compileCodegenOnly) {
 
 TEST_F(CompilerTest, compile) {
     // ARRANGE
-    auto args = DriverArgs{false, false, false, false, sampleSource};
+    auto args = DriverArgs{false, false, false, false, false, sampleSource};
     writeToPrepFile(sampleCode);
     string error{};
     CompilerResult result{};

@@ -22,22 +22,26 @@ DriverArgs parseDriverArgs(std::vector<std::string>& args) {
     bool lex{false};
     bool parse{false};
     bool codegen{false};
+    bool special{false};
 
     if (findFlag(FLAG_LEX)) {
         lex = true;
-        parse = codegen = false;
+        parse = codegen = special = false;
     } else if (findFlag(FLAG_PARSE)) {
         parse = true;
-        lex = codegen = false;
+        lex = codegen = special = false;
     } else if (findFlag(FLAG_CODEGEN)) {
         codegen = true;
-        lex = parse = false;
+        lex = parse = special = false;
+    } else if (findFlag(FLAG_SPECIAL)) {
+        special = true;
+        lex = parse = codegen = false;
     }
 
     const bool skipCleanup = findFlag(FLAG_SKIP_CLEANUP);
 
     for (const auto& flag : args) {
-        if (flag.starts_with("--")) {
+        if (flag.starts_with("-")) {
             throw std::runtime_error("Multiple flags provided instead of one.");
         }
     }
@@ -49,7 +53,7 @@ DriverArgs parseDriverArgs(std::vector<std::string>& args) {
     if (args.size() != 1) {
         throw std::runtime_error("More than one source path or flag provided.");
     }
-    
-    return {lex, parse, codegen, !skipCleanup, *args.begin()};
+
+    return {lex, parse, codegen, special, !skipCleanup, *args.begin()};
 }
 } // namespace wacc::driver

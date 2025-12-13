@@ -108,3 +108,23 @@ TEST_F(DriverTest, runDriverNoCleanupInvalidFile) {
     // ASSERT
     ASSERT_FALSE(error.empty());
 }
+
+TEST_F(DriverTest, runDriverSpecial) {
+    // ARRANGE
+    auto arguments = vector<string>{"-S", sampleSource};
+    string error{};
+
+    // ACT
+    try {
+        runDriver(arguments);
+    } catch (const std::runtime_error& ex) {
+        error = ex.what();
+    }
+
+    // ASSERT
+    ASSERT_TRUE(error.empty());
+    ASSERT_TRUE(std::filesystem::exists(sampleSource));
+    ASSERT_FALSE(std::filesystem::exists(samplePrep));
+    ASSERT_TRUE(std::filesystem::exists(sampleAsm));
+    ASSERT_FALSE(std::filesystem::exists(sampleBin));
+}

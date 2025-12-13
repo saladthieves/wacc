@@ -53,6 +53,10 @@ sample/file
 sample/file.i
 sample/file.s
 
+# wacc test files
 test_sample/test_file
 test_sample/test_file.i
 test_sample/test_file.s
+
+# macOS 
+.DS_Store

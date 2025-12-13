@@ -6,17 +6,15 @@
 namespace wacc {
 namespace driver {
 namespace {
-using namespace std::string_literals;
-/*
-    TODO: Implement the -S flag
-    -S  - Run emission + writer only (don't assemble or link).
-*/
-constexpr auto FLAG_LEX = "--lex"s;
-constexpr auto FLAG_PARSE = "--parse"s;
-constexpr auto FLAG_CODEGEN = "--codegen"s;
-constexpr auto FLAG_SKIP_CLEANUP = "--skip-cleanup"s;
-constexpr auto COMPILER_CLANG = "clang"s;
-constexpr auto COMPILER_GCC = "gcc"s;
+using namespace std::string_view_literals;
+
+constexpr auto FLAG_LEX = "--lex"sv;
+constexpr auto FLAG_PARSE = "--parse"sv;
+constexpr auto FLAG_CODEGEN = "--codegen"sv;
+constexpr auto FLAG_SPECIAL = "-S"sv;
+constexpr auto FLAG_SKIP_CLEANUP = "--skip-cleanup"sv;
+constexpr auto COMPILER_CLANG = "clang"sv;
+constexpr auto COMPILER_GCC = "gcc"sv;
 } // namespace
 
 class DriverArgs {
@@ -24,6 +22,7 @@ public:
     bool lex{false};
     bool parse{false};
     bool codegen{false};
+    bool special{false};
     bool cleanUp{true};
     std::string path{""};
     std::string compiler{COMPILER_CLANG};
