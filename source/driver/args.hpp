@@ -21,7 +21,7 @@ TODO: Write tests for flags functionality
 constexpr auto FLAG_LEX = "--lex"s;
 constexpr auto FLAG_PARSE = "--parse"s;
 constexpr auto FLAG_CODEGEN = "--codegen"s;
-constexpr auto FLAG_CLEANUP = "--cleanup"s;
+constexpr auto FLAG_SKIP_CLEANUP = "--skip-cleanup"s;
 constexpr auto COMPILER_CLANG = "clang"s;
 constexpr auto COMPILER_GCC = "gcc"s;
 } // namespace

@@ -1,4 +1,5 @@
 #include "args.hpp"
+#include <algorithm>
 #include <stdexcept>
 #include <vector>
 
@@ -8,7 +9,7 @@ DriverArgs parseDriverArgs(std::vector<std::string>& args) {
         throw std::runtime_error("No driver arguments provided.");
     }
 
-    const auto assign = [&args](const std::string& flag) -> bool {
+    const auto findFlag = [&args](std::string_view flag) -> bool {
         auto result = std::find(args.begin(), args.end(), flag);
         if (result != args.end()) {
             args.erase(result);
@@ -18,19 +19,37 @@ DriverArgs parseDriverArgs(std::vector<std::string>& args) {
         }
     };
 
-    const bool lex = assign(FLAG_LEX);
-    const bool parse = assign(FLAG_PARSE);
-    const bool codegen = assign(FLAG_CODEGEN);
-    const bool cleanUp = assign(FLAG_CLEANUP);
+    bool lex{false};
+    bool parse{false};
+    bool codegen{false};
+
+    if (findFlag(FLAG_LEX)) {
+        lex = true;
+        parse = codegen = false;
+    } else if (findFlag(FLAG_PARSE)) {
+        parse = true;
+        lex = codegen = false;
+    } else if (findFlag(FLAG_CODEGEN)) {
+        codegen = true;
+        lex = parse = false;
+    }
+
+    const bool skipCleanup = findFlag(FLAG_SKIP_CLEANUP);
+
+    for (const auto& flag : args) {
+        if (flag.starts_with("--")) {
+            throw std::runtime_error("Multiple flags provided instead of one.");
+        }
+    }
 
     if (args.empty()) {
         throw std::runtime_error("No source path provided.");
     }
 
     if (args.size() != 1) {
-        throw std::runtime_error("More than one source path provided.");
+        throw std::runtime_error("More than one source path or flag provided.");
     }
-
-    return {lex, parse, codegen, cleanUp, *args.begin()};
+    
+    return {lex, parse, codegen, !skipCleanup, *args.begin()};
 }
 } // namespace wacc::driver

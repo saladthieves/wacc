@@ -2,6 +2,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Compiler (Ninja - Skip Cleanup)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
+            "args": [
+                "--lex",
+                "--parse",
+                "--codegen",
+                "--skip-cleanup",
+                "sample/file.c"
+            ],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-ninja-debug"
+        },
+        {
             "name": "Launch Compiler (Ninja)",
             "type": "lldb",
             "request": "launch",
@@ -10,21 +25,6 @@
                 "--lex",
                 "--parse",
                 "--codegen",
-                "sample/file.c"
-            ],
-            "internalConsoleOptions": "neverOpen",
-            "preLaunchTask": "build-ninja-debug"
-        },
-        {
-            "name": "Launch Compiler (Ninja-Cleanup)",
-            "type": "lldb",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/${config:compilerBinaryName}",
-            "args": [
-                "--lex",
-                "--parse",
-                "--codegen",
-                "--cleanup",
                 "sample/file.c"
             ],
             "internalConsoleOptions": "neverOpen",
