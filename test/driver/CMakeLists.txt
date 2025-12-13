@@ -7,6 +7,7 @@ target_sources(${TARGET}
         args_test.cpp
         assembler_test.cpp
         compiler_test.cpp
+        driver_test.cpp
         preprocessor_test.cpp
 )
 

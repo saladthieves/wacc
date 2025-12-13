@@ -13,13 +13,10 @@ void runDriver(std::vector<std::string>& arguments) {
     const auto args = parseDriverArgs(arguments);
     const auto info = utils::getFileInfo(args.path);
 
-    auto source = std::filesystem::path{args.path};
-    auto directory = std::filesystem::directory_iterator{info.parent};
-
     try {
         const auto preprocessed = runPreprocessor(args);
         const auto [proceed, assembly] = runCompiler(preprocessed, args);
-        
+
         if (proceed) {
             runAssembler(assembly, args);
         }
@@ -36,14 +33,23 @@ void cleanUp(const DriverArgs& args, bool failed) {
 
     const auto info = utils::getFileInfo(args.path);
     auto source = std::filesystem::path{args.path};
+    if (!std::filesystem::exists(source)) return;
+    
     auto directory = std::filesystem::directory_iterator{info.parent};
 
-    for (auto& file : directory) {
-        const auto& path = file.path();
-        if (path == source) continue;
-
-        if (path.has_extension() || failed) {
-            std::filesystem::remove(path);
+    if (failed) {
+        for (auto& file : directory) {
+            const auto& path = file.path();
+            if (path != source) {
+                std::filesystem::remove(path);
+            }
+        }
+    } else {
+        for (auto& file : directory) {
+            const auto& path = file.path();
+            if (path.has_extension() && path != source) {
+                std::filesystem::remove(path);
+            }
         }
     }
 }

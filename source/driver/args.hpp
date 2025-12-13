@@ -8,13 +8,7 @@ namespace driver {
 namespace {
 using namespace std::string_literals;
 /*
-TODO: Write tests for flags functionality
-    --lex       - Run lexer only.
-    --parse     - Run lexer + parser only.
-    --codegen   - Run lexer + parser + generation only.
-
-    None of the above flags should produce output files.
-
+    TODO: Implement the -S flag
     -S  - Run emission + writer only (don't assemble or link).
 */
 constexpr auto FLAG_LEX = "--lex"s;
