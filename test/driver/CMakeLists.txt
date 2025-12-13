@@ -5,6 +5,7 @@ add_library(${TARGET})
 target_sources(${TARGET}
     PUBLIC
         args_test.cpp
+        assembler_test.cpp
         compiler_test.cpp
         preprocessor_test.cpp
 )

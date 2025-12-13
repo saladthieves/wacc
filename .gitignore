@@ -52,3 +52,7 @@ build/
 sample/file
 sample/file.i
 sample/file.s
+
+test_sample/test_file
+test_sample/test_file.i
+test_sample/test_file.s
