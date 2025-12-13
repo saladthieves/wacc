@@ -6,7 +6,9 @@
 #include "utils.hpp"
 
 #include <filesystem>
+#include <format>
 #include <stdexcept>
+#include <vector>
 
 namespace wacc::driver {
 void runDriver(std::vector<std::string>& arguments) {
@@ -35,21 +37,23 @@ void cleanUp(const DriverArgs& args, const utils::FileInfo& info, bool failed) {
     auto source = std::filesystem::path(info.path);
     auto directory = std::filesystem::directory_iterator{info.parent};
 
-    for (auto& file : directory) {
-        const auto& path = file.path();
-        if (args.special && path.string().ends_with(".s")) {
-            continue;
-        }
-        
-        if (failed) {
-            if (path != source) {
-                std::filesystem::remove(path);
-            }
-        } else {
-            if (path.has_extension() && path != source) {
-                std::filesystem::remove(path);
-            }
-        }
+    auto root = std::filesystem::path{info.parent};
+    auto prepFile = root / std::format("{}.{}", info.stem, "i");
+    auto asmFile = root / std::format("{}.{}", info.stem, "s");
+    auto binFile = root / info.stem;
+
+    std::vector<std::filesystem::path> paths{prepFile};
+
+    if (!args.special) {
+        paths.push_back(asmFile);
+    }
+
+    if (failed) {
+        paths.push_back(binFile);
+    }
+
+    for (const auto& path : paths) {
+        std::filesystem::remove(path);
     }
 }
 } // namespace wacc::driver
