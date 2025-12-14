@@ -231,11 +231,14 @@ TEST(LexerTest, scanKeywordsInvalid) {
 TEST(LexerTest, scanSingleToken) {
     // ARRANGE
     auto tests = vector<pair<string, TokenType>>{
-        {"(", OPEN_PAREN },
-        {")", CLOSE_PAREN},
-        {"{", OPEN_BRACE },
-        {"}", CLOSE_BRACE},
-        {";", SEMICOLON  },
+        {"(",  OPEN_PAREN   },
+        {")",  CLOSE_PAREN  },
+        {"{",  OPEN_BRACE   },
+        {"}",  CLOSE_BRACE  },
+        {";",  SEMICOLON    },
+        {"~",  OP_COMPLEMENT},
+        {"-",  OP_NEGATE    },
+        {"--", OP_DECREMENT },
     };
 
     for (const auto& test : tests) {
@@ -284,8 +287,8 @@ TEST(LexerTest, scanSource) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
-        return 42;
-    })";
+            return ~(-- -2);
+        })";
 
     auto lexer = Lexer{Source{source}};
     string error{};
@@ -306,7 +309,7 @@ TEST(LexerTest, scanSource) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    ASSERT_EQ(tokens.size(), 11);
+    ASSERT_EQ(tokens.size(), 16);
 
     ASSERT_TRUE(check(tokens[0], KEYWORD_INT, "int", 1));
     ASSERT_TRUE(check(tokens[1], IDENTIFIER, "main", 1));
@@ -315,8 +318,13 @@ TEST(LexerTest, scanSource) {
     ASSERT_TRUE(check(tokens[4], CLOSE_PAREN, ")", 1));
     ASSERT_TRUE(check(tokens[5], OPEN_BRACE, "{", 1));
     ASSERT_TRUE(check(tokens[6], KEYWORD_RETURN, "return", 2));
-    ASSERT_TRUE(check(tokens[7], CONSTANT_INT, "42", 2));
-    ASSERT_TRUE(check(tokens[8], SEMICOLON, ";", 2));
-    ASSERT_TRUE(check(tokens[9], CLOSE_BRACE, "}", 3));
-    ASSERT_TRUE(check(tokens[10], END, "END", 3));
+    ASSERT_TRUE(check(tokens[7], OP_COMPLEMENT, "~", 2));
+    ASSERT_TRUE(check(tokens[8], OPEN_PAREN, "(", 2));
+    ASSERT_TRUE(check(tokens[9], OP_DECREMENT, "--", 2));
+    ASSERT_TRUE(check(tokens[10], OP_NEGATE, "-", 2));
+    ASSERT_TRUE(check(tokens[11], CONSTANT_INT, "2", 2));
+    ASSERT_TRUE(check(tokens[12], CLOSE_PAREN, ")", 2));
+    ASSERT_TRUE(check(tokens[13], SEMICOLON, ";", 2));
+    ASSERT_TRUE(check(tokens[14], CLOSE_BRACE, "}", 3));
+    ASSERT_TRUE(check(tokens[15], END, "END", 3));
 }

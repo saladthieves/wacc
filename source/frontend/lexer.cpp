@@ -29,6 +29,16 @@ Lexer::TokensPtr Lexer::scan() {
             case '{': makeToken(OPEN_BRACE); break;
             case '}': makeToken(CLOSE_BRACE); break;
             case ';': makeToken(SEMICOLON); break;
+            case '~': makeToken(OP_COMPLEMENT); break;
+            case '-': {
+                if (peekNext() == '-') {
+                    advance();
+                    makeToken(OP_DECREMENT);
+                } else {
+                    makeToken(OP_NEGATE);
+                }
+                break;
+            }
 
             default: fail("Unexpected token character: [{}]", c);
         }

@@ -18,6 +18,10 @@ enum class TokenType : unsigned {
     OPEN_PAREN, CLOSE_PAREN,
     OPEN_BRACE, CLOSE_BRACE,
 
+    OP_COMPLEMENT,
+    OP_NEGATE,
+    OP_DECREMENT,
+
     CONSTANT_INT,
 
     SEMICOLON,
@@ -81,6 +85,9 @@ public:
             case SEMICOLON:      value = "SEMICOLON"; break;
             case INVALID_TOKEN:  value = "INVALID_TOKEN"; break;
             case END:            value = "END"; break;
+            case OP_COMPLEMENT:  value = "OP_COMPLEMENT"; break;
+            case OP_NEGATE:      value = "OP_NEGATE"; break;
+            case OP_DECREMENT:   value = "OP_DECREMENT"; break;
             default:             throw std::format_error("Unhandled token::TokenType enum");
         }
         return std::format_to(context.out(), "{}", value);
