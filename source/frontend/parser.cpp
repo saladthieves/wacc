@@ -48,7 +48,7 @@ ast::AstReturnPtr Parser::parseReturn() {
 }
 
 ast::AstExprPtr Parser::parseExpression() {
-    return parseInteger();
+    return parseConstantInteger();
 }
 
 ast::AstIdentPtr Parser::parseIdentifier() {
@@ -57,11 +57,11 @@ ast::AstIdentPtr Parser::parseIdentifier() {
     return std::make_unique<ast::AstIdent>(token, token.value);
 }
 
-ast::AstIntPtr Parser::parseInteger() {
+ast::AstConstIntPtr Parser::parseConstantInteger() {
     const auto& token = expect(TokenType::CONSTANT_INT);
     int value = std::stoi(std::string{token.value});
 
-    return std::make_unique<ast::AstInt>(token, value);
+    return std::make_unique<ast::AstConstInt>(token, value);
 }
 
 auto Parser::expect(std::initializer_list<const TokenType> types)

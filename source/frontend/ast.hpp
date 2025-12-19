@@ -10,7 +10,7 @@ namespace front {
 namespace ast {
 enum class AstNodeType : unsigned {
     EXPRESSION = 1,
-    INTEGER,
+    CONST_INTEGER,
     IDENTIFIER,
     STATEMENT,
     RETURN,
@@ -21,7 +21,7 @@ enum class AstNodeType : unsigned {
 // Forward Declarations
 class AstNode;
 class AstExpr;
-class AstInt;
+class AstConstInt;
 class AstIdent;
 class AstStmt;
 class AstReturn;
@@ -31,7 +31,7 @@ class AstProg;
 // Aliases
 using AstNodePtr = std::unique_ptr<AstNode>;
 using AstExprPtr = std::unique_ptr<AstExpr>;
-using AstIntPtr = std::unique_ptr<AstInt>;
+using AstConstIntPtr = std::unique_ptr<AstConstInt>;
 using AstIdentPtr = std::unique_ptr<AstIdent>;
 using AstStmtPtr = std::unique_ptr<AstStmt>;
 using AstReturnPtr = std::unique_ptr<AstReturn>;
@@ -58,12 +58,12 @@ public:
     virtual AstNodeType type() const override { return EXPRESSION; };
 };
 
-// AstInt
-class AstInt : public AstExpr {
+// AstConstInt
+class AstConstInt : public AstExpr {
 public:
-    AstInt(Token token, int value);
+    AstConstInt(Token token, int value);
 
-    virtual AstNodeType type() const override { return INTEGER; };
+    virtual AstNodeType type() const override { return CONST_INTEGER; };
 
     Token token;
     int value;
@@ -152,14 +152,16 @@ public:
         switch (type) {
             using enum AstNodeType;
 
-            case EXPRESSION: value = "EXPRESSION"; break;
-            case INTEGER:    value = "INTEGER"; break;
-            case IDENTIFIER: value = "IDENTIFIER"; break;
-            case STATEMENT:  value = "STATEMENT"; break;
-            case RETURN:     value = "RETURN"; break;
-            case FUNCTION:   value = "FUNCTION"; break;
-            case PROGRAM:    value = "PROGRAM"; break;
-            default:         throw std::format_error("Unhandled front::ast::AstNodeType enum");
+            case EXPRESSION:    value = "EXPRESSION"; break;
+            case CONST_INTEGER: value = "CONST_INTEGER"; break;
+            case IDENTIFIER:    value = "IDENTIFIER"; break;
+            case STATEMENT:     value = "STATEMENT"; break;
+            case RETURN:        value = "RETURN"; break;
+            case FUNCTION:      value = "FUNCTION"; break;
+            case PROGRAM:       value = "PROGRAM"; break;
+            default:
+                throw std::format_error(
+                    "Unhandled front::ast::AstNodeType enum");
         }
 
         return std::format_to(context.out(), "{}", value);
@@ -189,8 +191,8 @@ public:
             const auto& type = node.type();
             switch (type) {
                 using enum AstNodeType;
-                case INTEGER: {
-                    const auto& integer = static_cast<const AstInt&>(node);
+                case CONST_INTEGER: {
+                    const auto& integer = static_cast<const AstConstInt&>(node);
                     auto in = indent(level);
                     return std::format("{}AstInt [value = '{}']\n", in,
                                        integer.value);

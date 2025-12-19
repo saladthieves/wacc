@@ -44,7 +44,7 @@ private:
 
     ast::AstIdentPtr parseIdentifier();
 
-    ast::AstIntPtr parseInteger();
+    ast::AstConstIntPtr parseConstantInteger();
 
     const Token& expect(std::initializer_list<const TokenType> types);
 

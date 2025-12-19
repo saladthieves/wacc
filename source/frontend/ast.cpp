@@ -1,8 +1,8 @@
 #include "ast.hpp"
 
 namespace wacc::front::ast {
-// AstInt
-AstInt::AstInt(Token token, int value) : token{token}, value{value} {
+// AstConstInt
+AstConstInt::AstConstInt(Token token, int value) : token{token}, value{value} {
 }
 
 // AstIdent

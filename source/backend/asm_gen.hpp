@@ -3,7 +3,6 @@
 #include "asm_ast.hpp"
 #include "ast.hpp"
 
-#include <__format/format_functions.h>
 #include <format>
 #include <stdexcept>
 
@@ -34,7 +33,7 @@ private:
 
     AsmRetPtr genAsmRet() const;
 
-    AsmImmPtr genForAstInt(const AstInt& obj) const;
+    AsmImmPtr genForAstConstInt(const AstConstInt& obj) const;
 
     AsmRegPtr genAsmReg() const;
 

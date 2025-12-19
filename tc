@@ -2,9 +2,9 @@
 
 TEST_ROOT="$HOME/dev/projects/cpp/personal/writing-a-c-compiler-tests"
 TEST_SCRIPT="test_compiler"
-TEST_CHAPTER="--chapter 1"
+TEST_CHAPTER="--chapter 2"
 TEST_STAGE="codegen"
-CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER"
+CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage lex"
 
 echo "🧪 - Testing compiler..."
 eval ${CMD}

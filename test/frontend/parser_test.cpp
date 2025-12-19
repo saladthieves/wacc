@@ -111,7 +111,7 @@ TEST(ParserTest, parseProgram) {
     ASSERT_TRUE(functionName->value == "main");
 
     auto functionBody = as<AstReturn>(function->body);
-    auto returnExpression = as<AstInt>(functionBody->expression);
+    auto returnExpression = as<AstConstInt>(functionBody->expression);
     ASSERT_EQ(returnExpression->token.type, CONSTANT_INT);
     ASSERT_TRUE(returnExpression->value == 42);
 

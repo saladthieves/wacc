@@ -54,9 +54,9 @@ AsmMovPtr AsmGenerator::genAsmMov(const AstExpr& obj) const {
     AsmOperandPtr src{nullptr};
     switch (type) {
         using enum AstNodeType;
-        case INTEGER: {
-            auto& intObj = static_cast<const AstInt&>(obj);
-            src = genForAstInt(intObj);
+        case CONST_INTEGER: {
+            auto& intObj = static_cast<const AstConstInt&>(obj);
+            src = genForAstConstInt(intObj);
             break;
         }
 
@@ -73,7 +73,7 @@ AsmRetPtr AsmGenerator::genAsmRet() const {
     return std::make_unique<AsmRet>();
 }
 
-AsmImmPtr AsmGenerator::genForAstInt(const AstInt& obj) const {
+AsmImmPtr AsmGenerator::genForAstConstInt(const AstConstInt& obj) const {
     return std::make_unique<AsmImm>(obj.value);
 }
 
