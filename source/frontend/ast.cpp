@@ -5,6 +5,11 @@ namespace wacc::front::ast {
 AstConstInt::AstConstInt(Token token, int value) : token{token}, value{value} {
 }
 
+// AstUnary
+AstUnary::AstUnary(AstUnaryOpType op, AstExprPtr expr) :
+    op{op}, expr{std::move(expr)} {
+}
+
 // AstIdent
 AstIdent::AstIdent(Token token, std::string_view value) :
     token{token}, value{value} {

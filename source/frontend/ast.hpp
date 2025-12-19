@@ -11,6 +11,7 @@ namespace ast {
 enum class AstNodeType : unsigned {
     EXPRESSION = 1,
     CONST_INTEGER,
+    UNARY,
     IDENTIFIER,
     STATEMENT,
     RETURN,
@@ -18,10 +19,16 @@ enum class AstNodeType : unsigned {
     PROGRAM
 };
 
+enum class AstUnaryOpType : unsigned {
+    UNARY_COMPLEMENT = 1,
+    UNARY_NEGATE,
+};
+
 // Forward Declarations
 class AstNode;
 class AstExpr;
 class AstConstInt;
+class AstUnary;
 class AstIdent;
 class AstStmt;
 class AstReturn;
@@ -32,6 +39,7 @@ class AstProg;
 using AstNodePtr = std::unique_ptr<AstNode>;
 using AstExprPtr = std::unique_ptr<AstExpr>;
 using AstConstIntPtr = std::unique_ptr<AstConstInt>;
+using AstUnaryPtr = std::unique_ptr<AstUnary>;
 using AstIdentPtr = std::unique_ptr<AstIdent>;
 using AstStmtPtr = std::unique_ptr<AstStmt>;
 using AstReturnPtr = std::unique_ptr<AstReturn>;
@@ -67,6 +75,17 @@ public:
 
     Token token;
     int value;
+};
+
+// AstUnary
+class AstUnary : public AstExpr {
+public:
+    AstUnary(AstUnaryOpType op, AstExprPtr expr);
+
+    virtual AstNodeType type() const override { return UNARY; };
+
+    AstUnaryOpType op;
+    AstExprPtr expr;
 };
 
 // AstIdent
@@ -169,6 +188,33 @@ public:
 };
 
 namespace {
+using wacc::front::ast::AstUnaryOpType;
+}
+
+template <>
+class formatter<AstUnaryOpType> {
+public:
+    constexpr auto parse(format_parse_context& context) {
+        return context.begin();
+    }
+
+    auto format(const AstUnaryOpType& type, format_context& context) const {
+        std::string value{};
+
+        switch (type) {
+            using enum AstUnaryOpType;
+            case UNARY_COMPLEMENT: value = "UNARY_COMPLEMENT"; break;
+            case UNARY_NEGATE:     value = "UNARY_NEGATE"; break;
+            default:
+                throw std::format_error(
+                    "Unhandled front::ast::AstUnaryOpType enum");
+        }
+
+        return std::format_to(context.out(), "{}", value);
+    }
+};
+
+namespace {
 using namespace wacc::front::ast;
 } // namespace
 
@@ -179,64 +225,66 @@ public:
         return context.begin();
     }
 
-    auto format(const AstNodePtr& ptr, format_context& context) const {
+    std::string formatNode(const AstNode& node, unsigned level) const {
         const auto indent = [](unsigned level) -> std::string {
             std::string output = "";
             for (auto i = 0; i < level; ++i) output += "  ";
             return output;
         };
 
-        const auto fmt = [&indent](this const auto& self, const AstNode& node,
-                                   unsigned level) -> std::string {
-            const auto& type = node.type();
-            switch (type) {
-                using enum AstNodeType;
-                case CONST_INTEGER: {
-                    const auto& integer = static_cast<const AstConstInt&>(node);
-                    auto in = indent(level);
-                    return std::format("{}AstInt [value = '{}']\n", in,
-                                       integer.value);
-                }
-                case IDENTIFIER: {
-                    const auto& ident = static_cast<const AstIdent&>(node);
-                    auto in = indent(level);
-                    std::string output = in + "AstIdent {\n";
-                    output += std::format("{}{}{}", in, in, ident.value);
-                    output += in + "}\n";
-                    return output;
-                }
-                case RETURN: {
-                    const auto& ret = static_cast<const AstReturn&>(node);
-                    auto in = indent(level);
-                    std::string output = in + "AstReturn {\n";
-                    output += self(*ret.expression, level + 1);
-                    output += in + "}\n";
-                    return output;
-                }
-                case FUNCTION: {
-                    const auto& fun = static_cast<const AstFun&>(node);
-                    auto in = indent(level);
-                    auto output = std::format("{}AstFun name='{}', body = {{\n",
-                                              in, fun.name->value);
-                    output += self(*fun.body, level + 1);
-                    output += in + "}\n";
-                    return output;
-                }
-                case PROGRAM: {
-                    const auto& prog = static_cast<const AstProg&>(node);
-                    auto in = indent(level);
-                    std::string output = in + "AstProg {\n";
-                    output += self(*prog.function, level + 1);
-                    output += in + "}\n";
-                    return output;
-                }
-                default:
-                    throw std::runtime_error("Unhandled ast::AstNode type.");
+        const auto& type = node.type();
+        const auto in = indent(level);
+        switch (type) {
+            using enum AstNodeType;
+            case CONST_INTEGER: {
+                const auto& integer = static_cast<const AstConstInt&>(node);
+                return std::format("{}AstInt [value = '{}']\n", in,
+                                   integer.value);
             }
-        };
+            case UNARY: {
+                const auto& unary = static_cast<const AstUnary&>(node);
+                auto output =
+                    std::format("{}AstUnary [operator = {}]\n", in, unary.op);
+                output += formatNode(*unary.expr, ++level);
+                output += in + "}\n";
+                return output;
+            }
+            case IDENTIFIER: {
+                const auto& ident = static_cast<const AstIdent&>(node);
+                std::string output = in + "AstIdent {\n";
+                output += std::format("{}{}{}", in, in, ident.value);
+                output += in + "}\n";
+                return output;
+            }
+            case RETURN: {
+                const auto& ret = static_cast<const AstReturn&>(node);
+                std::string output = in + "AstReturn {\n";
+                output += formatNode(*ret.expression, level + 1);
+                output += in + "}\n";
+                return output;
+            }
+            case FUNCTION: {
+                const auto& fun = static_cast<const AstFun&>(node);
+                auto output = std::format("{}AstFun name='{}', body = {{\n", in,
+                                          fun.name->value);
+                output += formatNode(*fun.body, level + 1);
+                output += in + "}\n";
+                return output;
+            }
+            case PROGRAM: {
+                const auto& prog = static_cast<const AstProg&>(node);
+                std::string output = in + "AstProg {\n";
+                output += formatNode(*prog.function, level + 1);
+                output += in + "}\n";
+                return output;
+            }
 
-        const auto value = fmt(*ptr, 0);
-        return std::format_to(context.out(), "{}", value);
+            default: throw std::runtime_error("Unhandled ast::AstNode type.");
+        }
+    }
+
+    auto format(const AstNodePtr& ptr, format_context& context) const {
+        return std::format_to(context.out(), "{}", formatNode(*ptr, 0));
     }
 };
 } // namespace std

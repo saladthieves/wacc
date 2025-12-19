@@ -46,9 +46,15 @@ private:
 
     ast::AstConstIntPtr parseConstantInteger();
 
+    ast::AstUnaryPtr parseUnaryExpression();
+
+    ast::AstUnaryOpType parseUnaryOperator();
+
     const Token& expect(std::initializer_list<const TokenType> types);
 
-    const Token& expect(const TokenType& type);
+    const Token& expect(const TokenType& type); 
+
+    const Token& expectAny(std::initializer_list<const TokenType> types);
 
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",

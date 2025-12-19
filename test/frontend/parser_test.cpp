@@ -14,6 +14,7 @@
 #include <vector>
 
 using enum wacc::front::token::TokenType;
+using enum wacc::front::ast::AstUnaryOpType;
 using wacc::front::lex::Lexer;
 using wacc::front::parse::Parser;
 using wacc::front::src::Source;
@@ -60,7 +61,6 @@ TEST(ParserTest, parseInvalidProgram) {
         {"int main (void)}",            OPEN_BRACE,            CLOSE_BRACE },
         {"int main (void){}",           KEYWORD_RETURN,        CLOSE_BRACE },
         {"int main (void){ 15; }",      KEYWORD_RETURN,        CONSTANT_INT},
-        {"int main (void){ return; }",  CONSTANT_INT,          SEMICOLON   },
         {"int main (void){ return 42}", SEMICOLON,             CLOSE_BRACE },
     };
 
@@ -90,11 +90,42 @@ TEST(ParserTest, parseInvalidProgram) {
     }
 }
 
+TEST(ParserTest, parseMalformedExpression) {
+    // ARRANGE
+    const auto tests = vector<string>{
+        "int main(void) { return; }",      "int main(void) { return (); }",
+        "int main(void) { return (()); }", "int main(void) { return -; }",
+        "int main(void) { return ~; }",    "int main(void) { return -(); }",
+        "int main(void) { return ~(); }",  "int main(void) { return --15; }",
+    };
+
+    for (const auto& test : tests) {
+        // ACT
+        auto source = Source{test};
+        auto lexer = Lexer{source};
+        auto parser = Parser{lexer.scan(), source};
+        string error{};
+
+        try {
+            parser.parse();
+        } catch (const std::runtime_error& ex) {
+            error = ex.what();
+        }
+
+        // ASSERT
+        ASSERT_FALSE(error.empty());
+        ASSERT_TRUE(error.contains("ParserError"));
+        ASSERT_TRUE(error.contains("malformed expression") ||
+                    error.contains("Expected") ||
+                    error.contains("Cannot parse"));
+    }
+}
+
 TEST(ParserTest, parseProgram) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
-        return 42;
+        return ~(-42);
     }
     )";
     auto lexer = Lexer{Source{source}};
@@ -111,9 +142,47 @@ TEST(ParserTest, parseProgram) {
     ASSERT_TRUE(functionName->value == "main");
 
     auto functionBody = as<AstReturn>(function->body);
-    auto returnExpression = as<AstConstInt>(functionBody->expression);
-    ASSERT_EQ(returnExpression->token.type, CONSTANT_INT);
-    ASSERT_TRUE(returnExpression->value == 42);
+    auto returnExprUnary = as<AstUnary>(functionBody->expression);
+    ASSERT_EQ(returnExprUnary->op, UNARY_COMPLEMENT);
+    auto returnExprNeg = as<AstUnary>(returnExprUnary->expr);
+    ASSERT_EQ(returnExprNeg->op, UNARY_NEGATE);
+    auto returnExprNegVal = as<AstConstInt>(returnExprNeg->expr);
+    ASSERT_TRUE(returnExprNegVal->value == 42);
 
     std::println("{}", ptr);
+}
+
+TEST(ParserTest, parsePrograms) {
+    // ARRANGE
+    const auto tests = vector<string>{
+        "int main(void) { return -15; }",
+        "int main(void) { return ~30; }",
+        "int main(void) { return ~~45; }",
+        "int main(void) { return ~-15; }",
+        "int main(void) { return -~80; }",
+        "int main(void) { return -~~100; }",
+        "int main(void) { return -(~~200); }",
+        "int main(void) { return ~-(~300); }",
+        "int main(void) { return (~15); }",
+        "int main(void) { return ~(15); }",
+        "int main(void) { return ~~(-3); }",
+        "int main(void) { return ~(-~(~-(~~-15))); }",
+    };
+
+    for (const auto& test : tests) {
+        auto source = Source{test};
+        auto lexer = Lexer{source};
+        auto parser = Parser{lexer.scan(), source};
+        string error{};
+
+        // ACT
+        try {
+            parser.parse();
+        } catch (const std::runtime_error& ex) {
+            error = ex.what();
+        }
+
+        // ASSERT
+        ASSERT_TRUE(error.empty());
+    }
 }

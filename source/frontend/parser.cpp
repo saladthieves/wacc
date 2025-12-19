@@ -1,6 +1,7 @@
 #include "parser.hpp"
 #include "ast.hpp"
 #include "source.hpp"
+#include "token.hpp"
 
 namespace wacc::front::parse {
 Parser::Parser(TokensPtr ptr, src::Source source) :
@@ -48,7 +49,22 @@ ast::AstReturnPtr Parser::parseReturn() {
 }
 
 ast::AstExprPtr Parser::parseExpression() {
-    return parseConstantInteger();
+    const auto& type = peek().type;
+    switch (type) {
+        using enum TokenType;
+        case CONSTANT_INT:  return parseConstantInteger();
+        case OP_COMPLEMENT:
+        case OP_NEGATE:     {
+            return parseUnaryExpression();
+        }
+        case OPEN_PAREN: {
+            expect(OPEN_PAREN);
+            auto expression = parseExpression();
+            expect(CLOSE_PAREN);
+            return expression;
+        }
+        default: fail("Unknown or malformed expression:");
+    }
 }
 
 ast::AstIdentPtr Parser::parseIdentifier() {
@@ -62,6 +78,24 @@ ast::AstConstIntPtr Parser::parseConstantInteger() {
     int value = std::stoi(std::string{token.value});
 
     return std::make_unique<ast::AstConstInt>(token, value);
+}
+
+ast::AstUnaryPtr Parser::parseUnaryExpression() {
+    auto op = parseUnaryOperator();
+    auto expr = parseExpression();
+    return std::make_unique<ast::AstUnary>(op, std::move(expr));
+}
+
+ast::AstUnaryOpType Parser::parseUnaryOperator() {
+    using enum TokenType;
+    const auto& type = expectAny({OP_COMPLEMENT, OP_NEGATE}).type;
+    
+    switch (type) {
+        case OP_COMPLEMENT: return ast::AstUnaryOpType::UNARY_COMPLEMENT;
+        case OP_NEGATE:     return ast::AstUnaryOpType::UNARY_NEGATE;
+        default:
+            fail("Cannot parse AstUnaryOpType from ast::TokenType[{}]", type);
+    }
 }
 
 auto Parser::expect(std::initializer_list<const TokenType> types)
@@ -88,5 +122,28 @@ auto Parser::expect(const TokenType& type) -> const Token& {
     }
 
     fail("Expected [{}] but got [{}] instead:", type, token.type);
+}
+
+auto Parser::expectAny(std::initializer_list<const TokenType> types)
+    -> const Token& {
+    const auto& token = advance();
+    for (const auto& type : types) {
+        if (token.type == type) {
+            sync();
+            return token;
+        }
+    }
+
+    std::string output{};
+    auto begin = types.begin();
+    auto end = types.end();
+    for (; begin != end; ++begin) {
+        output += std::format("{}", *begin);
+        if (begin != end - 1) {
+            output += ", ";
+        }
+    }
+
+    fail("Exected any of [{}] but got [{}] instead:", output, token.type);
 }
 } // namespace wacc::front::parse
