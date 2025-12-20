@@ -8,10 +8,8 @@ namespace wacc {
 namespace back {
 namespace ast {
 enum class AsmNodeType : unsigned {
-    OPERAND = 1,
-    OP_IMM,
+    OP_IMM = 1,
     OP_REG,
-    INSTRUCTION,
     INSTR_MOV,
     INSTR_RET,
     FUNCTION,
@@ -39,6 +37,7 @@ using AsmMovPtr = std::unique_ptr<AsmMov>;
 using AsmRetPtr = std::unique_ptr<AsmRet>;
 using AsmFunPtr = std::unique_ptr<AsmFun>;
 using AsmProgPtr = std::unique_ptr<AsmProg>;
+
 using AsmInstrPtrs = std::vector<AsmInstrPtr>;
 
 namespace {
@@ -55,7 +54,7 @@ public:
 // AsmOperand
 class AsmOperand : public AsmNode {
 public:
-    virtual AsmNodeType type() const override { return OPERAND; };
+    virtual AsmNodeType type() const override = 0;
 };
 
 // AsmImm
@@ -77,7 +76,7 @@ public:
 // AsmInstr
 class AsmInstr : public AsmNode {
 public:
-    virtual AsmNodeType type() const override { return INSTRUCTION; };
+    virtual AsmNodeType type() const override = 0;
 };
 
 // AsmMov
@@ -138,14 +137,12 @@ public:
 
         switch (type) {
             using enum AsmNodeType;
-            case OPERAND:     value = "OPERAND"; break;
-            case OP_IMM:      value = "OP_IMM"; break;
-            case OP_REG:      value = "OP_REG"; break;
-            case INSTRUCTION: value = "INSTRUCTION"; break;
-            case INSTR_MOV:   value = "INSTR_MOV"; break;
-            case INSTR_RET:   value = "INSTR_RET"; break;
-            case FUNCTION:    value = "FUNCTION"; break;
-            case PROGRAM:     value = "PROGRAM"; break;
+            case OP_IMM:    value = "OP_IMM"; break;
+            case OP_REG:    value = "OP_REG"; break;
+            case INSTR_MOV: value = "INSTR_MOV"; break;
+            case INSTR_RET: value = "INSTR_RET"; break;
+            case FUNCTION:  value = "FUNCTION"; break;
+            case PROGRAM:   value = "PROGRAM"; break;
             default:
                 throw std::format_error(
                     "Unhandled back::ast::AsmNodeType enum");

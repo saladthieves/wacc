@@ -142,7 +142,7 @@ TEST(ParserTest, parseProgram) {
     ASSERT_TRUE(functionName->value == "main");
 
     auto functionBody = as<AstReturn>(function->body);
-    auto returnExprUnary = as<AstUnary>(functionBody->expression);
+    auto returnExprUnary = as<AstUnary>(functionBody->expr);
     ASSERT_EQ(returnExprUnary->op, UNARY_COMPLEMENT);
     auto returnExprNeg = as<AstUnary>(returnExprUnary->expr);
     ASSERT_EQ(returnExprNeg->op, UNARY_NEGATE);

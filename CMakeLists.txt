@@ -11,6 +11,7 @@ project(
 
 add_subdirectory(source/util)
 add_subdirectory(source/frontend)
+add_subdirectory(source/tacky)
 add_subdirectory(source/backend)
 add_subdirectory(source/driver)
 add_subdirectory(source)

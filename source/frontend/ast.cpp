@@ -16,8 +16,8 @@ AstIdent::AstIdent(Token token, std::string_view value) :
 }
 
 // AstReturn
-AstReturn::AstReturn(AstExprPtr expression) :
-    expression{std::move(expression)} {
+AstReturn::AstReturn(AstExprPtr expr) :
+    expr{std::move(expr)} {
 }
 
 // AstFun

@@ -10,6 +10,7 @@ using namespace std::string_view_literals;
 
 constexpr auto FLAG_LEX = "--lex"sv;
 constexpr auto FLAG_PARSE = "--parse"sv;
+constexpr auto FLAG_TACKY = "--tacky"sv; // TODO: Implement new flag
 constexpr auto FLAG_CODEGEN = "--codegen"sv;
 constexpr auto FLAG_SPECIAL = "-S"sv;
 constexpr auto FLAG_SKIP_CLEANUP = "--skip-cleanup"sv;

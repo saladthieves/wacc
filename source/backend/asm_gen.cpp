@@ -42,7 +42,7 @@ AsmInstrPtrs AsmGenerator::genForAstStmt(const AstStmt& obj) const {
 
 AsmInstrPtrs AsmGenerator::genForAstReturn(const AstReturn& obj) const {
     auto instructions = AsmInstrPtrs{};
-    auto& expr = static_cast<const AstExpr&>(*obj.expression);
+    auto& expr = static_cast<const AstExpr&>(*obj.expr);
     instructions.emplace_back(genAsmMov(expr));
     instructions.emplace_back(genAsmRet());
 

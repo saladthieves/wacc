@@ -47,6 +47,8 @@ CompilerResult runCompiler(const std::string& preprocessed,
 
     if (args.parse) return {false};
 
+    // TODO: Insert tacky generation here
+
     auto generator = AsmGenerator{std::move(ast)};
     auto asmAst = generator.generate();
 

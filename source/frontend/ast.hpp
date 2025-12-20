@@ -9,11 +9,9 @@ namespace wacc {
 namespace front {
 namespace ast {
 enum class AstNodeType : unsigned {
-    EXPRESSION = 1,
-    CONST_INTEGER,
+    CONST_INTEGER = 1,
     UNARY,
     IDENTIFIER,
-    STATEMENT,
     RETURN,
     FUNCTION,
     PROGRAM
@@ -63,7 +61,7 @@ public:
 // AstExpr
 class AstExpr : public AstNode {
 public:
-    virtual AstNodeType type() const override { return EXPRESSION; };
+    virtual AstNodeType type() const override = 0;
 };
 
 // AstConstInt
@@ -102,17 +100,17 @@ public:
 // AstStmt
 class AstStmt : public AstNode {
 public:
-    virtual AstNodeType type() const override { return STATEMENT; };
+    virtual AstNodeType type() const override = 0;
 };
 
 // AstReturn
 class AstReturn : public AstStmt {
 public:
-    AstReturn(AstExprPtr expression);
+    AstReturn(AstExprPtr expr);
 
     virtual AstNodeType type() const override { return RETURN; };
 
-    AstExprPtr expression;
+    AstExprPtr expr;
 };
 
 // AstFun
@@ -170,11 +168,8 @@ public:
 
         switch (type) {
             using enum AstNodeType;
-
-            case EXPRESSION:    value = "EXPRESSION"; break;
             case CONST_INTEGER: value = "CONST_INTEGER"; break;
             case IDENTIFIER:    value = "IDENTIFIER"; break;
-            case STATEMENT:     value = "STATEMENT"; break;
             case RETURN:        value = "RETURN"; break;
             case FUNCTION:      value = "FUNCTION"; break;
             case PROGRAM:       value = "PROGRAM"; break;
@@ -259,7 +254,7 @@ public:
             case RETURN: {
                 const auto& ret = static_cast<const AstReturn&>(node);
                 std::string output = in + "AstReturn {\n";
-                output += formatNode(*ret.expression, level + 1);
+                output += formatNode(*ret.expr, level + 1);
                 output += in + "}\n";
                 return output;
             }
