@@ -6,6 +6,7 @@
 #include "parser.hpp"
 #include "source.hpp"
 #include "utils.hpp"
+#include "tacky_gen.hpp"
 
 #include <filesystem>
 #include <format>
@@ -19,6 +20,7 @@ using back::write::AsmWriter;
 using front::lex::Lexer;
 using front::parse::Parser;
 using front::src::Source;
+using tacky::gen::TackyGenerator;
 } // namespace
 
 CompilerResult runCompiler(const std::string& preprocessed,
@@ -47,9 +49,12 @@ CompilerResult runCompiler(const std::string& preprocessed,
 
     if (args.parse) return {false};
 
-    // TODO: Insert tacky generation here
+    auto tackyGenerator = TackyGenerator{std::move(ast)};
+    auto tackyAst = tackyGenerator.generate();
 
-    auto generator = AsmGenerator{std::move(ast)};
+    if (args.tacky) return {false};
+
+    auto generator = AsmGenerator{std::move(ast)};  // TODO: Fix this pass
     auto asmAst = generator.generate();
 
     if (args.codegen) return {false};

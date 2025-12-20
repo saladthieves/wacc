@@ -16,7 +16,7 @@ using namespace wacc::tacky::ast;
 class VariableGenerator {
 public:
     VariableGenerator();
-
+    void reset();
     void resetSession(std::string session = "");
     void resetFunction(std::string function);
     std::string generate(TackyUnaryOpType type);

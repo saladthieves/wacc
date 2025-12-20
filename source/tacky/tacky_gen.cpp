@@ -7,7 +7,12 @@
 namespace wacc::tacky::gen {
 // VariableGenerator
 VariableGenerator::VariableGenerator() {
+    reset();
+}
+
+void VariableGenerator::reset() {
     resetSession();
+    count = 0;
 }
 
 void VariableGenerator::resetSession(std::string session) {
@@ -52,8 +57,8 @@ TackyProgPtr TackyGenerator::genForAstProg(const AstProg& obj) const {
 
 TackyFunPtr TackyGenerator::genForAstFun(const AstFun& obj) const {
     auto identifier = std::string{obj.name->value};
+    generator.reset();
     generator.resetFunction(identifier);
-    generator.resetSession();
     auto& stmt = static_cast<const AstStmt&>(*obj.body);
     return std::make_unique<TackyFun>(identifier, genForAstStmt(stmt));
 }

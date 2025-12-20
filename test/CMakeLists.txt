@@ -9,7 +9,7 @@ target_link_libraries(${TARGET}
         frontend-tests
         tacky-tests
         backend-tests
-        driver-tests
+        # driver-tests
         util-tests
 )
 

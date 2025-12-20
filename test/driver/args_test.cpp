@@ -39,6 +39,7 @@ TEST(ArgsTest, selectLex) {
     // ASSERT
     ASSERT_TRUE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
+    ASSERT_FALSE(arguments.tacky);
     ASSERT_FALSE(arguments.codegen);
     ASSERT_FALSE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
@@ -55,6 +56,24 @@ TEST(ArgsTest, selectParse) {
     // ASSERT
     ASSERT_FALSE(arguments.lex);
     ASSERT_TRUE(arguments.parse);
+    ASSERT_FALSE(arguments.tacky);
+    ASSERT_FALSE(arguments.codegen);
+    ASSERT_FALSE(arguments.special);
+    ASSERT_TRUE(arguments.cleanUp);
+    ASSERT_TRUE(arguments.path == "some-path");
+}
+
+TEST(ArgsTest, selectTacky) {
+    // ARRANGE
+    auto args = vector<string>{"--tacky", "some-path"};
+
+    // ACT
+    const auto arguments = parseDriverArgs(args);
+
+    // ASSERT
+    ASSERT_FALSE(arguments.lex);
+    ASSERT_FALSE(arguments.parse);
+    ASSERT_TRUE(arguments.tacky);
     ASSERT_FALSE(arguments.codegen);
     ASSERT_FALSE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
@@ -71,6 +90,7 @@ TEST(ArgsTest, selectCodegen) {
     // ASSERT
     ASSERT_FALSE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
+    ASSERT_FALSE(arguments.tacky);
     ASSERT_TRUE(arguments.codegen);
     ASSERT_FALSE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
@@ -87,6 +107,7 @@ TEST(ArgsTest, selectSpecial) {
     // ASSERT
     ASSERT_FALSE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
+    ASSERT_FALSE(arguments.tacky);
     ASSERT_FALSE(arguments.codegen);
     ASSERT_TRUE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);
@@ -103,6 +124,7 @@ TEST(ArgsTest, selectSkipCleanup) {
     // ASSERT
     ASSERT_FALSE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
+    ASSERT_FALSE(arguments.tacky);
     ASSERT_FALSE(arguments.codegen);
     ASSERT_FALSE(arguments.special);
     ASSERT_FALSE(arguments.cleanUp);
@@ -111,7 +133,7 @@ TEST(ArgsTest, selectSkipCleanup) {
 
 TEST(ArgsTest, throwOnMultipleFlagsSameKind) {
     // ARRANGE
-    auto args = vector<string>{"--lex", "--parse", "-S", "some-path"};
+    auto args = vector<string>{"--lex", "--parse", "--tacky", "-S", "some-path"};
     string error{};
 
     // ACT
@@ -143,6 +165,7 @@ TEST(ArgsTest, noThrowOnMultipleFlagsDifferentKind) {
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
+    ASSERT_FALSE(arguments.tacky);
     ASSERT_FALSE(arguments.codegen);
     ASSERT_FALSE(arguments.special);
     ASSERT_FALSE(arguments.cleanUp);
@@ -193,6 +216,7 @@ TEST(ArgsTest, parseNoFlags) {
     // ASSERT
     ASSERT_FALSE(arguments.lex);
     ASSERT_FALSE(arguments.parse);
+    ASSERT_FALSE(arguments.tacky);
     ASSERT_FALSE(arguments.codegen);
     ASSERT_FALSE(arguments.special);
     ASSERT_TRUE(arguments.cleanUp);

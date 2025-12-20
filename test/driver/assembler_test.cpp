@@ -38,13 +38,15 @@ protected:
         file.close();
     }
 
-    DriverArgs sampleArgs{false, false, false, false, false, sampleSource};
+    DriverArgs sampleArgs{false, false, false,       false,
+                          false, false, sampleSource};
 };
 
 TEST_F(AssemblerTest, throwOnInvalidPath) {
     // ARRANGE
     const auto assembly = "invalid-path";
-    auto args = DriverArgs{false, false, false, false, false, sampleSource};
+    auto args =
+        DriverArgs{false, false, false, false, false, false, sampleSource};
     string error{};
 
     // ACT
@@ -62,7 +64,8 @@ TEST_F(AssemblerTest, throwOnInvalidPath) {
 TEST_F(AssemblerTest, throwOnInvalidExtension) {
     // ARRANGE
     const auto assembly = absolute(sampleSource);
-    auto args = DriverArgs{false, false, false, false, false, sampleSource};
+    auto args =
+        DriverArgs{false, false, false, false, false, false, sampleSource};
     string error{};
 
     // ACT
@@ -80,7 +83,8 @@ TEST_F(AssemblerTest, throwOnInvalidExtension) {
 TEST_F(AssemblerTest, throwOnInvalidAssembly) {
     // ARRANGE
     const auto assembly = sampleAsm;
-    auto args = DriverArgs{false, false, false, false, false, sampleSource};
+    auto args =
+        DriverArgs{false, false, false, false, false, false, sampleSource};
     const auto lines = vector<string>{"invalid", "assembly"};
     writeToAsmFile(lines);
     string error{};
@@ -101,7 +105,8 @@ TEST_F(AssemblerTest, throwOnInvalidAssembly) {
 TEST_F(AssemblerTest, assemble) {
     // ARRANGE
     const auto assembly = sampleAsm;
-    auto args = DriverArgs{false, false, false, false, false, sampleSource};
+    auto args =
+        DriverArgs{false, false, false, false, false, false, sampleSource};
     const auto platform = wacc::utils::Platform{};
     string main = platform.isMacOS() ? "_main" : "main";
     const auto lines = vector<string>{
