@@ -6,6 +6,7 @@ target_sources(${TARGET}
     PUBLIC
         # asm_emit_test.cpp
         asm_gen_test.cpp
+        asm_pseudo_pass_test.cpp
         asm_writer_test.cpp
 )
 

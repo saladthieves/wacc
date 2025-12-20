@@ -14,8 +14,7 @@ AsmNodePtr AsmGenerator::generate() const {
 }
 
 AsmProgPtr AsmGenerator::genForTackyProg(const TackyProg& obj) const {
-    auto& fun = static_cast<const TackyFun&>(*obj.function);
-    return std::make_unique<AsmProg>(genForTackyFun(fun));
+    return std::make_unique<AsmProg>(genForTackyFun(*obj.function));
 }
 
 AsmFunPtr AsmGenerator::genForTackyFun(const TackyFun& obj) const {
@@ -41,7 +40,7 @@ AsmGenerator::genForTackyInstrs(const TackyInstrs& tackyBody) const {
             case INSTR_UNARY: {
                 auto& tackyUnary = static_cast<const TackyUnary&>(*tacky);
                 genForTackyUnary(tackyUnary, asmBody);
-                break;
+                continue;
             }
             default: {
                 fail("Unhandled conversion from TackyInstr::[{}] to AsmInstr",

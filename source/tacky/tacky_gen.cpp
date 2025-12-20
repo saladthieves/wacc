@@ -51,16 +51,14 @@ TackyNodePtr TackyGenerator::generate() const {
 }
 
 TackyProgPtr TackyGenerator::genForAstProg(const AstProg& obj) const {
-    auto& fun = static_cast<const AstFun&>(*obj.function);
-    return std::make_unique<TackyProg>(genForAstFun(fun));
+    return std::make_unique<TackyProg>(genForAstFun(*obj.function));
 }
 
 TackyFunPtr TackyGenerator::genForAstFun(const AstFun& obj) const {
     auto identifier = std::string{obj.name->value};
     generator.reset();
     generator.resetFunction(identifier);
-    auto& stmt = static_cast<const AstStmt&>(*obj.body);
-    return std::make_unique<TackyFun>(identifier, genForAstStmt(stmt));
+    return std::make_unique<TackyFun>(identifier, genForAstStmt(*obj.body));
 }
 
 TackyInstrs TackyGenerator::genForAstStmt(const AstStmt& obj) const {
