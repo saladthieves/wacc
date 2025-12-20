@@ -16,6 +16,5 @@ target_sources(${TARGET}
 target_link_libraries(${TARGET}
     PRIVATE
         util
-        frontend
         tacky
 )

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "asm_ast.hpp"
-#include "ast.hpp"
+#include "tacky_ast.hpp"
 
 #include <format>
 #include <stdexcept>
@@ -10,32 +10,33 @@ namespace wacc {
 namespace back {
 namespace gen {
 namespace {
-using namespace wacc::front::ast;
+using namespace wacc::tacky::ast;
 using namespace wacc::back::ast;
 } // namespace
 
 class AsmGenerator {
 public:
-    AsmGenerator(AstNodePtr ptr);
+    AsmGenerator(TackyNodePtr ptr);
 
     AsmNodePtr generate() const;
 
 private:
-    AsmProgPtr genForAstProg(const AstProg& obj) const;
+    AsmProgPtr genForTackyProg(const TackyProg& obj) const;
 
-    AsmFunPtr genForAstFun(const AstFun& obj) const;
+    AsmFunPtr genForTackyFun(const TackyFun& obj) const;
 
-    AsmInstrPtrs genForAstStmt(const AstStmt& obj) const;
+    AsmInstrPtrs genForTackyInstrs(const TackyInstrs& tackyBody) const;
 
-    AsmInstrPtrs genForAstReturn(const AstReturn& obj) const;
+    void genForTackyReturn(const TackyReturn& tacky,
+                           AsmInstrPtrs& asmBody) const;
 
-    AsmMovPtr genAsmMov(const AstExpr& obj) const;
+    void genForTackyUnary(const TackyUnary& tacky, AsmInstrPtrs& asmBody) const;
 
-    AsmRetPtr genAsmRet() const;
+    AsmRegPtr genAsmReg(AsmRegisterType type) const;
 
-    AsmImmPtr genForAstConstInt(const AstConstInt& obj) const;
+    AsmOperandPtr genForTackyVal(const TackyVal& tacky) const;
 
-    AsmRegPtr genAsmReg() const;
+    AsmUnaryOpType genForTackyUnaryOp(const TackyUnaryOpType& type) const;
 
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
@@ -44,7 +45,7 @@ private:
         throw std::runtime_error(std::format("AsmGeneratorError: {}", message));
     }
 
-    AstNodePtr ast;
+    TackyNodePtr ast;
 };
 } // namespace gen
 } // namespace back

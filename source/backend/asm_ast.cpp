@@ -6,14 +6,30 @@ AsmImm::AsmImm(int value) : value{value} {
 }
 
 // AsmReg
+AsmReg::AsmReg(AsmRegisterType reg) : reg{reg} {
+}
+
+// AsmPseudo
+AsmPseudo::AsmPseudo(std::string identifier) : identifier{identifier} {
+}
+
+// AsmStack
+AsmStack::AsmStack(signed value) : value{value} {
+}
 
 // AsmMov
-
 AsmMov::AsmMov(AsmOperandPtr src, AsmOperandPtr dest) :
     src{std::move(src)}, dest{std::move(dest)} {
 }
 
-// AsmRet
+// AsmUnary
+AsmUnary::AsmUnary(AsmUnaryOpType op, AsmOperandPtr operand) :
+    op{op}, operand{std::move(operand)} {
+}
+
+// AsmAllocStack
+AsmAllocStack::AsmAllocStack(signed value) : value{value} {
+}
 
 // AsmFun
 AsmFun::AsmFun(std::string name, AsmInstrPtrs instructions) :
@@ -23,4 +39,4 @@ AsmFun::AsmFun(std::string name, AsmInstrPtrs instructions) :
 // AsmProg
 AsmProg::AsmProg(AsmFunPtr function) : function{std::move(function)} {
 }
-} // namespace wacc::asmast
+} // namespace wacc::back::ast

@@ -1,84 +1,111 @@
 #include "asm_gen.hpp"
 #include "asm_ast.hpp"
-#include "ast.hpp"
+#include "tacky_ast.hpp"
 
 namespace wacc::back::gen {
-AsmGenerator::AsmGenerator(AstNodePtr ptr) : ast{std::move(ptr)} {
+AsmGenerator::AsmGenerator(TackyNodePtr ptr) : ast{std::move(ptr)} {
 }
 
 AsmNodePtr AsmGenerator::generate() const {
     if (!ast) fail("The AstNode root tree is null.");
 
-    auto& prog = static_cast<const AstProg&>(*ast);
-    return genForAstProg(prog);
+    auto& prog = static_cast<const TackyProg&>(*ast);
+    return genForTackyProg(prog);
 }
 
-AsmProgPtr AsmGenerator::genForAstProg(const AstProg& obj) const {
-    auto& fun = static_cast<const AstFun&>(*obj.function);
-    return std::make_unique<AsmProg>(genForAstFun(fun));
+AsmProgPtr AsmGenerator::genForTackyProg(const TackyProg& obj) const {
+    auto& fun = static_cast<const TackyFun&>(*obj.function);
+    return std::make_unique<AsmProg>(genForTackyFun(fun));
 }
 
-AsmFunPtr AsmGenerator::genForAstFun(const AstFun& obj) const {
-    auto name = std::string{obj.name->value};
-    auto& stmt = static_cast<const AstStmt&>(*obj.body);
-    return std::make_unique<AsmFun>(name, genForAstStmt(stmt));
+AsmFunPtr AsmGenerator::genForTackyFun(const TackyFun& obj) const {
+    auto name = std::string{obj.identifier};
+    auto body = genForTackyInstrs(obj.body);
+    return std::make_unique<AsmFun>(name, std::move(body));
 }
 
-AsmInstrPtrs AsmGenerator::genForAstStmt(const AstStmt& obj) const {
-    const auto& type = obj.type();
+AsmInstrPtrs
+AsmGenerator::genForTackyInstrs(const TackyInstrs& tackyBody) const {
+    auto asmBody = AsmInstrPtrs{};
+
+    for (const auto& tacky : tackyBody) {
+        const auto& type = tacky->type();
+        switch (type) {
+            using enum TackyNodeType;
+            case INSTR_RETURN: {
+                auto& tackyRet = static_cast<const TackyReturn&>(*tacky);
+                genForTackyReturn(tackyRet, asmBody);
+                continue;
+            }
+
+            case INSTR_UNARY: {
+                auto& tackyUnary = static_cast<const TackyUnary&>(*tacky);
+                genForTackyUnary(tackyUnary, asmBody);
+                break;
+            }
+            default: {
+                fail("Unhandled conversion from TackyInstr::[{}] to AsmInstr",
+                     type);
+            }
+        }
+    }
+
+    return asmBody;
+}
+
+void AsmGenerator::genForTackyReturn(const TackyReturn& tacky,
+                                     AsmInstrPtrs& asmBody) const {
+    auto src = genForTackyVal(*tacky.val);
+    auto dest = genAsmReg(AsmRegisterType::AX);
+    asmBody.emplace_back(
+        std::make_unique<AsmMov>(std::move(src), std::move(dest)));
+    asmBody.emplace_back(std::make_unique<AsmRet>());
+}
+
+void AsmGenerator::genForTackyUnary(const TackyUnary& tacky,
+                                    AsmInstrPtrs& asmBody) const {
+    auto movSrc = genForTackyVal(*tacky.src);
+    auto movDest = genForTackyVal(*tacky.dest);
+    asmBody.emplace_back(
+        std::make_unique<AsmMov>(std::move(movSrc), std::move(movDest)));
+
+    auto unaryOp = genForTackyUnaryOp(tacky.op);
+    auto unaryDest = genForTackyVal(*tacky.dest);
+    asmBody.emplace_back(
+        std::make_unique<AsmUnary>(std::move(unaryOp), std::move(unaryDest)));
+}
+
+AsmRegPtr AsmGenerator::genAsmReg(AsmRegisterType type) const {
+    return std::make_unique<AsmReg>(type);
+}
+
+AsmOperandPtr AsmGenerator::genForTackyVal(const TackyVal& tacky) const {
+    const auto& type = tacky.type();
     switch (type) {
-        using enum AstNodeType;
-        case RETURN: {
-            const auto& retObj = static_cast<const AstReturn&>(obj);
-            return genForAstReturn(retObj);
+        using enum TackyNodeType;
+        case CONSTANT: {
+            auto& tackyConst = static_cast<const TackyConstant&>(tacky);
+            return std::make_unique<AsmImm>(tackyConst.value);
+        }
+        case VARIABLE: {
+            auto& tackyVar = static_cast<const TackyVariable&>(tacky);
+            return std::make_unique<AsmPseudo>(tackyVar.identifier);
         }
 
         default: {
-            fail("Failed to generate instruction from AstStmt::[type = {}].",
+            fail("Unhandled conversion from TackyVal::[{}] to AsmOperand:",
                  type);
         }
     }
 }
 
-AsmInstrPtrs AsmGenerator::genForAstReturn(const AstReturn& obj) const {
-    auto instructions = AsmInstrPtrs{};
-    auto& expr = static_cast<const AstExpr&>(*obj.expr);
-    instructions.emplace_back(genAsmMov(expr));
-    instructions.emplace_back(genAsmRet());
-
-    return instructions;
-}
-
-AsmMovPtr AsmGenerator::genAsmMov(const AstExpr& obj) const {
-    const auto& type = obj.type();
-    AsmOperandPtr src{nullptr};
+AsmUnaryOpType
+AsmGenerator::genForTackyUnaryOp(const TackyUnaryOpType& type) const {
     switch (type) {
-        using enum AstNodeType;
-        case CONST_INTEGER: {
-            auto& intObj = static_cast<const AstConstInt&>(obj);
-            src = genForAstConstInt(intObj);
-            break;
-        }
-
-        default: {
-            fail("Failed to generate AsmMov from AstExpr::[type = {}].", type);
-        }
+        using enum TackyUnaryOpType;
+        case UNARY_COMPLEMENT: return AsmUnaryOpType::UNARY_NOT;
+        case UNARY_NEGATE:     return AsmUnaryOpType::UNARY_NEGATE;
     }
-    auto dest = genAsmReg();
-
-    return std::make_unique<AsmMov>(std::move(src), std::move(dest));
-}
-
-AsmRetPtr AsmGenerator::genAsmRet() const {
-    return std::make_unique<AsmRet>();
-}
-
-AsmImmPtr AsmGenerator::genForAstConstInt(const AstConstInt& obj) const {
-    return std::make_unique<AsmImm>(obj.value);
-}
-
-AsmRegPtr AsmGenerator::genAsmReg() const {
-    return std::make_unique<AsmReg>();
 }
 
 } // namespace wacc::back::gen
