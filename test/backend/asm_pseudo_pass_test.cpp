@@ -2,6 +2,7 @@
 #include "asm_pseudo_pass.hpp"
 #include "test_utils.hpp"
 
+#include "gtest/gtest.h"
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
@@ -90,4 +91,37 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPass) {
     auto unaryOp = as<AsmStack>(unary->operand);
     ASSERT_EQ(unaryOp->value, -4);
     ASSERT_EQ(unary->op, AsmUnaryOpType::UNARY_NEGATE);
+}
+
+TEST_F(AsmPseudoPassTest, runAsmUnaryPassMultiple) {
+    // ARRANGE
+    const auto identifier1 = "TEMP.0";
+    const auto identifier2 = "TEMP.1";
+    auto operand1 = make_unique<AsmPseudo>(identifier1);
+    addInstr(make_unique<AsmUnary>(AsmUnaryOpType::UNARY_NEGATE,
+                                   std::move(operand1)));
+    auto operand2 = make_unique<AsmPseudo>(identifier2);
+    addInstr(make_unique<AsmUnary>(AsmUnaryOpType::UNARY_NEGATE,
+                                   std::move(operand2)));
+
+    auto pass = AsmPseudoPass{getProgram()};
+
+    // ACT
+    auto node = pass.run();
+
+    // ASSERT
+    auto prog = as<AsmProg>(node);
+    auto fun = as<AsmFun>(prog->function);
+    auto& body = fun->instructions;
+    ASSERT_EQ(body.size(), 2);
+    
+    auto unary1 = as<AsmUnary>(body.front());
+    auto unary1Op = as<AsmStack>(unary1->operand);
+    ASSERT_EQ(unary1Op->value, -4);
+    ASSERT_EQ(unary1->op, AsmUnaryOpType::UNARY_NEGATE);
+
+    auto unary2 = as<AsmUnary>(body.back());
+    auto unary2Op = as<AsmStack>(unary2->operand);
+    ASSERT_EQ(unary2Op->value, -8);
+    ASSERT_EQ(unary2->op, AsmUnaryOpType::UNARY_NEGATE);
 }
