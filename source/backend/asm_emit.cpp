@@ -3,6 +3,7 @@
 #include "utils.hpp"
 
 #include <string>
+#include <utility>
 
 namespace wacc::back::emit {
 AsmEmitter::AsmEmitter(AsmNodePtr ptr, utils::Platform platform) :
@@ -45,6 +46,8 @@ void AsmEmitter::emitAsmFun(const AsmFun& obj) {
 
     pushLine("{}.globl {}", INDENT, name);
     pushLine("{}:", name);
+    pushLine("{0}pushq{0}%rbp", INDENT);
+    pushLine("{0}movq{0}%rsp, %rbp", INDENT);
 
     for (const auto& ptr : obj.instructions) {
         emitAsmInstr(*ptr);
@@ -55,6 +58,11 @@ void AsmEmitter::emitAsmInstr(const AsmInstr& obj) {
     const auto& type = obj.type();
     switch (type) {
         using enum AsmNodeType;
+        case INSTR_ALLOC: {
+            auto& alloc = static_cast<const AsmAllocStack&>(obj);
+            emitAsmAllocStack(alloc);
+            break;
+        }
         case INSTR_MOV: {
             auto& mov = static_cast<const AsmMov&>(obj);
             emitAsmMov(mov);
@@ -63,6 +71,12 @@ void AsmEmitter::emitAsmInstr(const AsmInstr& obj) {
         case INSTR_RET: {
             auto& ret = static_cast<const AsmRet&>(obj);
             emitAsmRet(ret);
+            break;
+        }
+
+        case INSTR_UNARY: {
+            auto& unary = static_cast<const AsmUnary&>(obj);
+            emitAsmUnary(unary);
             break;
         }
 
@@ -80,23 +94,64 @@ void AsmEmitter::emitAsmMov(const AsmMov& obj) {
 }
 
 void AsmEmitter::emitAsmRet(const AsmRet& obj) {
+    pushLine("{0}movq{0}%rbp, %rsp", INDENT);
+    pushLine("{0}popq{0}%rbp", INDENT);
     pushLine("{}ret", INDENT);
+}
+
+void AsmEmitter::emitAsmUnary(const AsmUnary& obj) {
+    const auto op = formatAsmUnaryOp(obj.op);
+    const auto operand = formatAsmOperand(*obj.operand);
+    pushLine("{}{}{}{}", INDENT, op, INDENT, operand);
+}
+
+void AsmEmitter::emitAsmAllocStack(const AsmAllocStack& obj) {
+    pushLine("{}subq{}${}, %rsp", INDENT, INDENT, obj.value);
 }
 
 std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) const {
     const auto& type = obj.type();
     switch (type) {
         using enum AsmNodeType;
+        case OP_REG: {
+            auto& reg = static_cast<const AsmReg&>(obj);
+            return formatAsmReg(reg);
+        }
+        case OP_STACK: {
+            auto& stack = static_cast<const AsmStack&>(obj);
+            return std::format("{}(%rbp)", stack.value);
+        }
         case OP_IMM: {
             auto& imm = static_cast<const AsmImm&>(obj);
             return std::format("${}", imm.value);
         }
-        case OP_REG: {
-            return std::format("%eax");
-        }
 
         default: {
             fail("Failed to format AsmOperand::[type = {}]", type);
+        }
+    }
+}
+
+std::string AsmEmitter::formatAsmReg(const AsmReg& obj) const {
+    const auto& type = obj.reg;
+    switch (type) {
+        using enum AsmRegisterType;
+        case AX:  return "%eax";
+        case R10: return "%r10d";
+        default:  {
+            fail("Failed to format AsmRegisterType::[{}]",
+                 std::to_underlying(type));
+        }
+    }
+}
+
+std::string AsmEmitter::formatAsmUnaryOp(const AsmUnaryOpType& type) const {
+    switch (type) {
+        using enum AsmUnaryOpType;
+        case UNARY_NEGATE: return "negl";
+        case UNARY_NOT:    return "notl";
+        default:           {
+            fail("Failed to format AsmUnaryOp::[type = {}]", type);
         }
     }
 }

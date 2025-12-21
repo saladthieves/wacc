@@ -36,8 +36,16 @@ private:
     void emitAsmMov(const AsmMov& obj);
 
     void emitAsmRet(const AsmRet& obj);
+    
+    void emitAsmUnary(const AsmUnary& obj);
+
+    void emitAsmAllocStack(const AsmAllocStack& obj);
 
     std::string formatAsmOperand(const AsmOperand& obj) const;
+
+    std::string formatAsmReg(const AsmReg& obj) const;
+
+    std::string formatAsmUnaryOp(const AsmUnaryOpType& type) const;
 
     template <typename... T>
     void pushLine(std::format_string<T...> str, T&&... args) {
