@@ -1,5 +1,6 @@
 #pragma once
 
+#include <expected>
 #include <format>
 #include <functional>
 #include <stdexcept>

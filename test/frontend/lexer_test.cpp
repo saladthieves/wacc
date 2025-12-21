@@ -84,13 +84,13 @@ TEST_F(LexerTest, scanNumberConstantInvalidAlpha) {
         // ACT
         auto lexer = getLexer(source);
         string error{};
-
+        
         try {
             lexer.scan();
         } catch (const std::runtime_error& ex) {
             error = ex.what();
         }
-
+        
         // ASSERT
         ASSERT_FALSE(error.empty());
         ASSERT_TRUE(error.contains("character in number constant"));

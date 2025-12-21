@@ -11,6 +11,7 @@ target_link_libraries(${TARGET}
     PUBLIC
         tacky
         frontend
+        test-base
         test-utils
         util
         GTest::gtest_main

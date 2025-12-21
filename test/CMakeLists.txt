@@ -6,8 +6,8 @@ add_executable(${TARGET})
 
 target_link_libraries(${TARGET}
     PRIVATE
-        frontend-tests
-        # tacky-tests
+        # frontend-tests
+        tacky-tests
         # backend-tests
         # driver-tests
         # util-tests

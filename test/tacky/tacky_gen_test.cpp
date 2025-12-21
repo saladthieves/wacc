@@ -1,7 +1,5 @@
 #include "ast.hpp"
-#include "lexer.hpp"
-#include "parser.hpp"
-#include "source.hpp"
+#include "base_test.hpp"
 #include "tacky_ast.hpp"
 #include "tacky_gen.hpp"
 #include "test_utils.hpp"
@@ -10,16 +8,17 @@
 
 using namespace wacc::front::ast;
 using namespace wacc::tacky::ast;
-using wacc::front::lex::Lexer;
-using wacc::front::parse::Parser;
-using wacc::front::src::Source;
+using wacc::tacky::ast::TackyUnaryOpType;
 using wacc::tacky::gen::TackyGenerator;
 using wacc::tacky::gen::VariableGenerator;
-using wacc::tacky::ast::TackyUnaryOpType;
 
 using wacc::test::utils::as;
 
 using std::string;
+
+class TackyGeneratorTest :
+    public testing::Test,
+    public wacc::test::base::BaseTest {};
 
 TEST(VariableGeneratorTest, testGenerate) {
     // ARRANGE
@@ -28,11 +27,11 @@ TEST(VariableGeneratorTest, testGenerate) {
     auto generator = VariableGenerator{};
     generator.resetSession(session);
     generator.resetFunction(function);
-    
+
     // ACT
     auto first = generator.generate(TackyUnaryOpType::UNARY_COMPLEMENT);
     auto second = generator.generate(TackyUnaryOpType::UNARY_NEGATE);
-    
+
     // ASSERT
     ASSERT_STREQ(first.c_str(), "S1A2B.MAIN.UNARY_COMPLEMENT.TEMP.0");
     ASSERT_STREQ(second.c_str(), "S1A2B.MAIN.UNARY_NEGATE.TEMP.1");
@@ -43,11 +42,11 @@ TEST(VariableGeneratorTest, testGenerateRandom) {
     const auto function = "main";
     auto generator = VariableGenerator{};
     generator.resetFunction(function);
-    
+
     // ACT
     auto first = generator.generate(TackyUnaryOpType::UNARY_COMPLEMENT);
     auto second = generator.generate(TackyUnaryOpType::UNARY_NEGATE);
-    
+
     // ASSERT
     ASSERT_TRUE(first.starts_with("S"));
     ASSERT_TRUE(first.ends_with("MAIN.UNARY_COMPLEMENT.TEMP.0"));
@@ -55,10 +54,9 @@ TEST(VariableGeneratorTest, testGenerateRandom) {
     ASSERT_TRUE(second.ends_with("MAIN.UNARY_NEGATE.TEMP.1"));
 }
 
-TEST(TackyGeneratorTest, throwOnNull) {
+TEST_F(TackyGeneratorTest, throwOnNull) {
     // ARRANGE
-    AstNodePtr ptr{nullptr};
-    auto generator = TackyGenerator{std::move(ptr)};
+    auto generator = TackyGenerator{nullptr};
     string error{};
 
     // ACT
@@ -74,14 +72,11 @@ TEST(TackyGeneratorTest, throwOnNull) {
     ASSERT_TRUE(error.contains("AstNode root tree is null"));
 }
 
-TEST(TackyGeneratorTest, generate) {
+TEST_F(TackyGeneratorTest, generate) {
     // ARRANGE
     const auto source = "int main(void) { return 15; }";
-    auto src = Source{source};
-    auto lexer = Lexer{src};
-    auto parser = Parser{lexer.scan(), src};
-    auto generator = TackyGenerator{parser.parse()};
-    
+    auto generator = getTackyGenerator(source);
+
     string error{};
     TackyNodePtr node{nullptr};
 
@@ -104,14 +99,11 @@ TEST(TackyGeneratorTest, generate) {
     ASSERT_EQ(val->value, 15);
 }
 
-TEST(TackyGeneratorTest, generateComplement) {
+TEST_F(TackyGeneratorTest, generateComplement) {
     // ARRANGE
     const auto source = "int main(void) { return ~22; }";
-    auto src = Source{source};
-    auto lexer = Lexer{src};
-    auto parser = Parser{lexer.scan(), src};
-    auto generator = TackyGenerator{parser.parse()};
-    
+    auto generator = getTackyGenerator(source);
+
     string error{};
     TackyNodePtr node{nullptr};
 
@@ -127,26 +119,24 @@ TEST(TackyGeneratorTest, generateComplement) {
     auto prog = as<TackyProg>(node);
     auto fun = as<TackyFun>(prog->function);
     ASSERT_TRUE(fun->identifier == "main");
-    
+
     auto& body = fun->body;
     ASSERT_EQ(body.size(), 2);
-    
+
     auto unary = as<TackyUnary>(body.front());
     ASSERT_EQ(unary->op, TackyUnaryOpType::UNARY_COMPLEMENT);
     auto unarySrc = as<TackyConstant>(unary->src);
     ASSERT_EQ(unarySrc->value, 22);
     auto unaryDest = as<TackyVariable>(unary->dest);
-    ASSERT_TRUE(unaryDest->identifier.ends_with(".MAIN.UNARY_COMPLEMENT.TEMP.0"));
+    ASSERT_TRUE(
+        unaryDest->identifier.ends_with(".MAIN.UNARY_COMPLEMENT.TEMP.0"));
 }
 
-TEST(TackyGeneratorTest, generateNegate) {
+TEST_F(TackyGeneratorTest, generateNegate) {
     // ARRANGE
     const auto source = "int start(void) { return ~(-38); }";
-    auto src = Source{source};
-    auto lexer = Lexer{src};
-    auto parser = Parser{lexer.scan(), src};
-    auto generator = TackyGenerator{parser.parse()};
-    
+    auto generator = getTackyGenerator(source);
+
     string error{};
     TackyNodePtr node{nullptr};
 
@@ -162,10 +152,10 @@ TEST(TackyGeneratorTest, generateNegate) {
     auto prog = as<TackyProg>(node);
     auto fun = as<TackyFun>(prog->function);
     ASSERT_TRUE(fun->identifier == "start");
-    
+
     auto& body = fun->body;
     ASSERT_EQ(body.size(), 3);
-    
+
     auto unaryFirst = as<TackyUnary>(body.front());
     ASSERT_EQ(unaryFirst->op, TackyUnaryOpType::UNARY_NEGATE);
     auto unarySrc = as<TackyConstant>(unaryFirst->src);
@@ -176,9 +166,11 @@ TEST(TackyGeneratorTest, generateNegate) {
     auto unarySecond = as<TackyUnary>(body[1]);
     ASSERT_EQ(unarySecond->op, TackyUnaryOpType::UNARY_COMPLEMENT);
     auto unarySecondSrc = as<TackyVariable>(unarySecond->src);
-    ASSERT_TRUE(unarySecondSrc->identifier.ends_with(".START.UNARY_NEGATE.TEMP.0"));
+    ASSERT_TRUE(
+        unarySecondSrc->identifier.ends_with(".START.UNARY_NEGATE.TEMP.0"));
     auto unarySecondDest = as<TackyVariable>(unarySecond->dest);
-    ASSERT_TRUE(unarySecondDest->identifier.ends_with(".START.UNARY_COMPLEMENT.TEMP.1"));
+    ASSERT_TRUE(unarySecondDest->identifier.ends_with(
+        ".START.UNARY_COMPLEMENT.TEMP.1"));
 
     auto third = as<TackyReturn>(body.back());
     auto val = as<TackyVariable>(third->val);
