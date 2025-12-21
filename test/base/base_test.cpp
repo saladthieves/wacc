@@ -39,7 +39,7 @@ AsmPseudoPass BaseTest::getAsmPseudoPass(string_view code) const {
 
 AsmInstrFixPass BaseTest::getAsmInstrFixPass(string_view code) const {
     auto pass = getAsmPseudoPass(code);
-    return AsmInstrFixPass{pass.run(), pass.getOffset()};
+    return AsmInstrFixPass{pass.run(), pass.getAbsoluteOffset()};
 }
 
 AsmEmitter BaseTest::getAsmEmitter(Platform platform) const {

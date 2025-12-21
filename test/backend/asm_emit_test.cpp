@@ -60,7 +60,7 @@ TEST_F(AsmEmitterTest, emitLinux) {
 
     // ASSERT
     auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 15);
+    ASSERT_EQ(lines.size(), 18);
 
     // clang-format off
     ASSERT_TRUE(lines[0]  == "    .globl main");
@@ -68,20 +68,23 @@ TEST_F(AsmEmitterTest, emitLinux) {
     // Prologue
     ASSERT_TRUE(lines[2]  == "    pushq    %rbp");
     ASSERT_TRUE(lines[3]  == "    movq    %rsp, %rbp");
-    ASSERT_TRUE(lines[4]  == "    subq    $-8, %rsp");
+    ASSERT_TRUE(lines[4]  == "    subq    $12, %rsp");
     // Instructions
     ASSERT_TRUE(lines[5]  == "    movl    $25, -4(%rbp)");
-    ASSERT_TRUE(lines[6]  == "    negl    -4(%rbp)");
+    ASSERT_TRUE(lines[6]  == "    notl    -4(%rbp)");
     ASSERT_TRUE(lines[7]  == "    movl    -4(%rbp), %r10d");
     ASSERT_TRUE(lines[8]  == "    movl    %r10d, -8(%rbp)");
-    ASSERT_TRUE(lines[9]  == "    notl    -8(%rbp)");
-    ASSERT_TRUE(lines[10] == "    movl    -8(%rbp), %eax");
+    ASSERT_TRUE(lines[9]  == "    negl    -8(%rbp)");
+    ASSERT_TRUE(lines[10] == "    movl    -8(%rbp), %r10d");
+    ASSERT_TRUE(lines[11] == "    movl    %r10d, -12(%rbp)");
+    ASSERT_TRUE(lines[12] == "    notl    -12(%rbp)");
+    ASSERT_TRUE(lines[13] == "    movl    -12(%rbp), %eax");
     // Epilogue
-    ASSERT_TRUE(lines[11] == "    movq    %rbp, %rsp");
-    ASSERT_TRUE(lines[12] == "    popq    %rbp");
-    ASSERT_TRUE(lines[13] == "    ret");
+    ASSERT_TRUE(lines[14] == "    movq    %rbp, %rsp");
+    ASSERT_TRUE(lines[15] == "    popq    %rbp");
+    ASSERT_TRUE(lines[16] == "    ret");
 
-    ASSERT_TRUE(lines[14] == R"(    .section .note.GNU-stack,"",@progbits)");
+    ASSERT_TRUE(lines[17] == R"(    .section .note.GNU-stack,"",@progbits)");
     // clang-format on
 }
 
@@ -94,7 +97,7 @@ TEST_F(AsmEmitterTest, emitMacOS) {
 
     // ASSERT
     auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 14);
+    ASSERT_EQ(lines.size(), 17);
 
     // clang-format off
     ASSERT_TRUE(lines[0]  == "    .globl _main");
@@ -102,18 +105,21 @@ TEST_F(AsmEmitterTest, emitMacOS) {
     // Prologue
     ASSERT_TRUE(lines[2]  == "    pushq    %rbp");
     ASSERT_TRUE(lines[3]  == "    movq    %rsp, %rbp");
-    ASSERT_TRUE(lines[4]  == "    subq    $-8, %rsp");
+    ASSERT_TRUE(lines[4]  == "    subq    $12, %rsp");
     // Instructions
     ASSERT_TRUE(lines[5]  == "    movl    $25, -4(%rbp)");
-    ASSERT_TRUE(lines[6]  == "    negl    -4(%rbp)");
+    ASSERT_TRUE(lines[6]  == "    notl    -4(%rbp)");
     ASSERT_TRUE(lines[7]  == "    movl    -4(%rbp), %r10d");
     ASSERT_TRUE(lines[8]  == "    movl    %r10d, -8(%rbp)");
-    ASSERT_TRUE(lines[9]  == "    notl    -8(%rbp)");
-    ASSERT_TRUE(lines[10] == "    movl    -8(%rbp), %eax");
+    ASSERT_TRUE(lines[9]  == "    negl    -8(%rbp)");
+    ASSERT_TRUE(lines[10] == "    movl    -8(%rbp), %r10d");
+    ASSERT_TRUE(lines[11] == "    movl    %r10d, -12(%rbp)");
+    ASSERT_TRUE(lines[12] == "    notl    -12(%rbp)");
+    ASSERT_TRUE(lines[13] == "    movl    -12(%rbp), %eax");
     // Epilogue
-    ASSERT_TRUE(lines[11] == "    movq    %rbp, %rsp");
-    ASSERT_TRUE(lines[12] == "    popq    %rbp");
-    ASSERT_TRUE(lines[13] == "    ret");
+    ASSERT_TRUE(lines[14] == "    movq    %rbp, %rsp");
+    ASSERT_TRUE(lines[15] == "    popq    %rbp");
+    ASSERT_TRUE(lines[16] == "    ret");
     // clang-format on
 }
 

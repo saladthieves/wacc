@@ -66,7 +66,8 @@ CompilerResult runCompiler(const std::string& preprocessed,
     auto pseudo = AsmPseudoPass{std::move(asmAst)};
     auto pseudoAst = pseudo.run();
 
-    auto fixPass = AsmInstrFixPass{std::move(pseudoAst), pseudo.getOffset()};
+    auto fixPass =
+        AsmInstrFixPass{std::move(pseudoAst), pseudo.getAbsoluteOffset()};
     auto fixAst = fixPass.run();
 
     if (args.codegen) return {false};

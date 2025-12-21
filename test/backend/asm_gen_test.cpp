@@ -83,32 +83,42 @@ TEST_F(AsmGeneratorTest, generate) {
     auto asmFun = as<AsmFun>(asmProg->function);
 
     auto& asmBody = asmFun->instructions;
-    ASSERT_EQ(asmBody.size(), 6);
+    ASSERT_EQ(asmBody.size(), 8);
 
     matchAsmMov(asmBody[0], [](auto& src, auto& dest) {
         matchAsmImm(src, 25);
-        matchAsmPseudo(dest, "MAIN.UNARY_NEGATE.TEMP.0");
+        matchAsmPseudo(dest, "MAIN.UNARY_COMPLEMENT.TEMP.0");
     });
 
     matchAsmUnary(asmBody[1], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
-        matchAsmPseudo(operand, "MAIN.UNARY_NEGATE.TEMP.0");
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        matchAsmPseudo(operand, "MAIN.UNARY_COMPLEMENT.TEMP.0");
     });
 
     matchAsmMov(asmBody[2], [](auto& src, auto& dest) {
-        matchAsmPseudo(src, "MAIN.UNARY_NEGATE.TEMP.0");
-        matchAsmPseudo(dest, "MAIN.UNARY_COMPLEMENT.TEMP.1");
+        matchAsmPseudo(src, "MAIN.UNARY_COMPLEMENT.TEMP.0");
+        matchAsmPseudo(dest, "MAIN.UNARY_NEGATE.TEMP.1");
     });
 
     matchAsmUnary(asmBody[3], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
-        matchAsmPseudo(operand, "MAIN.UNARY_COMPLEMENT.TEMP.1");
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        matchAsmPseudo(operand, "MAIN.UNARY_NEGATE.TEMP.1");
     });
 
     matchAsmMov(asmBody[4], [](auto& src, auto& dest) {
-        matchAsmPseudo(src, "MAIN.UNARY_COMPLEMENT.TEMP.1");
+        matchAsmPseudo(src, "MAIN.UNARY_NEGATE.TEMP.1");
+        matchAsmPseudo(dest, "MAIN.UNARY_COMPLEMENT.TEMP.2");
+    });
+
+    matchAsmUnary(asmBody[5], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        matchAsmPseudo(operand, "MAIN.UNARY_COMPLEMENT.TEMP.2");
+    });
+
+    matchAsmMov(asmBody[6], [](auto& src, auto& dest) {
+        matchAsmPseudo(src, "MAIN.UNARY_COMPLEMENT.TEMP.2");
         matchAsmReg(dest, AsmRegisterType::AX);
     });
 
-    matchAsmRet(asmBody[5]);
+    matchAsmRet(asmBody[7]);
 }

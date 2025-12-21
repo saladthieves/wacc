@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace wacc::back::pass {
-AsmInstrFixPass::AsmInstrFixPass(AsmNodePtr ptr, signed int stackOffset) :
+AsmInstrFixPass::AsmInstrFixPass(AsmNodePtr ptr, unsigned int stackOffset) :
     ast{std::move(ptr)}, stackOffset{stackOffset} {
 }
 
@@ -21,25 +21,23 @@ AsmNodePtr AsmInstrFixPass::run() {
 
 void AsmInstrFixPass::runPass(AsmInstrPtrs& instructions) {
     using enum AsmNodeType;
-    const auto hasStacks = [](AsmOperandPtr& src, AsmOperandPtr& dest) -> bool {
-        return src->type() == OP_STACK && dest->type() == OP_STACK;
+
+    const auto findFixInstr = [&]() -> StackPos {
+        auto pos = instructions.begin();
+        for (; pos != instructions.end(); ++pos) {
+            if (pos->get()->type() != INSTR_MOV) continue;
+
+            auto& mov = static_cast<AsmMov&>(*pos->get());
+            if (mov.src->type() == OP_STACK && mov.dest->type() == OP_STACK) {
+                break;
+            }
+        }
+
+        return pos;
     };
 
-    std::vector<StackPos> positions{};
-
-    for (auto pos = instructions.begin(); pos != instructions.end(); ++pos) {
-        auto& instr = *pos;
-        const auto& type = instr->type();
-        if (type == INSTR_MOV) {
-            auto& movInstr = static_cast<AsmMov&>(*instr);
-            if (hasStacks(movInstr.src, movInstr.dest)) {
-                positions.push_back(pos);
-            }
-            continue;
-        }
-    }
-
-    for (auto& pos : positions) {
+    StackPos pos{};
+    while ((pos = findFixInstr()) != instructions.end()) {
         fixAsmMov(pos, instructions);
     }
 
@@ -59,7 +57,7 @@ void AsmInstrFixPass::fixAsmMov(StackPos pos, AsmInstrPtrs& instructions) {
     auto movFromR10 = std::make_unique<AsmMov>(std::make_unique<AsmReg>(reg),
                                                std::move(mov.dest));
     *pos = std::move(movToR10);
-    
+
     instructions.insert(pos + 1, std::move(movFromR10));
 }
 } // namespace wacc::back::pass

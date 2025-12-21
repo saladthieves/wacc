@@ -13,7 +13,7 @@ class AsmInstrFixPass {
     using StackPos = AsmInstrPtrs::iterator;
 
 public:
-    AsmInstrFixPass(AsmNodePtr ptr, signed int stackOffset);
+    AsmInstrFixPass(AsmNodePtr ptr, unsigned int stackOffset);
 
     AsmNodePtr run();
 
@@ -33,7 +33,7 @@ private:
     }
 
     AsmNodePtr ast{nullptr};
-    signed int stackOffset{0};
+    unsigned int stackOffset{0};
 };
 } // namespace pass
 } // namespace back

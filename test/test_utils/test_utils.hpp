@@ -22,7 +22,7 @@ static const auto sampleSource = std::format("{}/{}.{}", rootFolder, name, "c");
 static const auto samplePrep = std::format("{}/{}.{}", rootFolder, name, "i");
 static const auto sampleAsm = std::format("{}/{}.{}", rootFolder, name, "s");
 static const auto sampleBin = std::format("{}/{}", rootFolder, name);
-static constexpr auto sampleCode = "int main(void) { return ~(-25); }";
+static constexpr auto sampleCode = "int main(void) { return ~(-(~25)); }";
 
 void cleanUpSamples(std::function<bool(const std::string&)> condition);
 

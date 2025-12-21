@@ -59,7 +59,7 @@ TEST_F(AsmInstrFixPassTest, genAsmAllocStack) {
         make_unique<AsmMov>(std::make_unique<AsmStack>(-4),
                             std::make_unique<AsmReg>(AsmRegisterType::AX)));
     auto program = getProgram();
-    auto pass = AsmInstrFixPass{std::move(program), -4};
+    auto pass = AsmInstrFixPass{std::move(program), 4};
 
     // ACT
     auto ast = pass.run();
@@ -70,7 +70,7 @@ TEST_F(AsmInstrFixPassTest, genAsmAllocStack) {
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, -4); });
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -83,7 +83,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmMov) {
     addInstr(make_unique<AsmMov>(make_unique<AsmStack>(-4),
                                  make_unique<AsmStack>(-4)));
     auto program = getProgram();
-    auto pass = AsmInstrFixPass{std::move(program), -4};
+    auto pass = AsmInstrFixPass{std::move(program), 4};
 
     // ACT
     auto ast = pass.run();
@@ -94,7 +94,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmMov) {
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 3);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, -4); });
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -118,9 +118,9 @@ TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     auto prog = as<AsmProg>(ast);
     auto fun = as<AsmFun>(prog->function);
     auto& body = fun->instructions;
-    ASSERT_EQ(body.size(), 8);
+    ASSERT_EQ(body.size(), 11);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, -8); });
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 12); });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmImm(src, 25);
@@ -128,7 +128,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     });
 
     matchAsmUnary(body[2], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
         matchAsmStack(operand, -4);
     });
 
@@ -143,14 +143,29 @@ TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     });
 
     matchAsmUnary(body[5], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
         matchAsmStack(operand, -8);
     });
 
     matchAsmMov(body[6], [](auto& src, auto& dest) {
         matchAsmStack(src, -8);
+        matchAsmReg(dest, AsmRegisterType::R10);
+    });
+
+    matchAsmMov(body[7], [](auto& src, auto& dest) {
+        matchAsmReg(src, AsmRegisterType::R10);
+        matchAsmStack(dest, -12);
+    });
+
+    matchAsmUnary(body[8], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        matchAsmStack(operand, -12);
+    });
+
+    matchAsmMov(body[9], [](auto& src, auto& dest) {
+        matchAsmStack(src, -12);
         matchAsmReg(dest, AsmRegisterType::AX);
     });
 
-    matchAsmRet(body[7]);
+    matchAsmRet(body[10]);
 }

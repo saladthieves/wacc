@@ -20,7 +20,7 @@ using std::string_view;
 using Operand = const AsmOperandPtr&;
 using MovMatcher = std::function<void(Operand src, Operand dest)>;
 using UnaryMatcher = std::function<void(const AsmUnaryOpType&, Operand)>;
-using AllocStackMatcher = std::function<void(const signed int&)>;
+using AllocStackMatcher = std::function<void(const unsigned int&)>;
 } // namespace
 
 // AsmOperand matchers

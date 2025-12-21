@@ -151,11 +151,11 @@ public:
 // AsmAllocStack
 class AsmAllocStack : public AsmInstr {
 public:
-    AsmAllocStack(signed value);
+    AsmAllocStack(unsigned value);
 
     virtual AsmNodeType type() const override { return INSTR_ALLOC; };
 
-    signed value;
+    unsigned value;
 };
 
 // AsmRet

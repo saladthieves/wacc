@@ -1,5 +1,6 @@
 #include "asm_pseudo_pass.hpp"
 
+#include <cstdlib>
 #include <memory>
 
 namespace wacc::back::pass {
@@ -15,6 +16,10 @@ AsmNodePtr AsmPseudoPass::run() {
     runPass(asmFun.instructions);
 
     return std::move(ast);
+}
+
+unsigned int AsmPseudoPass::getAbsoluteOffset() const {
+    return std::abs(offset);
 }
 
 void AsmPseudoPass::runPass(AsmInstrPtrs& instructions) {

@@ -28,7 +28,7 @@ AsmUnary::AsmUnary(AsmUnaryOpType op, AsmOperandPtr operand) :
 }
 
 // AsmAllocStack
-AsmAllocStack::AsmAllocStack(signed value) : value{value} {
+AsmAllocStack::AsmAllocStack(unsigned value) : value{value} {
 }
 
 // AsmFun

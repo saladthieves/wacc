@@ -21,7 +21,7 @@ public:
 
     AsmNodePtr run();
 
-    signed int getOffset() const { return offset; }
+    unsigned int getAbsoluteOffset() const;
 
 private:
     void runPass(AsmInstrPtrs& instructions);
