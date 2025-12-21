@@ -18,7 +18,7 @@ class LexerTest : public testing::Test, public wacc::test::base::BaseTest {};
 
 TEST_F(LexerTest, scanEmpty) {
     // ARRANGE
-    auto lexer = getLexer();
+    auto lexer = getLexer("");
 
     // ACT
     auto ptr = lexer.scan();

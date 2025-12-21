@@ -1,5 +1,6 @@
 #include "asm_ast.hpp"
 #include "asm_pseudo_pass.hpp"
+#include "matchers.hpp"
 #include "test_utils.hpp"
 
 #include "gtest/gtest.h"
@@ -8,6 +9,8 @@
 #include <string>
 
 using namespace wacc::back::ast;
+using namespace wacc::test::match;
+
 using wacc::back::pass::AsmPseudoPass;
 using wacc::test::utils::as;
 
@@ -63,11 +66,11 @@ TEST_F(AsmPseudoPassTest, runAsmMovPass) {
     auto fun = as<AsmFun>(prog->function);
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 1);
-    auto mov = as<AsmMov>(body.front());
-    auto movSrc = as<AsmStack>(mov->src);
-    ASSERT_EQ(movSrc->value, -4);
-    auto movDest = as<AsmStack>(mov->dest);
-    ASSERT_EQ(movDest->value, -4);
+
+    matchAsmMov(body[0], [](auto& src, auto& dest) {
+        matchAsmStack(src, -4);
+        matchAsmStack(dest, -4);
+    });
 }
 
 TEST_F(AsmPseudoPassTest, runAsmUnaryPass) {
@@ -87,10 +90,11 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPass) {
     auto fun = as<AsmFun>(prog->function);
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 1);
-    auto unary = as<AsmUnary>(body.front());
-    auto unaryOp = as<AsmStack>(unary->operand);
-    ASSERT_EQ(unaryOp->value, -4);
-    ASSERT_EQ(unary->op, AsmUnaryOpType::UNARY_NEGATE);
+
+    matchAsmUnary(body[0], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        matchAsmStack(operand, -4);
+    });
 }
 
 TEST_F(AsmPseudoPassTest, runAsmUnaryPassMultiple) {
@@ -114,14 +118,14 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPassMultiple) {
     auto fun = as<AsmFun>(prog->function);
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 2);
-    
-    auto unary1 = as<AsmUnary>(body.front());
-    auto unary1Op = as<AsmStack>(unary1->operand);
-    ASSERT_EQ(unary1Op->value, -4);
-    ASSERT_EQ(unary1->op, AsmUnaryOpType::UNARY_NEGATE);
 
-    auto unary2 = as<AsmUnary>(body.back());
-    auto unary2Op = as<AsmStack>(unary2->operand);
-    ASSERT_EQ(unary2Op->value, -8);
-    ASSERT_EQ(unary2->op, AsmUnaryOpType::UNARY_NEGATE);
+    matchAsmUnary(body[0], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        matchAsmStack(operand, -4);
+    });
+
+    matchAsmUnary(body[1], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        matchAsmStack(operand, -8);
+    });
 }

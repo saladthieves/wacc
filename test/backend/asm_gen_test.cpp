@@ -1,6 +1,7 @@
 #include "asm_ast.hpp"
 #include "asm_gen.hpp"
 #include "base_test.hpp"
+#include "matchers.hpp"
 #include "tacky_ast.hpp"
 #include "test_utils.hpp"
 
@@ -8,6 +9,7 @@
 
 using namespace wacc::back::ast;
 using namespace wacc::tacky::ast;
+using namespace wacc::test::match;
 
 using wacc::back::gen::AsmGenerator;
 
@@ -51,24 +53,22 @@ TEST_F(AsmGeneratorTest, generateNegate) {
     auto& asmBody = asmFun->instructions;
     ASSERT_EQ(asmBody.size(), 4);
 
-    auto asm1 = as<AsmMov>(asmBody.front());
-    auto asm1Src = as<AsmImm>(asm1->src);
-    ASSERT_EQ(asm1Src->value, 42);
-    auto asm1Dest = as<AsmPseudo>(asm1->dest);
-    ASSERT_TRUE(asm1Dest->identifier.ends_with("MAIN.UNARY_NEGATE.TEMP.0"));
+    matchAsmMov(asmBody[0], [](auto& src, auto& dest) {
+        matchAsmImm(src, 42);
+        matchAsmPseudo(dest, "MAIN.UNARY_NEGATE.TEMP.0");
+    });
 
-    auto asm2 = as<AsmUnary>(asmBody[1]);
-    ASSERT_EQ(asm2->op, AsmUnaryOpType::UNARY_NEGATE);
-    auto asm2Dest = as<AsmPseudo>(asm2->operand);
-    ASSERT_TRUE(asm2Dest->identifier.ends_with("MAIN.UNARY_NEGATE.TEMP.0"));
+    matchAsmUnary(asmBody[1], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        matchAsmPseudo(operand, "MAIN.UNARY_NEGATE.TEMP.0");
+    });
 
-    auto asm3 = as<AsmMov>(asmBody[2]);
-    auto asm3Src = as<AsmPseudo>(asm3->src);
-    ASSERT_TRUE(asm3Src->identifier.ends_with("MAIN.UNARY_NEGATE.TEMP.0"));
-    auto asm3Dest = as<AsmReg>(asm3->dest);
-    ASSERT_EQ(asm3Dest->reg, AsmRegisterType::AX);
+    matchAsmMov(asmBody[2], [](auto& src, auto& dest) {
+        matchAsmPseudo(src, "MAIN.UNARY_NEGATE.TEMP.0");
+        matchAsmReg(dest, AsmRegisterType::AX);
+    });
 
-    auto asm4 = as<AsmRet>(asmBody.back());
+    matchAsmRet(asmBody[3]);
 }
 
 TEST_F(AsmGeneratorTest, generate) {
@@ -85,33 +85,30 @@ TEST_F(AsmGeneratorTest, generate) {
     auto& asmBody = asmFun->instructions;
     ASSERT_EQ(asmBody.size(), 6);
 
-    auto asm1 = as<AsmMov>(asmBody.front());
-    auto asm1Src = as<AsmImm>(asm1->src);
-    ASSERT_EQ(asm1Src->value, 25);
-    auto asm1Dest = as<AsmPseudo>(asm1->dest);
-    ASSERT_TRUE(asm1Dest->identifier.ends_with("MAIN.UNARY_NEGATE.TEMP.0"));
+    matchAsmMov(asmBody[0], [](auto& src, auto& dest) {
+        matchAsmImm(src, 25);
+        matchAsmPseudo(dest, "MAIN.UNARY_NEGATE.TEMP.0");
+    });
 
-    auto asm2 = as<AsmUnary>(asmBody[1]);
-    ASSERT_EQ(asm2->op, AsmUnaryOpType::UNARY_NEGATE);
-    auto asm2Dest = as<AsmPseudo>(asm2->operand);
-    ASSERT_TRUE(asm2Dest->identifier.ends_with("MAIN.UNARY_NEGATE.TEMP.0"));
+    matchAsmUnary(asmBody[1], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        matchAsmPseudo(operand, "MAIN.UNARY_NEGATE.TEMP.0");
+    });
 
-    auto asm3 = as<AsmMov>(asmBody[2]);
-    auto asm3Src = as<AsmPseudo>(asm3->src);
-    ASSERT_TRUE(asm3Src->identifier.ends_with("MAIN.UNARY_NEGATE.TEMP.0"));
-    auto asm3Dest = as<AsmPseudo>(asm3->dest);
-    ASSERT_TRUE(asm3Dest->identifier.ends_with("MAIN.UNARY_COMPLEMENT.TEMP.1"));
+    matchAsmMov(asmBody[2], [](auto& src, auto& dest) {
+        matchAsmPseudo(src, "MAIN.UNARY_NEGATE.TEMP.0");
+        matchAsmPseudo(dest, "MAIN.UNARY_COMPLEMENT.TEMP.1");
+    });
 
-    auto asm4 = as<AsmUnary>(asmBody[3]);
-    ASSERT_EQ(asm4->op, AsmUnaryOpType::UNARY_NOT);
-    auto asm4Dest = as<AsmPseudo>(asm4->operand);
-    ASSERT_TRUE(asm4Dest->identifier.ends_with("MAIN.UNARY_COMPLEMENT.TEMP.1"));
+    matchAsmUnary(asmBody[3], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        matchAsmPseudo(operand, "MAIN.UNARY_COMPLEMENT.TEMP.1");
+    });
 
-    auto asm5 = as<AsmMov>(asmBody[4]);
-    auto asm5Src = as<AsmPseudo>(asm5->src);
-    ASSERT_TRUE(asm5Src->identifier.ends_with("MAIN.UNARY_COMPLEMENT.TEMP.1"));
-    auto asm5Dest = as<AsmReg>(asm5->dest);
-    ASSERT_EQ(asm5Dest->reg, AsmRegisterType::AX);
+    matchAsmMov(asmBody[4], [](auto& src, auto& dest) {
+        matchAsmPseudo(src, "MAIN.UNARY_COMPLEMENT.TEMP.1");
+        matchAsmReg(dest, AsmRegisterType::AX);
+    });
 
-    auto asm6 = as<AsmRet>(asmBody.back());
+    matchAsmRet(asmBody[5]);
 }

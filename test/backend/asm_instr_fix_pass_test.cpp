@@ -1,6 +1,7 @@
 #include "asm_ast.hpp"
 #include "asm_instr_fix_pass.hpp"
 #include "base_test.hpp"
+#include "matchers.hpp"
 #include "test_utils.hpp"
 
 #include <gtest/gtest.h>
@@ -9,6 +10,8 @@
 #include <string>
 
 using namespace wacc::back::ast;
+using namespace wacc::test::match;
+
 using wacc::back::pass::AsmInstrFixPass;
 using wacc::test::utils::as;
 
@@ -66,11 +69,13 @@ TEST_F(AsmInstrFixPassTest, genAsmAllocStack) {
     auto fun = as<AsmFun>(prog->function);
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 2);
-    auto stackAlloc = as<AsmAllocStack>(body.front());
-    ASSERT_EQ(stackAlloc->value, -4);
-    auto mov = as<AsmMov>(body.back());
-    auto movSrc = as<AsmStack>(mov->src);
-    auto dest = as<AsmReg>(mov->dest);
+
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, -4); });
+
+    matchAsmMov(body[1], [](auto& src, auto& dest) {
+        matchAsmStack(src, -4);
+        matchAsmReg(dest, AsmRegisterType::AX);
+    });
 }
 
 TEST_F(AsmInstrFixPassTest, fixAsmMov) {
@@ -89,16 +94,17 @@ TEST_F(AsmInstrFixPassTest, fixAsmMov) {
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 3);
 
-    auto stackAlloc = as<AsmAllocStack>(body.front());
-    ASSERT_EQ(stackAlloc->value, -4);
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, -4); });
 
-    auto movToR10 = as<AsmMov>(body[1]);
-    auto movToR10Src = as<AsmReg>(movToR10->src);
-    auto movToR10Dest = as<AsmReg>(movToR10->dest);
+    matchAsmMov(body[1], [](auto& src, auto& dest) {
+        matchAsmStack(src, -4);
+        matchAsmReg(dest, AsmRegisterType::R10);
+    });
 
-    auto movFromR10 = as<AsmMov>(body[2]);
-    auto movFromR10Src = as<AsmReg>(movFromR10->src);
-    auto movFromR10Dest = as<AsmReg>(movFromR10->dest);
+    matchAsmMov(body[2], [](auto& src, auto& dest) {
+        matchAsmReg(src, AsmRegisterType::R10);
+        matchAsmStack(dest, -4);
+    });
 }
 
 TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
@@ -114,32 +120,37 @@ TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     auto& body = fun->instructions;
     ASSERT_EQ(body.size(), 8);
 
-    auto asm0 = as<AsmAllocStack>(body.front());
-    ASSERT_EQ(asm0->value, -8);
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, -8); });
 
-    auto asm1 = as<AsmMov>(body[1]);
-    auto asm1Src = as<AsmImm>(asm1->src);
-    auto asm1Dest = as<AsmStack>(asm1->dest);
+    matchAsmMov(body[1], [](auto& src, auto& dest) {
+        matchAsmImm(src, 25);
+        matchAsmStack(dest, -4);
+    });
 
-    auto asm2 = as<AsmUnary>(body[2]);
-    ASSERT_EQ(asm2->op, AsmUnaryOpType::UNARY_NEGATE);
-    auto asm2Op = as<AsmStack>(asm2->operand);
+    matchAsmUnary(body[2], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        matchAsmStack(operand, -4);
+    });
 
-    auto asm3 = as<AsmMov>(body[3]);
-    auto asm3Src = as<AsmStack>(asm3->src);
-    auto asm3Dest = as<AsmReg>(asm3->dest);
+    matchAsmMov(body[3], [](auto& src, auto& dest) {
+        matchAsmStack(src, -4);
+        matchAsmReg(dest, AsmRegisterType::R10);
+    });
 
-    auto asm4 = as<AsmMov>(body[4]);
-    auto asm4Src = as<AsmReg>(asm4->src);
-    auto asm4Dest = as<AsmStack>(asm4->dest);
+    matchAsmMov(body[4], [](auto& src, auto& dest) {
+        matchAsmReg(src, AsmRegisterType::R10);
+        matchAsmStack(dest, -8);
+    });
 
-    auto asm5 = as<AsmUnary>(body[5]);
-    ASSERT_EQ(asm5->op, AsmUnaryOpType::UNARY_NOT);
-    auto asm5Op = as<AsmStack>(asm5->operand);
+    matchAsmUnary(body[5], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        matchAsmStack(operand, -8);
+    });
 
-    auto asm6 = as<AsmMov>(body[6]);
-    auto asm6Src = as<AsmStack>(asm6->src);
-    auto asm6Dest = as<AsmReg>(asm6->dest);
+    matchAsmMov(body[6], [](auto& src, auto& dest) {
+        matchAsmStack(src, -8);
+        matchAsmReg(dest, AsmRegisterType::AX);
+    });
 
-    auto asm7 = as<AsmRet>(body[7]);
+    matchAsmRet(body[7]);
 }
