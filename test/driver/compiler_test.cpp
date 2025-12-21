@@ -109,7 +109,7 @@ TEST_F(CompilerTest, compileParserOnly) {
     ASSERT_FALSE(std::filesystem::exists(sampleAsm));
 }
 
-TEST_F(CompilerTest, compileTackyOnly) {    // TODO: Fix this
+TEST_F(CompilerTest, compileTackyOnly) {
     // ARRANGE
     auto args =
         DriverArgs{false, false, true, false, false, false, sampleSource};

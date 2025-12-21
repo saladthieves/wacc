@@ -1,12 +1,15 @@
 #include "compiler.hpp"
+#include "asm_ast.hpp"
 #include "asm_emit.hpp"
 #include "asm_gen.hpp"
+#include "asm_instr_fix_pass.hpp"
+#include "asm_pseudo_pass.hpp"
 #include "asm_writer.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "source.hpp"
-#include "utils.hpp"
 #include "tacky_gen.hpp"
+#include "utils.hpp"
 
 #include <filesystem>
 #include <format>
@@ -16,6 +19,9 @@ namespace wacc::driver {
 namespace {
 using back::emit::AsmEmitter;
 using back::gen::AsmGenerator;
+using back::pass::AsmInstrFixPass;
+using back::pass::AsmInstrPtrs;
+using back::pass::AsmPseudoPass;
 using back::write::AsmWriter;
 using front::lex::Lexer;
 using front::parse::Parser;
@@ -54,12 +60,18 @@ CompilerResult runCompiler(const std::string& preprocessed,
 
     if (args.tacky) return {false};
 
-    auto generator = AsmGenerator{std::move(ast)};  // TODO: Fix this pass
-    auto asmAst = generator.generate();
+    auto asmGenerator = AsmGenerator{std::move(tackyAst)};
+    auto asmAst = asmGenerator.generate();
+
+    auto pseudo = AsmPseudoPass{std::move(asmAst)};
+    auto pseudoAst = pseudo.run();
+
+    auto fixPass = AsmInstrFixPass{std::move(pseudoAst), pseudo.getOffset()};
+    auto fixAst = fixPass.run();
 
     if (args.codegen) return {false};
 
-    auto emitter = AsmEmitter{std::move(asmAst), utils::Platform{}};
+    auto emitter = AsmEmitter{std::move(fixAst), utils::Platform{}};
     auto lines = emitter.emit();
 
     const auto info = utils::getFileInfo(args.path);

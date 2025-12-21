@@ -1,3 +1,3 @@
 int main(void) {
-    return 38;
+    return -(-88);
 }
