@@ -2,49 +2,38 @@
 
 #include "asm_ast.hpp"
 
-#include <map>
-#include <string>
-
 namespace wacc {
 namespace back {
 namespace pass {
 namespace {
 using namespace wacc::back::ast;
-using Key = std::string;
-using Value = signed int;
-using StackMap = std::map<Key, Value>;
-} // namespace
+}
 
-class AsmPseudoPass {
+class AsmInstrFixPass {
+    using StackPos = AsmInstrPtrs::iterator;
+
 public:
-    AsmPseudoPass(AsmNodePtr ptr);
+    AsmInstrFixPass(AsmNodePtr ptr, signed int stackOffset);
 
     AsmNodePtr run();
-
-    signed int getOffset() const { return offset; }
 
 private:
     void runPass(AsmInstrPtrs& instructions);
 
-    void runAsmMovPass(AsmMov& instr);
+    void genAsmAllocStack(AsmInstrPtrs& instructions);
 
-    void runAsmUnaryPass(AsmUnary& instr);
-
-    AsmStackPtr replace(AsmOperandPtr& ptr);
-
-    signed int getAdjustedOffset();
+    void fixAsmMov(StackPos pos, AsmInstrPtrs& instructions);
 
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
                            T&&... args) const {
         const auto message = std::format(str, std::forward<T>(args)...);
         throw std::runtime_error(
-            std::format("AsmPseudoPassError: {}", message));
+            std::format("AsmInstrFixPassError: {}", message));
     }
 
     AsmNodePtr ast{nullptr};
-    StackMap stacks{};
-    signed int offset{0};
+    signed int stackOffset{0};
 };
 } // namespace pass
 } // namespace back

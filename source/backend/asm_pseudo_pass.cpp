@@ -20,22 +20,16 @@ AsmNodePtr AsmPseudoPass::run() {
 void AsmPseudoPass::runPass(AsmInstrPtrs& instructions) {
     for (auto& instr : instructions) {
         const auto& type = instr->type();
-        switch (type) {
-            using enum AsmNodeType;
-            case INSTR_MOV: {
-                auto& mov = static_cast<AsmMov&>(*instr);
-                runAsmMovPass(mov);
-                continue;
-            }
-            case INSTR_UNARY: {
-                auto& unary = static_cast<AsmUnary&>(*instr);
-                runAsmUnaryPass(unary);
-                continue;
-            }
+        if (type == INSTR_MOV) {
+            auto& mov = static_cast<AsmMov&>(*instr);
+            runAsmMovPass(mov);
+            continue;
+        }
 
-            default: {
-                fail("Unhandled TackyInstr::[{}] pass ", type);
-            }
+        if (type == INSTR_UNARY) {
+            auto& unary = static_cast<AsmUnary&>(*instr);
+            runAsmUnaryPass(unary);
+            continue;
         }
     }
 }
@@ -61,7 +55,7 @@ AsmStackPtr AsmPseudoPass::replace(AsmOperandPtr& ptr) {
     signed value{0};
     auto entry = stacks.find(obj.identifier);
     if (entry == stacks.end()) {
-        value = getOffset();
+        value = getAdjustedOffset();
         stacks[obj.identifier] = offset;
     } else {
         value = entry->second;
@@ -70,7 +64,7 @@ AsmStackPtr AsmPseudoPass::replace(AsmOperandPtr& ptr) {
     return std::make_unique<AsmStack>(value);
 }
 
-signed int AsmPseudoPass::getOffset() {
+signed int AsmPseudoPass::getAdjustedOffset() {
     offset -= 4;
     return offset;
 }

@@ -14,5 +14,4 @@ target_link_libraries(${TARGET}
         test-utils
         util
         GTest::gtest_main
-
 )
