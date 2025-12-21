@@ -1,5 +1,5 @@
 #include "ast.hpp"
-#include "lexer.hpp"
+#include "base_test.hpp"
 #include "parser.hpp"
 #include "source.hpp"
 #include "test_utils.hpp"
@@ -15,7 +15,6 @@
 
 using enum wacc::front::token::TokenType;
 using enum wacc::front::ast::AstUnaryOpType;
-using wacc::front::lex::Lexer;
 using wacc::front::parse::Parser;
 using wacc::front::src::Source;
 using wacc::front::token::Token;
@@ -32,7 +31,9 @@ using std::vector;
 
 using Tokens = vector<Token>;
 
-TEST(ParserTest, parseThrowOnEmpty) {
+class ParserTest : public testing::Test, public wacc::test::base::BaseTest {};
+
+TEST_F(ParserTest, parseThrowOnEmpty) {
     // ARRANGE
     auto source = std::string_view{""};
     auto ptr = make_unique<Tokens>();
@@ -51,7 +52,7 @@ TEST(ParserTest, parseThrowOnEmpty) {
     ASSERT_TRUE(error.contains("No tokens found"));
 }
 
-TEST(ParserTest, parseInvalidProgram) {
+TEST_F(ParserTest, parseInvalidProgram) {
     // ARRANGE
     const auto tests = vector<tuple<string, TokenType, TokenType>>{
         {"15",                          KEYWORD_INT,           CONSTANT_INT},
@@ -66,10 +67,7 @@ TEST(ParserTest, parseInvalidProgram) {
 
     for (const auto& test : tests) {
         // ACT
-        auto source = Source{std::get<0>(test)};
-
-        auto lexer = Lexer{source};
-        auto parser = Parser{lexer.scan(), source};
+        auto parser = getParser(std::get<string>(test));
         string error{};
 
         try {
@@ -90,7 +88,7 @@ TEST(ParserTest, parseInvalidProgram) {
     }
 }
 
-TEST(ParserTest, parseMalformedExpression) {
+TEST_F(ParserTest, parseMalformedExpression) {
     // ARRANGE
     const auto tests = vector<string>{
         "int main(void) { return; }",      "int main(void) { return (); }",
@@ -101,9 +99,7 @@ TEST(ParserTest, parseMalformedExpression) {
 
     for (const auto& test : tests) {
         // ACT
-        auto source = Source{test};
-        auto lexer = Lexer{source};
-        auto parser = Parser{lexer.scan(), source};
+        auto parser = getParser(test);
         string error{};
 
         try {
@@ -121,15 +117,14 @@ TEST(ParserTest, parseMalformedExpression) {
     }
 }
 
-TEST(ParserTest, parseProgram) {
+TEST_F(ParserTest, parseProgram) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
         return ~(-42);
     }
     )";
-    auto lexer = Lexer{Source{source}};
-    auto parser = Parser{lexer.scan(), Source{source}};
+    auto parser = getParser(source);
 
     // ACT
     auto ptr = parser.parse();
@@ -152,7 +147,7 @@ TEST(ParserTest, parseProgram) {
     std::println("{}", ptr);
 }
 
-TEST(ParserTest, parsePrograms) {
+TEST_F(ParserTest, parsePrograms) {
     // ARRANGE
     const auto tests = vector<string>{
         "int main(void) { return -15; }",
@@ -170,9 +165,7 @@ TEST(ParserTest, parsePrograms) {
     };
 
     for (const auto& test : tests) {
-        auto source = Source{test};
-        auto lexer = Lexer{source};
-        auto parser = Parser{lexer.scan(), source};
+        auto parser = getParser(test);
         string error{};
 
         // ACT

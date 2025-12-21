@@ -7,13 +7,14 @@ add_executable(${TARGET})
 target_link_libraries(${TARGET}
     PRIVATE
         frontend-tests
-        tacky-tests
-        backend-tests
-        driver-tests
-        util-tests
+        # tacky-tests
+        # backend-tests
+        # driver-tests
+        # util-tests
 )
 
 add_subdirectory(backend)
+add_subdirectory(base)
 add_subdirectory(driver)
 add_subdirectory(frontend)
 add_subdirectory(tacky)

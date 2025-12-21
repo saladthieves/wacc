@@ -1,5 +1,5 @@
+#include "base_test.hpp"
 #include "lexer.hpp"
-#include "source.hpp"
 #include "token.hpp"
 
 #include <gtest/gtest.h>
@@ -7,8 +7,6 @@
 #include <vector>
 
 using enum wacc::front::token::TokenType;
-using wacc::front::lex::Lexer;
-using wacc::front::src::Source;
 using wacc::front::token::Token;
 using wacc::front::token::TokenType;
 
@@ -16,10 +14,11 @@ using std::pair;
 using std::string;
 using std::vector;
 
-TEST(LexerTest, scanEmpty) {
+class LexerTest : public testing::Test, public wacc::test::base::BaseTest {};
+
+TEST_F(LexerTest, scanEmpty) {
     // ARRANGE
-    const auto source = "";
-    auto lexer = Lexer{Source{source}};
+    auto lexer = getLexer();
 
     // ACT
     auto ptr = lexer.scan();
@@ -32,10 +31,10 @@ TEST(LexerTest, scanEmpty) {
     ASSERT_TRUE(tokens.front().value == "END");
 }
 
-TEST(LexerTest, scanEmptyText) {
+TEST_F(LexerTest, scanEmptyText) {
     // ARRANGE
     const auto source = "           ";
-    auto lexer = Lexer{Source{source}};
+    auto lexer = getLexer(source);
 
     // ACT
     auto ptr = lexer.scan();
@@ -48,7 +47,7 @@ TEST(LexerTest, scanEmptyText) {
     ASSERT_TRUE(tokens.front().value == "END");
 }
 
-TEST(LexerTest, scanNumberConstant) {
+TEST_F(LexerTest, scanNumberConstant) {
     // ARRANGE
     auto tests = vector<pair<string, string>>{
         {"29",        "29" },
@@ -59,7 +58,7 @@ TEST(LexerTest, scanNumberConstant) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{Source{test.first}};
+        auto lexer = getLexer(test.first);
         auto ptr = lexer.scan();
 
         // ASSERT
@@ -76,14 +75,14 @@ TEST(LexerTest, scanNumberConstant) {
     }
 }
 
-TEST(LexerTest, scanNumberConstantInvalidAlpha) {
+TEST_F(LexerTest, scanNumberConstantInvalidAlpha) {
     // ARRANGE
     auto tests = vector<string>{"29s",  "38a",  "2x92",  "28ss",
                                 "1xx2", "115_", "3_3_3", "123ret"};
 
     for (const auto& source : tests) {
         // ACT
-        auto lexer = Lexer{Source{source}};
+        auto lexer = getLexer(source);
         string error{};
 
         try {
@@ -98,13 +97,13 @@ TEST(LexerTest, scanNumberConstantInvalidAlpha) {
     }
 }
 
-TEST(LexerTest, scanNumberConstantInvalidChar) {
+TEST_F(LexerTest, scanNumberConstantInvalidChar) {
     // ARRANGE
     auto tests = vector<string>{"29!", "38@", "2`92", "28'", "1\"2"};
 
     for (const auto& source : tests) {
         // ACT
-        auto lexer = Lexer{Source{source}};
+        auto lexer = getLexer(source);
         string error{};
 
         try {
@@ -119,7 +118,7 @@ TEST(LexerTest, scanNumberConstantInvalidChar) {
     }
 }
 
-TEST(LexerTest, scanIdentifier) {
+TEST_F(LexerTest, scanIdentifier) {
     // ARRANGE
     auto tests = vector<pair<string, string>>{
         {"hello",           "hello"    },
@@ -132,7 +131,7 @@ TEST(LexerTest, scanIdentifier) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{Source{test.first}};
+        auto lexer = getLexer(test.first);
         auto ptr = lexer.scan();
 
         // ASSERT
@@ -149,13 +148,13 @@ TEST(LexerTest, scanIdentifier) {
     }
 }
 
-TEST(LexerTest, scanIdentifierInvalid) {
+TEST_F(LexerTest, scanIdentifierInvalid) {
     // ARRANGE
     auto tests = vector<string>{"some@ne", "may?be", "no!w",   "fi#st",
                                 "noun`s",  "adv'",   "sha``e!"};
 
     for (const auto& source : tests) {
-        auto lexer = Lexer{Source{source}};
+        auto lexer = getLexer(source);
         string error{};
 
         // ACT
@@ -170,7 +169,7 @@ TEST(LexerTest, scanIdentifierInvalid) {
     }
 }
 
-TEST(LexerTest, scanKeywords) {
+TEST_F(LexerTest, scanKeywords) {
     // ARRANGE
     auto tests = vector<pair<string, TokenType>>{
         {"int",    KEYWORD_INT   },
@@ -180,7 +179,7 @@ TEST(LexerTest, scanKeywords) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{Source{test.first}};
+        auto lexer = getLexer(test.first);
         string error{};
 
         auto ptr = lexer.scan();
@@ -199,7 +198,7 @@ TEST(LexerTest, scanKeywords) {
     }
 }
 
-TEST(LexerTest, scanKeywordsInvalid) {
+TEST_F(LexerTest, scanKeywordsInvalid) {
     // ARRANGE
     auto tests = vector<string>{
         {"integer"},
@@ -209,7 +208,7 @@ TEST(LexerTest, scanKeywordsInvalid) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{Source{test}};
+        auto lexer = getLexer(test);
         string error{};
 
         auto ptr = lexer.scan();
@@ -228,7 +227,7 @@ TEST(LexerTest, scanKeywordsInvalid) {
     }
 }
 
-TEST(LexerTest, scanSingleToken) {
+TEST_F(LexerTest, scanSingleToken) {
     // ARRANGE
     auto tests = vector<pair<string, TokenType>>{
         {"(",  OPEN_PAREN   },
@@ -243,7 +242,7 @@ TEST(LexerTest, scanSingleToken) {
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{Source{test.first}};
+        auto lexer = getLexer(test.first);
         string error{};
 
         auto ptr = lexer.scan();
@@ -262,13 +261,13 @@ TEST(LexerTest, scanSingleToken) {
     }
 }
 
-TEST(LexerTest, scanSingleTokenInvalid) {
+TEST_F(LexerTest, scanSingleTokenInvalid) {
     // ARRANGE
     auto tests = vector<string>{"@", "?", "!", "`", "``", "#"};
 
     for (const auto& test : tests) {
         // ACT
-        auto lexer = Lexer{Source{test}};
+        auto lexer = getLexer(test);
         string error{};
 
         try {
@@ -283,14 +282,14 @@ TEST(LexerTest, scanSingleTokenInvalid) {
     }
 }
 
-TEST(LexerTest, scanSource) {
+TEST_F(LexerTest, scanSource) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
             return ~(-- -2);
         })";
 
-    auto lexer = Lexer{Source{source}};
+    auto lexer = getLexer(source);
     string error{};
     vector<Token> tokens;
 

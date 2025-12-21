@@ -1,31 +1,32 @@
+#include "base_test.hpp"
 #include "source.hpp"
 #include "token.hpp"
 
 #include <gtest/gtest.h>
-#include <string_view>
 
-using wacc::front::src::Source;
 using wacc::front::token::Token;
 using wacc::front::token::TokenType;
 
 using std::string_view;
 
-TEST(TestSource, init) {
+class SourceTest : public testing::Test, public wacc::test::base::BaseTest {};
+
+TEST_F(SourceTest, init) {
     // ARRANGE
     const auto src = "int main(void) {";
 
     // ACT
-    auto source = Source{src};
+    auto source = getSource(src);
     auto content = string_view{source.cbegin(), source.cend()};
 
     // ASSERT
     ASSERT_TRUE(content == src);
 }
 
-TEST(TestSource, decorate) {
+TEST_F(SourceTest, decorate) {
     // ARRANGE
     const auto src = "int main(void) {";
-    auto source = Source{src};
+    auto source = getSource(src);
 
     auto lineStart = 0;
     auto lineNo = 8;
@@ -40,13 +41,12 @@ TEST(TestSource, decorate) {
     ASSERT_TRUE(decorated.contains("              ^^^^^^^^^^\n"));
 }
 
-TEST(TestSource, decorateToken) {
+TEST_F(SourceTest, decorateToken) {
     // ARRANGE
-    using enum TokenType;
     const auto src = "int main(void) {";
-    auto source = Source{src};
+    auto source = getSource(src);
     auto value = string_view{"main"};
-    auto token = Token{IDENTIFIER, 1, 0, 17, 5, value};
+    auto token = Token{TokenType::IDENTIFIER, 1, 0, 17, 5, value};
 
     // ACT
     auto decorated = source.decorate(token);
