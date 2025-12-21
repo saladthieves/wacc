@@ -1,11 +1,6 @@
 #include "asm_ast.hpp"
-#include "asm_gen.hpp"
 #include "asm_instr_fix_pass.hpp"
-#include "asm_pseudo_pass.hpp"
-#include "lexer.hpp"
-#include "parser.hpp"
-#include "source.hpp"
-#include "tacky_gen.hpp"
+#include "base_test.hpp"
 #include "test_utils.hpp"
 
 #include <gtest/gtest.h>
@@ -14,19 +9,15 @@
 #include <string>
 
 using namespace wacc::back::ast;
-using wacc::back::gen::AsmGenerator;
 using wacc::back::pass::AsmInstrFixPass;
-using wacc::back::pass::AsmPseudoPass;
-using wacc::front::lex::Lexer;
-using wacc::front::parse::Parser;
-using wacc::front::src::Source;
-using wacc::tacky::gen::TackyGenerator;
 using wacc::test::utils::as;
 
 using std::make_unique;
 using std::string;
 
-class AsmInstrFixPassTest : public testing::Test {
+class AsmInstrFixPassTest :
+    public testing::Test,
+    public wacc::test::base::BaseTest {
 protected:
     void SetUp() override { instructions = AsmInstrPtrs{}; }
 
@@ -112,14 +103,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmMov) {
 
 TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     // ARRANGE
-    auto code = "int main(void) { return -(~5); }";
-    auto source = Source{code};
-    auto lexer = Lexer{source};
-    auto parser = Parser{lexer.scan(), source};
-    auto tacky = TackyGenerator{parser.parse()};
-    auto asmGen = AsmGenerator{tacky.generate()};
-    auto pseudo = AsmPseudoPass{asmGen.generate()};
-    auto pass = AsmInstrFixPass{pseudo.run(), pseudo.getOffset()};
+    auto pass = getAsmInstrFixPass();
 
     // ACT
     auto ast = pass.run();
@@ -131,14 +115,14 @@ TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     ASSERT_EQ(body.size(), 8);
 
     auto asm0 = as<AsmAllocStack>(body.front());
-    ASSERT_EQ(asm0->value, pseudo.getOffset());
+    ASSERT_EQ(asm0->value, -8);
 
     auto asm1 = as<AsmMov>(body[1]);
     auto asm1Src = as<AsmImm>(asm1->src);
     auto asm1Dest = as<AsmStack>(asm1->dest);
 
     auto asm2 = as<AsmUnary>(body[2]);
-    ASSERT_EQ(asm2->op, AsmUnaryOpType::UNARY_NOT);
+    ASSERT_EQ(asm2->op, AsmUnaryOpType::UNARY_NEGATE);
     auto asm2Op = as<AsmStack>(asm2->operand);
 
     auto asm3 = as<AsmMov>(body[3]);
@@ -150,7 +134,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     auto asm4Dest = as<AsmStack>(asm4->dest);
 
     auto asm5 = as<AsmUnary>(body[5]);
-    ASSERT_EQ(asm5->op, AsmUnaryOpType::UNARY_NEGATE);
+    ASSERT_EQ(asm5->op, AsmUnaryOpType::UNARY_NOT);
     auto asm5Op = as<AsmStack>(asm5->operand);
 
     auto asm6 = as<AsmMov>(body[6]);

@@ -1,9 +1,7 @@
 #include "asm_ast.hpp"
 #include "asm_gen.hpp"
-#include "lexer.hpp"
-#include "parser.hpp"
+#include "base_test.hpp"
 #include "tacky_ast.hpp"
-#include "tacky_gen.hpp"
 #include "test_utils.hpp"
 
 #include <gtest/gtest.h>
@@ -12,25 +10,14 @@ using namespace wacc::back::ast;
 using namespace wacc::tacky::ast;
 
 using wacc::back::gen::AsmGenerator;
-using wacc::front::lex::Lexer;
-using wacc::front::parse::Parser;
-using wacc::front::src::Source;
-using wacc::tacky::gen::TackyGenerator;
 
 using wacc::test::utils::as;
 
 using std::string;
 
-class AsmGeneratorTest : public testing::Test {
-protected:
-    TackyNodePtr generateTacky(const string& src) {
-        auto source = Source{src};
-        auto lexer = Lexer{source};
-        auto parser = Parser{lexer.scan(), source};
-        auto tacky = TackyGenerator{parser.parse()};
-        return tacky.generate();
-    }
-};
+class AsmGeneratorTest :
+    public testing::Test,
+    public wacc::test::base::BaseTest {};
 
 TEST_F(AsmGeneratorTest, throwOnNull) {
     // ARRANGE
@@ -51,21 +38,16 @@ TEST_F(AsmGeneratorTest, throwOnNull) {
 
 TEST_F(AsmGeneratorTest, generateNegate) {
     // ARRANGE
-    const auto src =
-        R"(
-        int main(void) {
-            return -42;
-        }
-    )";
+    const auto src = "int main(void) { return -42; }";
+    auto generator = getAsmGenerator(src);
 
     // ACT
-    auto generator = AsmGenerator{generateTacky(src)};
     auto asmAst = generator.generate();
 
     // ASSERT
     auto asmProg = as<AsmProg>(asmAst);
     auto asmFun = as<AsmFun>(asmProg->function);
-    
+
     auto& asmBody = asmFun->instructions;
     ASSERT_EQ(asmBody.size(), 4);
 
@@ -91,27 +73,21 @@ TEST_F(AsmGeneratorTest, generateNegate) {
 
 TEST_F(AsmGeneratorTest, generate) {
     // ARRANGE
-    const auto src =
-        R"(
-        int main(void) {
-            return ~(-15);
-        }
-    )";
+    auto generator = getAsmGenerator();
 
     // ACT
-    auto generator = AsmGenerator{generateTacky(src)};
     auto asmAst = generator.generate();
 
     // ASSERT
     auto asmProg = as<AsmProg>(asmAst);
     auto asmFun = as<AsmFun>(asmProg->function);
-    
+
     auto& asmBody = asmFun->instructions;
     ASSERT_EQ(asmBody.size(), 6);
 
     auto asm1 = as<AsmMov>(asmBody.front());
     auto asm1Src = as<AsmImm>(asm1->src);
-    ASSERT_EQ(asm1Src->value, 15);
+    ASSERT_EQ(asm1Src->value, 25);
     auto asm1Dest = as<AsmPseudo>(asm1->dest);
     ASSERT_TRUE(asm1Dest->identifier.ends_with("MAIN.UNARY_NEGATE.TEMP.0"));
 
