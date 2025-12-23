@@ -1,71 +1,26 @@
-#include "cmd.hpp"
-#include "driver.hpp"
+#include "e2e_base.hpp"
 
 #include <expected>
-#include <filesystem>
-#include <fstream>
 #include <gtest/gtest.h>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
-using std::expected;
+
+using namespace wacc::test::e2e;
+
 using std::string;
 using std::string_view;
-using std::unexpected;
 using std::vector;
-using std::filesystem::path;
 
 class Chapter1Test : public testing::Test {
 protected:
-    static void SetUpTestSuite() {
-        TearDownTestSuite();
-        std::filesystem::create_directory(root);
-    }
+    static void SetUpTestSuite() { setUpSuite(chapter); }
 
-    static void TearDownTestSuite() {
-        if (std::filesystem::exists(root)) {
-            std::filesystem::remove_all(root);
-        }
-    }
+    static void TearDownTestSuite() { tearDownSuite(chapter); }
 
-    expected<path, string> compile(string_view code) {
-        auto sourceFile = root / name;
-        writeToFile(code, sourceFile);
-
-        vector<string> args{sourceFile};
-
-        try {
-            wacc::driver::runDriver(args);
-            return root / binary;
-        } catch (const std::exception& ex) {
-            return unexpected<string>(ex.what());
-        }
-    }
-
-    int run(path& binaryPath) {
-        auto result = wacc::utils::runCommand(binaryPath.string(), {});
-        return result.exitCode;
-    }
-
-private:
-    void writeToFile(string_view code, path& sourceFile) {
-        std::stringstream buffer{};
-        buffer << code;
-
-        std::ofstream ostream{sourceFile};
-        ostream << buffer.rdbuf();
-
-        ostream.close();
-    }
-
-    static path root;
-    static constexpr auto name = "program.c";
-    static constexpr auto binary = "program";
+    static constexpr auto chapter = "ch01";
 };
-
-path Chapter1Test::root = std::filesystem::absolute("sample") / "ch01";
 
 TEST_F(Chapter1Test, chapter1e2e) {
     // ARRANGE
@@ -88,7 +43,7 @@ TEST_F(Chapter1Test, chapter1e2e) {
 
     for (const auto& code : tests) {
         // ACT
-        auto compiled = compile(code);
+        auto compiled = compile(code, chapter);
         EXPECT_TRUE(compiled.has_value());
 
         // ASSERT

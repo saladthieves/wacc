@@ -7,6 +7,7 @@ add_executable(${TARGET})
 target_sources(${TARGET}
     PRIVATE
         ch01.cpp
+        e2e_base.cpp
 )
 
 target_link_libraries(${TARGET}
