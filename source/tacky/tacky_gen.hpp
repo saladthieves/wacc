@@ -19,7 +19,7 @@ public:
     void reset();
     void resetSession(std::string session = "");
     void resetFunction(std::string function);
-    std::string generate(TackyUnaryOpType type);
+    std::string generate();
 
 private:
     std::string session{};

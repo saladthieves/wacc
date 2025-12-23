@@ -32,12 +32,12 @@ TEST(VariableGeneratorTest, testGenerate) {
     generator.resetFunction(function);
 
     // ACT
-    auto first = generator.generate(TackyUnaryOpType::UNARY_COMPLEMENT);
-    auto second = generator.generate(TackyUnaryOpType::UNARY_NEGATE);
+    auto first = generator.generate();
+    auto second = generator.generate();
 
     // ASSERT
-    ASSERT_STREQ(first.c_str(), "S1A2B.MAIN.UNARY_COMPLEMENT.TEMP.0");
-    ASSERT_STREQ(second.c_str(), "S1A2B.MAIN.UNARY_NEGATE.TEMP.1");
+    ASSERT_STREQ(first.c_str(), "S1A2B.MAIN.TEMP.0");
+    ASSERT_STREQ(second.c_str(), "S1A2B.MAIN.TEMP.1");
 }
 
 TEST(VariableGeneratorTest, testGenerateRandom) {
@@ -47,14 +47,14 @@ TEST(VariableGeneratorTest, testGenerateRandom) {
     generator.resetFunction(function);
 
     // ACT
-    auto first = generator.generate(TackyUnaryOpType::UNARY_COMPLEMENT);
-    auto second = generator.generate(TackyUnaryOpType::UNARY_NEGATE);
+    auto first = generator.generate();
+    auto second = generator.generate();
 
     // ASSERT
     ASSERT_TRUE(first.starts_with("S"));
-    ASSERT_TRUE(first.ends_with("MAIN.UNARY_COMPLEMENT.TEMP.0"));
+    ASSERT_TRUE(first.ends_with("MAIN.TEMP.0"));
     ASSERT_TRUE(second.starts_with("S"));
-    ASSERT_TRUE(second.ends_with("MAIN.UNARY_NEGATE.TEMP.1"));
+    ASSERT_TRUE(second.ends_with("MAIN.TEMP.1"));
 }
 
 TEST_F(TackyGeneratorTest, throwOnNull) {
@@ -128,7 +128,7 @@ TEST_F(TackyGeneratorTest, generateComplement) {
     matchTackyUnary(body[0], [](auto& op, auto& src, auto& dest) {
         ASSERT_EQ(op, TackyUnaryOpType::UNARY_COMPLEMENT);
         matchTackyConstant(src, 22);
-        matchTackyVariable(dest, ".MAIN.UNARY_COMPLEMENT.TEMP.0");
+        matchTackyVariable(dest, ".MAIN.TEMP.0");
     });
 }
 
@@ -159,20 +159,16 @@ TEST_F(TackyGeneratorTest, generateNegate) {
     matchTackyUnary(body[0], [](auto& op, auto& src, auto& dest) {
         ASSERT_EQ(op, TackyUnaryOpType::UNARY_NEGATE);
         matchTackyConstant(src, 38);
-        matchTackyVariable(dest, ".START.UNARY_NEGATE.TEMP.0");
+        matchTackyVariable(dest, ".START.TEMP.0");
     });
 
     matchTackyUnary(body[1], [](auto& op, auto& src, auto& dest) {
         ASSERT_EQ(op, TackyUnaryOpType::UNARY_COMPLEMENT);
-        matchTackyVariable(src, ".START.UNARY_NEGATE.TEMP.0");
-        matchTackyVariable(dest, ".START.UNARY_COMPLEMENT.TEMP.1");
+        matchTackyVariable(src, ".START.TEMP.0");
+        matchTackyVariable(dest, ".START.TEMP.1");
     });
 
     matchTackyReturn(body[2], [](auto& val) {
-        matchTackyVariable(val, ".START.UNARY_COMPLEMENT.TEMP.1");
+        matchTackyVariable(val, ".START.TEMP.1");
     });
-
-    auto third = as<TackyReturn>(body.back());
-    auto val = as<TackyVariable>(third->val);
-    ASSERT_TRUE(val->identifier.ends_with(".START.UNARY_COMPLEMENT.TEMP.1"));
 }

@@ -35,8 +35,8 @@ void VariableGenerator::resetFunction(std::string function) {
     this->function = upper;
 }
 
-std::string VariableGenerator::generate(TackyUnaryOpType type) {
-    return std::format("{}.{}.{}.TEMP.{}", session, function, type, count++);
+std::string VariableGenerator::generate() {
+    return std::format("{}.{}.TEMP.{}", session, function, count++);
 }
 
 // TackyGenerator
@@ -110,7 +110,7 @@ TackyValPtr TackyGenerator::genForAstUnary(const AstUnary& obj,
                                            TackyInstrs& body) const {
     auto op = genForAstUnaryOp(obj.op);
     auto src = genForAstExpr(*obj.expr, body);
-    auto name = generator.generate(op);
+    auto name = generator.generate();
     auto dest = std::make_unique<TackyVariable>(name);
     auto unary =
         std::make_unique<TackyUnary>(op, std::move(src), std::move(dest));
