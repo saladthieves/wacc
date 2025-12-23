@@ -52,6 +52,24 @@
             "preLaunchTask": "build-testing-clean"
         },
         {
+            "name": "Launch E2E Tests",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:e2eTestingBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-e2e-testing"
+        },
+        {
+            "name": "Clean Launch E2E Tests",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/${config:e2eTestingBinaryName}",
+            "args": [],
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-e2e-testing-clean"
+        },
+        {
             "name": "Clean Launch Compiler (Ninja)",
             "type": "lldb",
             "request": "launch",

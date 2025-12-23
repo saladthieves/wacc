@@ -52,6 +52,7 @@ build/
 sample/file
 sample/file.i
 sample/file.s
+sample/ch*
 
 # wacc test files
 test_sample/test_file

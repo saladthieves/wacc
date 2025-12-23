@@ -54,6 +54,32 @@
         },
         {
             "type": "shell",
+            "label": "build-e2e-testing",
+            "detail": "Builds E2E tests",
+            "group": "test",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "build",
+                "--preset",
+                "build-e2e-testing"
+            ],
+            "dependsOn": [
+                "config-ninja-debug"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "build-e2e-testing-clean",
+            "detail": "Cleans and builds E2E tests",
+            "group": "test",
+            "dependsOn": [
+                "clean",
+                "build-e2e-testing"
+            ]
+        },
+        {
+            "type": "shell",
             "label": "build-ninja-debug",
             "detail": "Builds the compiler with Ninja in debug mode.",
             "group": "build",
@@ -141,6 +167,7 @@
                 "build/CMakeFiles",
                 "build/compiler",
                 "build/testing",
+                "build/e2e-testing",
             ]
         }
     ]

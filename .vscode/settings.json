@@ -4,6 +4,7 @@
     },
     "compilerBinaryName": "compiler",
     "testingBinaryName": "testing",
+    "e2eTestingBinaryName": "e2e-testing",
     "cSpell.words": [
         "asmast",
         "asmgen",

@@ -107,6 +107,15 @@
             "targets": [
                 "testing"
             ]
+        },
+        {
+            "name": "build-e2e-testing",
+            "displayName": "Build E2E Tests",
+            "description": "Builds E2E tests",
+            "configurePreset": "config-ninja-debug",
+            "targets": [
+                "e2e-testing"
+            ]
         }
     ]
 }

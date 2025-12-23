@@ -17,3 +17,4 @@ add_subdirectory(source/driver)
 add_subdirectory(source)
 
 add_subdirectory(test)
+add_subdirectory(e2e)
