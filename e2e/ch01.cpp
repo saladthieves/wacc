@@ -6,7 +6,6 @@
 #include <string_view>
 #include <vector>
 
-
 using namespace wacc::test::e2e;
 
 using std::string;
