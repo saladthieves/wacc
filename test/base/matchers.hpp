@@ -1,6 +1,7 @@
 #pragma once
 
 #include "asm_ast.hpp"
+#include "tacky_ast.hpp"
 #include "test_utils.hpp"
 
 #include <functional>
@@ -12,16 +13,30 @@ namespace test {
 namespace match {
 namespace {
 using namespace back::ast;
+using namespace tacky::ast;
+
 using utils::as;
 
 using std::string;
 using std::string_view;
 
-using Operand = const AsmOperandPtr&;
-using MovMatcher = std::function<void(Operand src, Operand dest)>;
-using UnaryMatcher = std::function<void(const AsmUnaryOpType&, Operand)>;
-using AllocStackMatcher = std::function<void(const unsigned int&)>;
+// clang-format off
+using TackyReturnMatcher = std::function<void(const TackyValPtr&)>;
+using TackyUnaryMatcher = std::function<void(const TackyUnaryOpType&, const TackyValPtr& src, const TackyValPtr& dest)>;
+
+using AsmMovMatcher = std::function<void(const AsmOperandPtr& src, const AsmOperandPtr& dest)>;
+using AsmUnaryMatcher = std::function<void(const AsmUnaryOpType&, const AsmOperandPtr&)>;
+using AsmAllocStackMatcher = std::function<void(const unsigned int&)>;
+// clang-format on
 } // namespace
+
+// TackyVal matchers
+void matchTackyConstant(const TackyValPtr& ptr, int value);
+void matchTackyVariable(const TackyValPtr& ptr, string identifier);
+
+// TackyInstr matchers
+void matchTackyReturn(const TackyInstrPtr& ptr, TackyReturnMatcher matcher);
+void matchTackyUnary(const TackyInstrPtr& ptr, TackyUnaryMatcher matcher);
 
 // AsmOperand matchers
 void matchAsmImm(const AsmOperandPtr& ptr, int value);
@@ -30,14 +45,10 @@ void matchAsmPseudo(const AsmOperandPtr& ptr, const string& value);
 void matchAsmStack(const AsmOperandPtr& ptr, signed value);
 
 // AsmInstr matchers
-// AsmMov
-void matchAsmMov(const AsmInstrPtr& ptr, MovMatcher matcher);
-// AsmUnary
-void matchAsmUnary(const AsmInstrPtr& ptr, UnaryMatcher matcher);
-// AsmRet
+void matchAsmMov(const AsmInstrPtr& ptr, AsmMovMatcher matcher);
+void matchAsmUnary(const AsmInstrPtr& ptr, AsmUnaryMatcher matcher);
 void matchAsmRet(const AsmInstrPtr& ptr);
-// AsmAllocStack
-void matchAsmAllocStack(const AsmInstrPtr& ptr, AllocStackMatcher matcher);
+void matchAsmAllocStack(const AsmInstrPtr& ptr, AsmAllocStackMatcher matcher);
 
 } // namespace match
 } // namespace test
