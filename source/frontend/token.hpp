@@ -21,6 +21,10 @@ enum class TokenType : unsigned {
     OP_COMPLEMENT,
     OP_NEGATE,
     OP_DECREMENT,
+    OP_ADDITION,
+    OP_MULTIPLY,
+    OP_DIVIDE,
+    OP_REMAINDER,
 
     CONSTANT_INT,
 
@@ -88,6 +92,10 @@ public:
             case OP_COMPLEMENT:  value = "OP_COMPLEMENT"; break;
             case OP_NEGATE:      value = "OP_NEGATE"; break;
             case OP_DECREMENT:   value = "OP_DECREMENT"; break;
+            case OP_ADDITION:    value = "OP_ADDITION";
+            case OP_MULTIPLY:    value = "OP_MULTIPLY";
+            case OP_DIVIDE:      value = "OP_DIVIDE";
+            case OP_REMAINDER:   value = "OP_REMAINDER";
             default:             throw std::format_error("Unhandled token::TokenType enum");
         }
         return std::format_to(context.out(), "{}", value);

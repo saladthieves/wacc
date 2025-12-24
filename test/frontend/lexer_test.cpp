@@ -84,13 +84,13 @@ TEST_F(LexerTest, scanNumberConstantInvalidAlpha) {
         // ACT
         auto lexer = getLexer(source);
         string error{};
-        
+
         try {
             lexer.scan();
         } catch (const std::runtime_error& ex) {
             error = ex.what();
         }
-        
+
         // ASSERT
         ASSERT_FALSE(error.empty());
         ASSERT_TRUE(error.contains("character in number constant"));
@@ -286,7 +286,7 @@ TEST_F(LexerTest, scanSource) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
-            return ~(-- -2);
+            return (-1 + 2) * ~3 - 4 / 5 % (--6);
         })";
 
     auto lexer = getLexer(source);
@@ -308,22 +308,35 @@ TEST_F(LexerTest, scanSource) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    ASSERT_EQ(tokens.size(), 16);
-
-    ASSERT_TRUE(check(tokens[0], KEYWORD_INT, "int", 1));
-    ASSERT_TRUE(check(tokens[1], IDENTIFIER, "main", 1));
-    ASSERT_TRUE(check(tokens[2], OPEN_PAREN, "(", 1));
-    ASSERT_TRUE(check(tokens[3], KEYWORD_VOID, "void", 1));
-    ASSERT_TRUE(check(tokens[4], CLOSE_PAREN, ")", 1));
-    ASSERT_TRUE(check(tokens[5], OPEN_BRACE, "{", 1));
-    ASSERT_TRUE(check(tokens[6], KEYWORD_RETURN, "return", 2));
-    ASSERT_TRUE(check(tokens[7], OP_COMPLEMENT, "~", 2));
-    ASSERT_TRUE(check(tokens[8], OPEN_PAREN, "(", 2));
-    ASSERT_TRUE(check(tokens[9], OP_DECREMENT, "--", 2));
-    ASSERT_TRUE(check(tokens[10], OP_NEGATE, "-", 2));
-    ASSERT_TRUE(check(tokens[11], CONSTANT_INT, "2", 2));
-    ASSERT_TRUE(check(tokens[12], CLOSE_PAREN, ")", 2));
-    ASSERT_TRUE(check(tokens[13], SEMICOLON, ";", 2));
-    ASSERT_TRUE(check(tokens[14], CLOSE_BRACE, "}", 3));
-    ASSERT_TRUE(check(tokens[15], END, "END", 3));
+    ASSERT_EQ(tokens.size(), 28);
+    // clang-format off
+    ASSERT_TRUE(check(tokens[0],  KEYWORD_INT,    "int",    1));
+    ASSERT_TRUE(check(tokens[1],  IDENTIFIER,     "main",   1));
+    ASSERT_TRUE(check(tokens[2],  OPEN_PAREN,     "(",      1));
+    ASSERT_TRUE(check(tokens[3],  KEYWORD_VOID,   "void",   1));
+    ASSERT_TRUE(check(tokens[4],  CLOSE_PAREN,    ")",      1));
+    ASSERT_TRUE(check(tokens[5],  OPEN_BRACE,     "{",      1));
+    ASSERT_TRUE(check(tokens[6],  KEYWORD_RETURN, "return", 2));
+    ASSERT_TRUE(check(tokens[7],  OPEN_PAREN,     "(",      2));
+    ASSERT_TRUE(check(tokens[8],  OP_NEGATE,      "-",      2));
+    ASSERT_TRUE(check(tokens[9],  CONSTANT_INT,   "1",      2));
+    ASSERT_TRUE(check(tokens[10], OP_ADDITION,    "+",      2));
+    ASSERT_TRUE(check(tokens[11], CONSTANT_INT,   "2",      2));
+    ASSERT_TRUE(check(tokens[12], CLOSE_PAREN,    ")",      2));
+    ASSERT_TRUE(check(tokens[13], OP_MULTIPLY,    "*",      2));
+    ASSERT_TRUE(check(tokens[14], OP_COMPLEMENT,  "~",      2));
+    ASSERT_TRUE(check(tokens[15], CONSTANT_INT,   "3",      2));
+    ASSERT_TRUE(check(tokens[16], OP_NEGATE,      "-",      2));
+    ASSERT_TRUE(check(tokens[17], CONSTANT_INT,   "4",      2));
+    ASSERT_TRUE(check(tokens[18], OP_DIVIDE,      "/",      2));
+    ASSERT_TRUE(check(tokens[19], CONSTANT_INT,   "5",      2));
+    ASSERT_TRUE(check(tokens[20], OP_REMAINDER,   "%",      2));
+    ASSERT_TRUE(check(tokens[21], OPEN_PAREN,     "(",      2));
+    ASSERT_TRUE(check(tokens[22], OP_DECREMENT,   "--",     2));
+    ASSERT_TRUE(check(tokens[23], CONSTANT_INT,   "6",      2));
+    ASSERT_TRUE(check(tokens[24], CLOSE_PAREN,    ")",      2));
+    ASSERT_TRUE(check(tokens[25], SEMICOLON,      ";",      2));
+    ASSERT_TRUE(check(tokens[26], CLOSE_BRACE,    "}",      3));
+    ASSERT_TRUE(check(tokens[27], END,            "END",    3));
+    // clang-format on
 }

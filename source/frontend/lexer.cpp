@@ -39,6 +39,10 @@ Lexer::TokensPtr Lexer::scan() {
                 }
                 break;
             }
+            case '+': makeToken(OP_ADDITION); break;
+            case '*': makeToken(OP_MULTIPLY); break;
+            case '/': makeToken(OP_DIVIDE); break;
+            case '%': makeToken(OP_REMAINDER); break;
 
             default: fail("Unexpected token character: [{}]", c);
         }
