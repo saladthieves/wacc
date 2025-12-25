@@ -5,6 +5,7 @@ add_library(${TARGET})
 target_sources(${TARGET}
     PRIVATE
         base_test.cpp
+        formatters.cpp
         matchers.cpp
 
     PUBLIC
