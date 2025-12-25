@@ -1,20 +1,25 @@
 #include "ast.hpp"
 #include "base_test.hpp"
+#include "formatters.hpp"
 #include "matchers.hpp"
-#include "tacky_ast.hpp"
 #include "tacky_gen.hpp"
 
 #include <gtest/gtest.h>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace wacc::front::ast;
 using namespace wacc::tacky::ast;
 using namespace wacc::test::match;
+using namespace wacc::test::fmt;
 
-using wacc::tacky::ast::TackyUnaryOpType;
 using wacc::tacky::gen::TackyGenerator;
 using wacc::tacky::gen::VariableGenerator;
 
+using std::pair;
 using std::string;
+using std::vector;
 
 class TackyGeneratorTest :
     public testing::Test,
@@ -72,89 +77,109 @@ TEST_F(TackyGeneratorTest, throwOnNull) {
     ASSERT_TRUE(error.contains("AstNode root tree is null"));
 }
 
-TEST_F(TackyGeneratorTest, generate) {
+TEST_F(TackyGeneratorTest, generateUnary) {
     // ARRANGE
-    const auto source = "int main(void) { return 15; }";
-    auto generator = getTackyGenerator(source);
+    const auto tests = vector<pair<string, vector<string>>>{
+        // clang-format off
+        {"{ return 0; }",  {"[R:0]"} },
+        {"{ return 15; }", {"[R:15]"}},
+        {"{ return 80; }", {"[R:80]"}},
+        {"{ return -3; }", {
+            "[O:- S:3 D:MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return ~8; }", {
+            "[O:~ S:8 D:MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return ~(-15); }", {
+            "[O:- S:15 D:MAIN.TEMP.0]",
+            "[O:~ S:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+        {"{ return -(~(-80)); }", {
+            "[O:- S:80 D:MAIN.TEMP.0]",
+            "[O:~ S:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[O:- S:MAIN.TEMP.1 D:MAIN.TEMP.2]",
+            "[R:MAIN.TEMP.2]",
+         }},
+        // clang-format on
+    };
 
-    string error{};
-    TackyNodePtr node{nullptr};
+    for (const auto& test : tests) {
+        auto code = std::format("int main(void) {}", std::get<0>(test));
+        auto generator = getTackyGenerator(code);
 
-    // ACT
-    try {
-        node = generator.generate();
-    } catch (const std::runtime_error& ex) {
-        error = ex.what();
+        // ACT
+        auto node = generator.generate();
+
+        // ASSERT
+        const auto& body = matchTackyProg(node);
+        for (auto i = 0; i < body.size(); ++i) {
+            auto actual = std::get<1>(test)[i];
+            auto expected = formatTackyInstr(body[i]);
+            ASSERT_STREQ(actual.c_str(), expected.c_str());
+        }
     }
-
-    // ASSERT
-    ASSERT_TRUE(error.empty());
-    const auto& body = matchTackyProg(node);
-    ASSERT_EQ(body.size(), 1);
-
-    matchTackyReturn(body[0], [](auto& val) { matchTackyConstant(val, 15); });
 }
 
-TEST_F(TackyGeneratorTest, generateComplement) {
+TEST_F(TackyGeneratorTest, generateBinary) {
     // ARRANGE
-    const auto source = "int main(void) { return ~22; }";
-    auto generator = getTackyGenerator(source);
+    const auto tests = vector<pair<string, vector<string>>>{
+        // clang-format off
+        {"{ return 1 + 2; }", {
+            "[S1:1 O:+ S2:2 D:MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return 1 + 2 + 3; }", {
+            "[S1:1 O:+ S2:2 D:MAIN.TEMP.0]",
+            "[S1:MAIN.TEMP.0 O:+ S2:3 D:MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+        {"{ return 1 - (2 + 3); }", {
+            "[S1:2 O:+ S2:3 D:MAIN.TEMP.0]",
+            "[S1:1 O:- S2:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+        {"{ return 1 * 2 + 3; }", {
+            "[S1:1 O:* S2:2 D:MAIN.TEMP.0]",
+            "[S1:MAIN.TEMP.0 O:+ S2:3 D:MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+        {"{ return 3 - 2 % 1; }", {
+            "[S1:2 O:% S2:1 D:MAIN.TEMP.0]",
+            "[S1:3 O:- S2:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+        {"{ return 1 * 2 + 3 / 4; }", {
+            "[S1:1 O:* S2:2 D:MAIN.TEMP.0]",
+            "[S1:3 O:/ S2:4 D:MAIN.TEMP.1]",
+            "[S1:MAIN.TEMP.0 O:+ S2:MAIN.TEMP.1 D:MAIN.TEMP.2]",
+            "[R:MAIN.TEMP.2]",
+         }},
+        {"{ return (5 + -8) / ~3; }", {
+            "[O:- S:8 D:MAIN.TEMP.0]",
+            "[S1:5 O:+ S2:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[O:~ S:3 D:MAIN.TEMP.2]",
+            "[S1:MAIN.TEMP.1 O:/ S2:MAIN.TEMP.2 D:MAIN.TEMP.3]",
+            "[R:MAIN.TEMP.3]",
+         }},
+        // clang-format on
+    };
 
-    string error{};
-    TackyNodePtr node{nullptr};
+    for (const auto& test : tests) {
+        auto code = std::format("int main(void) {}", std::get<0>(test));
+        auto generator = getTackyGenerator(code);
 
-    // ACT
-    try {
-        node = generator.generate();
-    } catch (const std::runtime_error& ex) {
-        error = ex.what();
+        // ACT
+        auto node = generator.generate();
+
+        // ASSERT
+        const auto& body = matchTackyProg(node);
+        for (auto i = 0; i < body.size(); ++i) {
+            auto actual = std::get<1>(test)[i];
+            auto expected = formatTackyInstr(body[i]);
+            ASSERT_STREQ(actual.c_str(), expected.c_str());
+        }
     }
-
-    // ASSERT
-    ASSERT_TRUE(error.empty());
-    const auto& body = matchTackyProg(node);
-    ASSERT_EQ(body.size(), 2);
-
-    matchTackyUnary(body[0], [](auto& op, auto& src, auto& dest) {
-        ASSERT_EQ(op, TackyUnaryOpType::UNARY_COMPLEMENT);
-        matchTackyConstant(src, 22);
-        matchTackyVariable(dest, ".MAIN.TEMP.0");
-    });
-}
-
-TEST_F(TackyGeneratorTest, generateNegate) {
-    // ARRANGE
-    const auto source = "int start(void) { return ~(-38); }";
-    auto generator = getTackyGenerator(source);
-
-    string error{};
-    TackyNodePtr node{nullptr};
-
-    // ACT
-    try {
-        node = generator.generate();
-    } catch (const std::runtime_error& ex) {
-        error = ex.what();
-    }
-
-    // ASSERT
-    ASSERT_TRUE(error.empty());
-    const auto& body = matchTackyProg(node);
-    ASSERT_EQ(body.size(), 3);
-
-    matchTackyUnary(body[0], [](auto& op, auto& src, auto& dest) {
-        ASSERT_EQ(op, TackyUnaryOpType::UNARY_NEGATE);
-        matchTackyConstant(src, 38);
-        matchTackyVariable(dest, ".START.TEMP.0");
-    });
-
-    matchTackyUnary(body[1], [](auto& op, auto& src, auto& dest) {
-        ASSERT_EQ(op, TackyUnaryOpType::UNARY_COMPLEMENT);
-        matchTackyVariable(src, ".START.TEMP.0");
-        matchTackyVariable(dest, ".START.TEMP.1");
-    });
-
-    matchTackyReturn(body[2], [](auto& val) {
-        matchTackyVariable(val, ".START.TEMP.1");
-    });
 }

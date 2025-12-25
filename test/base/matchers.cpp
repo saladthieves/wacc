@@ -2,6 +2,7 @@
 #include "asm_ast.hpp"
 #include "ast.hpp"
 #include "tacky_ast.hpp"
+
 #include <gtest/gtest.h>
 
 namespace wacc::test::match {
@@ -68,6 +69,11 @@ void matchTackyReturn(const TackyInstrPtr& ptr, TackyReturnMatcher matcher) {
 void matchTackyUnary(const TackyInstrPtr& ptr, TackyUnaryMatcher matcher) {
     auto unary = as<TackyUnary>(ptr);
     matcher(unary->op, unary->src, unary->dest);
+}
+
+void matchTackyBinary(const TackyInstrPtr& ptr, TackyBinaryMatcher matcher) {
+    auto binary = as<TackyBinary>(ptr);
+    matcher(binary->op, binary->src1, binary->src2, binary->dest);
 }
 
 // ASM

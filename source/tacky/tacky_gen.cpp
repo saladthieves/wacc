@@ -101,6 +101,11 @@ TackyValPtr TackyGenerator::genForAstExpr(const AstExpr& obj,
             return genForAstUnary(unary, body);
         }
 
+        case BINARY: {
+            auto& binary = static_cast<const AstBinary&>(obj);
+            return genForAstBinary(binary, body);
+        }
+
         default:
             fail("Could not generate TackyVal for AstNodeType::[{}]", type);
     }
@@ -119,6 +124,20 @@ TackyValPtr TackyGenerator::genForAstUnary(const AstUnary& obj,
     return std::make_unique<TackyVariable>(name);
 }
 
+TackyValPtr TackyGenerator::genForAstBinary(const AstBinary& obj,
+                                            TackyInstrPtrs& body) const {
+    auto src1 = genForAstExpr(*obj.left, body);
+    auto src2 = genForAstExpr(*obj.right, body);
+    auto op = genForAstBinaryOp(obj.op);
+    auto name = generator.generate();
+    auto dest = std::make_unique<TackyVariable>(name);
+    auto binary = std::make_unique<TackyBinary>(
+        op, std::move(src1), std::move(src2), std::move(dest));
+    body.push_back(std::move(binary));
+
+    return std::make_unique<TackyVariable>(name);
+}
+
 TackyConstant TackyGenerator::genForAstConstInt(const AstConstInt& obj) const {
     return {obj.value};
 }
@@ -131,6 +150,22 @@ TackyGenerator::genForAstUnaryOp(const AstUnaryOpType& type) const {
         case UNARY_NEGATE:     return TackyUnaryOpType::UNARY_NEGATE;
         default:
             fail("Conversion from AstUnaryOpType::[{}] to TackyUnaryOpType "
+                 "failed:",
+                 type);
+    }
+}
+
+TackyBinaryOpType
+TackyGenerator::genForAstBinaryOp(const AstBinaryOpType& type) const {
+    switch (type) {
+        using enum AstBinaryOpType;
+        case BINARY_ADD:       return TackyBinaryOpType::BINARY_ADD;
+        case BINARY_SUBTRACT:  return TackyBinaryOpType::BINARY_SUBTRACT;
+        case BINARY_MULTIPLY:  return TackyBinaryOpType::BINARY_MULTIPLY;
+        case BINARY_DIVIDE:    return TackyBinaryOpType::BINARY_DIVIDE;
+        case BINARY_REMAINDER: return TackyBinaryOpType::BINARY_REMAINDER;
+        default:
+            fail("Conversion from AstBinaryOpType::[{}] to TackyBinaryOpType "
                  "failed:",
                  type);
     }

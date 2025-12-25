@@ -18,6 +18,13 @@ TackyUnary::TackyUnary(TackyUnaryOpType op, TackyValPtr src, TackyValPtr dest) :
     op{op}, src{std::move(src)}, dest{std::move(dest)} {
 }
 
+// TackyBinary
+TackyBinary::TackyBinary(TackyBinaryOpType op, TackyValPtr src1,
+                         TackyValPtr src2, TackyValPtr dest) :
+    op{op}, src1{std::move(src1)}, src2{std::move(src2)},
+    dest{std::move(dest)} {
+}
+
 // TackyFun
 TackyFun::TackyFun(std::string identifier, TackyInstrPtrs body) :
     identifier{identifier}, body{std::move(body)} {

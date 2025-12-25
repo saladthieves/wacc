@@ -3,7 +3,7 @@
 TEST_ROOT="$HOME/dev/projects/cpp/personal/writing-a-c-compiler-tests"
 TEST_SCRIPT="test_compiler"
 TEST_CHAPTER="--chapter 3"
-CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage parse"
+CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage tacky"
 
 echo "🧪 - Testing compiler..."
 eval ${CMD}

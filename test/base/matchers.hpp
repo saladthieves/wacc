@@ -29,6 +29,7 @@ using AstReturnMatcher = std::function<void(const AstExprPtr& expr)>;
 
 using TackyReturnMatcher = std::function<void(const TackyValPtr&)>;
 using TackyUnaryMatcher = std::function<void(const TackyUnaryOpType&, const TackyValPtr& src, const TackyValPtr& dest)>;
+using TackyBinaryMatcher = std::function<void(const TackyBinaryOpType&, const TackyValPtr& src1, const TackyValPtr& src2, const TackyValPtr& dest)>;
 
 using AsmMovMatcher = std::function<void(const AsmOperandPtr& src, const AsmOperandPtr& dest)>;
 using AsmUnaryMatcher = std::function<void(const AsmUnaryOpType&, const AsmOperandPtr&)>;
@@ -55,6 +56,7 @@ void matchTackyVariable(const TackyValPtr& ptr, string identifier);
 // TackyInstr matchers
 void matchTackyReturn(const TackyInstrPtr& ptr, TackyReturnMatcher matcher);
 void matchTackyUnary(const TackyInstrPtr& ptr, TackyUnaryMatcher matcher);
+void matchTackyBinary(const TackyInstrPtr& ptr, TackyBinaryMatcher matcher);
 
 // ASM
 const AsmInstrPtrs& matchAsmProg(const AsmNodePtr& ptr);

@@ -47,9 +47,13 @@ private:
 
     TackyValPtr genForAstUnary(const AstUnary& obj, TackyInstrPtrs& body) const;
 
+    TackyValPtr genForAstBinary(const AstBinary& obj, TackyInstrPtrs& body) const;
+
     TackyConstant genForAstConstInt(const AstConstInt& obj) const;
 
-    TackyUnaryOpType genForAstUnaryOp(const AstUnaryOpType& op) const;
+    TackyUnaryOpType genForAstUnaryOp(const AstUnaryOpType& type) const;
+
+    TackyBinaryOpType genForAstBinaryOp(const AstBinaryOpType& type) const;
 
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
