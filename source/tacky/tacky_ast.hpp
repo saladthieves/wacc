@@ -31,7 +31,7 @@ using TackyUnaryPtr = std::unique_ptr<TackyUnary>;
 using TackyFunPtr = std::unique_ptr<TackyFun>;
 using TackyProgPtr = std::unique_ptr<TackyProg>;
 
-using TackyInstrs = std::vector<TackyInstrPtr>;
+using TackyInstrPtrs = std::vector<TackyInstrPtr>;
 
 enum class TackyNodeType : unsigned {
     CONSTANT = 1,
@@ -116,12 +116,12 @@ public:
 // TackyFun
 class TackyFun : public TackyNode {
 public:
-    TackyFun(std::string identifier, TackyInstrs body);
+    TackyFun(std::string identifier, TackyInstrPtrs body);
 
     virtual TackyNodeType type() const override { return FUNCTION; }
 
     std::string identifier;
-    TackyInstrs body;
+    TackyInstrPtrs body;
 };
 
 // TackyProg

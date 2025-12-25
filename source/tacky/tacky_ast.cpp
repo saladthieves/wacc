@@ -19,7 +19,7 @@ TackyUnary::TackyUnary(TackyUnaryOpType op, TackyValPtr src, TackyValPtr dest) :
 }
 
 // TackyFun
-TackyFun::TackyFun(std::string identifier, TackyInstrs body) :
+TackyFun::TackyFun(std::string identifier, TackyInstrPtrs body) :
     identifier{identifier}, body{std::move(body)} {
 }
 

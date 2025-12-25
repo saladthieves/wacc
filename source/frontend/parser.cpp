@@ -48,11 +48,24 @@ ast::AstReturnPtr Parser::parseReturn() {
     return std::make_unique<ast::AstReturn>(std::move(expression));
 }
 
-ast::AstExprPtr Parser::parseExpression() {
-    const auto& type = peek().type;
-    switch (type) {
+ast::AstExprPtr Parser::parseExpression(PrecedenceValue value) {
+    auto left = parseFactor();
+    const auto precedence = getPrecedence(peek().type);
+    while (isBinaryOp(peek().type) && precedence >= value) {
+        auto op = parseBinaryOperator();
+        auto right = parseExpression(precedence + 1);
+        left = std::make_unique<ast::AstBinary>(op, std::move(left),
+                                                std::move(right));
+    }
+    return left;
+}
+
+ast::AstExprPtr Parser::parseFactor() {
+    switch (peek().type) {
         using enum TokenType;
-        case CONSTANT_INT:  return parseConstantInteger();
+        case CONSTANT_INT: {
+            return parseConstantInteger();
+        }
         case OP_COMPLEMENT:
         case OP_NEGATE:     {
             return parseUnaryExpression();
@@ -63,7 +76,8 @@ ast::AstExprPtr Parser::parseExpression() {
             expect(CLOSE_PAREN);
             return expression;
         }
-        default: fail("Unknown or malformed expression:");
+
+        default: fail("Unknown or malformed factor expression:");
     }
 }
 
@@ -82,20 +96,62 @@ ast::AstConstIntPtr Parser::parseConstantInteger() {
 
 ast::AstUnaryPtr Parser::parseUnaryExpression() {
     auto op = parseUnaryOperator();
-    auto expr = parseExpression();
+    auto expr = parseFactor();
     return std::make_unique<ast::AstUnary>(op, std::move(expr));
 }
 
 ast::AstUnaryOpType Parser::parseUnaryOperator() {
     using enum TokenType;
     const auto& type = expectAny({OP_COMPLEMENT, OP_NEGATE}).type;
-    
+
     switch (type) {
         case OP_COMPLEMENT: return ast::AstUnaryOpType::UNARY_COMPLEMENT;
         case OP_NEGATE:     return ast::AstUnaryOpType::UNARY_NEGATE;
         default:
             fail("Cannot parse AstUnaryOpType from ast::TokenType[{}]", type);
     }
+}
+
+ast::AstBinaryOpType Parser::parseBinaryOperator() {
+    using enum TokenType;
+    const auto& token = expectAny({
+        OP_ADDITION,
+        OP_NEGATE,
+        OP_MULTIPLY,
+        OP_DIVIDE,
+        OP_REMAINDER,
+    });
+
+    switch (token.type) {
+        using enum ast::AstBinaryOpType;
+        case OP_ADDITION:  return BINARY_ADD;
+        case OP_NEGATE:    return BINARY_SUBTRACT;
+        case OP_MULTIPLY:  return BINARY_MULTIPLY;
+        case OP_DIVIDE:    return BINARY_DIVIDE;
+        case OP_REMAINDER: return BINARY_REMAINDER;
+        default:
+            fail("Cannot parse AstBinaryOpType from TokenType[{}]", token.type);
+    }
+}
+
+bool Parser::isBinaryOp(const TokenType& type) const {
+    using enum TokenType;
+    switch (type) {
+        case OP_ADDITION:
+        case OP_NEGATE:
+        case OP_MULTIPLY:
+        case OP_DIVIDE:
+        case OP_REMAINDER: return true;
+        default:           return false;
+    }
+}
+
+unsigned int Parser::getPrecedence(const TokenType& type) const {
+    for (const auto& entry : precedences) {
+        if (entry.first == type) return entry.second;
+    }
+
+    return 0;
 }
 
 auto Parser::expect(std::initializer_list<const TokenType> types)
@@ -146,4 +202,13 @@ auto Parser::expectAny(std::initializer_list<const TokenType> types)
 
     fail("Exected any of [{}] but got [{}] instead:", output, token.type);
 }
+
+const Parser::PrecedenceMap Parser::precedences{
+    {TokenType::OP_MULTIPLY,  50},
+    {TokenType::OP_DIVIDE,    50},
+    {TokenType::OP_REMAINDER, 50},
+
+    {TokenType::OP_ADDITION,  40},
+    {TokenType::OP_NEGATE,    40},
+};
 } // namespace wacc::front::parse

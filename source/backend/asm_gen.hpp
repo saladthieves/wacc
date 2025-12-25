@@ -25,7 +25,7 @@ private:
 
     AsmFunPtr genForTackyFun(const TackyFun& obj) const;
 
-    AsmInstrPtrs genForTackyInstrs(const TackyInstrs& tackyBody) const;
+    AsmInstrPtrs genForTackyInstrs(const TackyInstrPtrs& tackyBody) const;
 
     void genForTackyReturn(const TackyReturn& tacky,
                            AsmInstrPtrs& asmBody) const;

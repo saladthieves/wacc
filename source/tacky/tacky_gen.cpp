@@ -61,9 +61,9 @@ TackyFunPtr TackyGenerator::genForAstFun(const AstFun& obj) const {
     return std::make_unique<TackyFun>(identifier, genForAstStmt(*obj.body));
 }
 
-TackyInstrs TackyGenerator::genForAstStmt(const AstStmt& obj) const {
+TackyInstrPtrs TackyGenerator::genForAstStmt(const AstStmt& obj) const {
     const auto& type = obj.type();
-    auto body = TackyInstrs{};
+    auto body = TackyInstrPtrs{};
     switch (type) {
         using enum AstNodeType;
         case RETURN: {
@@ -82,13 +82,13 @@ TackyInstrs TackyGenerator::genForAstStmt(const AstStmt& obj) const {
 }
 
 void TackyGenerator::genForAstReturn(const AstReturn& obj,
-                                     TackyInstrs& body) const {
+                                     TackyInstrPtrs& body) const {
     auto val = genForAstExpr(*obj.expr, body);
     body.emplace_back(std::make_unique<TackyReturn>(std::move(val)));
 }
 
 TackyValPtr TackyGenerator::genForAstExpr(const AstExpr& obj,
-                                          TackyInstrs& body) const {
+                                          TackyInstrPtrs& body) const {
     const auto& type = obj.type();
     switch (type) {
         using enum AstNodeType;
@@ -107,7 +107,7 @@ TackyValPtr TackyGenerator::genForAstExpr(const AstExpr& obj,
 }
 
 TackyValPtr TackyGenerator::genForAstUnary(const AstUnary& obj,
-                                           TackyInstrs& body) const {
+                                           TackyInstrPtrs& body) const {
     auto op = genForAstUnaryOp(obj.op);
     auto src = genForAstExpr(*obj.expr, body);
     auto name = generator.generate();

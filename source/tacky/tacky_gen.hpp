@@ -39,13 +39,13 @@ private:
 
     TackyFunPtr genForAstFun(const AstFun& obj) const;
 
-    TackyInstrs genForAstStmt(const AstStmt& obj) const;
+    TackyInstrPtrs genForAstStmt(const AstStmt& obj) const;
 
-    void genForAstReturn(const AstReturn& obj, TackyInstrs& body) const;
+    void genForAstReturn(const AstReturn& obj, TackyInstrPtrs& body) const;
 
-    TackyValPtr genForAstExpr(const AstExpr& obj, TackyInstrs& body) const;
+    TackyValPtr genForAstExpr(const AstExpr& obj, TackyInstrPtrs& body) const;
 
-    TackyValPtr genForAstUnary(const AstUnary& obj, TackyInstrs& body) const;
+    TackyValPtr genForAstUnary(const AstUnary& obj, TackyInstrPtrs& body) const;
 
     TackyConstant genForAstConstInt(const AstConstInt& obj) const;
 

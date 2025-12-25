@@ -24,7 +24,7 @@ AsmFunPtr AsmGenerator::genForTackyFun(const TackyFun& obj) const {
 }
 
 AsmInstrPtrs
-AsmGenerator::genForTackyInstrs(const TackyInstrs& tackyBody) const {
+AsmGenerator::genForTackyInstrs(const TackyInstrPtrs& tackyBody) const {
     auto asmBody = AsmInstrPtrs{};
 
     for (const auto& tacky : tackyBody) {

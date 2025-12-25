@@ -10,14 +10,18 @@ AstUnary::AstUnary(AstUnaryOpType op, AstExprPtr expr) :
     op{op}, expr{std::move(expr)} {
 }
 
+// AstBinary
+AstBinary::AstBinary(AstBinaryOpType op, AstExprPtr left, AstExprPtr right) :
+    op{op}, left{std::move(left)}, right{std::move(right)} {
+}
+
 // AstIdent
 AstIdent::AstIdent(Token token, std::string_view value) :
     token{token}, value{value} {
 }
 
 // AstReturn
-AstReturn::AstReturn(AstExprPtr expr) :
-    expr{std::move(expr)} {
+AstReturn::AstReturn(AstExprPtr expr) : expr{std::move(expr)} {
 }
 
 // AstFun

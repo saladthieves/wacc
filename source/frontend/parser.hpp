@@ -4,6 +4,7 @@
 #include "source.hpp"
 #include "token.hpp"
 
+#include <map>
 #include <vector>
 
 namespace wacc {
@@ -15,6 +16,10 @@ class Parser {
     using Tokens = std::vector<Token>;
     using TokensPtr = std::unique_ptr<Tokens>;
     using ConstIter = Tokens::const_iterator;
+
+    using PrecedenceKey = TokenType;
+    using PrecedenceValue = unsigned int;
+    using PrecedenceMap = std::map<PrecedenceKey, PrecedenceValue>;
 
 public:
     Parser(TokensPtr ptr, src::Source source);
@@ -40,7 +45,9 @@ private:
 
     ast::AstReturnPtr parseReturn();
 
-    ast::AstExprPtr parseExpression();
+    ast::AstExprPtr parseExpression(PrecedenceValue value = 0);
+
+    ast::AstExprPtr parseFactor();
 
     ast::AstIdentPtr parseIdentifier();
 
@@ -50,9 +57,17 @@ private:
 
     ast::AstUnaryOpType parseUnaryOperator();
 
+    ast::AstBinaryOpType parseBinaryOperator();
+
+    bool isFactor(const TokenType& type) const;
+
+    bool isBinaryOp(const TokenType& type) const;
+
+    unsigned int getPrecedence(const TokenType& type) const;
+
     const Token& expect(std::initializer_list<const TokenType> types);
 
-    const Token& expect(const TokenType& type); 
+    const Token& expect(const TokenType& type);
 
     const Token& expectAny(std::initializer_list<const TokenType> types);
 
@@ -75,6 +90,7 @@ private:
     ConstIter current;
     ConstIter next;
     ConstIter end;
+    static const PrecedenceMap precedences;
 };
 } // namespace parse
 } // namespace front

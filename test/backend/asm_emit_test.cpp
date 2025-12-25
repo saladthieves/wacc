@@ -130,7 +130,7 @@ TEST_F(AsmEmitterTest, emitInstrIndent) {
 
     // ACT
     auto ptr = emitter.emit();
-    auto lines = *ptr;
+    const auto& lines = *ptr;
 
     for (std::size_t i = 0; i != lines.size(); ++i) {
         const auto& line = lines[i];
