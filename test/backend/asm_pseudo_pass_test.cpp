@@ -1,7 +1,6 @@
 #include "asm_ast.hpp"
 #include "asm_pseudo_pass.hpp"
 #include "matchers.hpp"
-#include "test_utils.hpp"
 
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
@@ -12,7 +11,6 @@ using namespace wacc::back::ast;
 using namespace wacc::test::match;
 
 using wacc::back::pass::AsmPseudoPass;
-using wacc::test::utils::as;
 
 using std::make_unique;
 using std::string;
@@ -62,9 +60,7 @@ TEST_F(AsmPseudoPassTest, runAsmMovPass) {
     auto node = pass.run();
 
     // ASSERT
-    auto prog = as<AsmProg>(node);
-    auto fun = as<AsmFun>(prog->function);
-    auto& body = fun->instructions;
+    const auto& body = matchAsmProg(node);
     ASSERT_EQ(body.size(), 1);
 
     matchAsmMov(body[0], [](auto& src, auto& dest) {
@@ -86,9 +82,7 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPass) {
     auto node = pass.run();
 
     // ASSERT
-    auto prog = as<AsmProg>(node);
-    auto fun = as<AsmFun>(prog->function);
-    auto& body = fun->instructions;
+    const auto& body = matchAsmProg(node);
     ASSERT_EQ(body.size(), 1);
 
     matchAsmUnary(body[0], [](auto& op, auto& operand) {
@@ -114,9 +108,7 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPassMultiple) {
     auto node = pass.run();
 
     // ASSERT
-    auto prog = as<AsmProg>(node);
-    auto fun = as<AsmFun>(prog->function);
-    auto& body = fun->instructions;
+    const auto& body = matchAsmProg(node);
     ASSERT_EQ(body.size(), 2);
 
     matchAsmUnary(body[0], [](auto& op, auto& operand) {

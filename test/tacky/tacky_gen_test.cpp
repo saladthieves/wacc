@@ -3,7 +3,6 @@
 #include "matchers.hpp"
 #include "tacky_ast.hpp"
 #include "tacky_gen.hpp"
-#include "test_utils.hpp"
 
 #include <gtest/gtest.h>
 
@@ -14,8 +13,6 @@ using namespace wacc::test::match;
 using wacc::tacky::ast::TackyUnaryOpType;
 using wacc::tacky::gen::TackyGenerator;
 using wacc::tacky::gen::VariableGenerator;
-
-using wacc::test::utils::as;
 
 using std::string;
 
@@ -92,10 +89,7 @@ TEST_F(TackyGeneratorTest, generate) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    auto prog = as<TackyProg>(node);
-    auto fun = as<TackyFun>(prog->function);
-    ASSERT_TRUE(fun->identifier == "main");
-    auto& body = fun->body;
+    const auto& body = matchTackyProg(node);
     ASSERT_EQ(body.size(), 1);
 
     matchTackyReturn(body[0], [](auto& val) { matchTackyConstant(val, 15); });
@@ -118,11 +112,7 @@ TEST_F(TackyGeneratorTest, generateComplement) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    auto prog = as<TackyProg>(node);
-    auto fun = as<TackyFun>(prog->function);
-    ASSERT_TRUE(fun->identifier == "main");
-
-    auto& body = fun->body;
+    const auto& body = matchTackyProg(node);
     ASSERT_EQ(body.size(), 2);
 
     matchTackyUnary(body[0], [](auto& op, auto& src, auto& dest) {
@@ -149,11 +139,7 @@ TEST_F(TackyGeneratorTest, generateNegate) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    auto prog = as<TackyProg>(node);
-    auto fun = as<TackyFun>(prog->function);
-    ASSERT_TRUE(fun->identifier == "start");
-
-    auto& body = fun->body;
+    const auto& body = matchTackyProg(node);
     ASSERT_EQ(body.size(), 3);
 
     matchTackyUnary(body[0], [](auto& op, auto& src, auto& dest) {

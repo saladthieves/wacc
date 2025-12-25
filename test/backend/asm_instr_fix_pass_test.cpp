@@ -2,7 +2,6 @@
 #include "asm_instr_fix_pass.hpp"
 #include "base_test.hpp"
 #include "matchers.hpp"
-#include "test_utils.hpp"
 
 #include <gtest/gtest.h>
 #include <memory>
@@ -13,7 +12,6 @@ using namespace wacc::back::ast;
 using namespace wacc::test::match;
 
 using wacc::back::pass::AsmInstrFixPass;
-using wacc::test::utils::as;
 
 using std::make_unique;
 using std::string;
@@ -65,9 +63,7 @@ TEST_F(AsmInstrFixPassTest, genAsmAllocStack) {
     auto ast = pass.run();
 
     // ASSERT
-    auto prog = as<AsmProg>(ast);
-    auto fun = as<AsmFun>(prog->function);
-    auto& body = fun->instructions;
+    const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
     matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
@@ -89,9 +85,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmMov) {
     auto ast = pass.run();
 
     // ASSERT
-    auto prog = as<AsmProg>(ast);
-    auto fun = as<AsmFun>(prog->function);
-    auto& body = fun->instructions;
+    const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 3);
 
     matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
@@ -115,9 +109,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmMovAll) {
     auto ast = pass.run();
 
     // ASSERT
-    auto prog = as<AsmProg>(ast);
-    auto fun = as<AsmFun>(prog->function);
-    auto& body = fun->instructions;
+    const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 11);
 
     matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 12); });

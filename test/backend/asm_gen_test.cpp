@@ -3,8 +3,8 @@
 #include "base_test.hpp"
 #include "matchers.hpp"
 #include "tacky_ast.hpp"
-#include "test_utils.hpp"
 
+#include <cstddef>
 #include <gtest/gtest.h>
 
 using namespace wacc::back::ast;
@@ -12,8 +12,6 @@ using namespace wacc::tacky::ast;
 using namespace wacc::test::match;
 
 using wacc::back::gen::AsmGenerator;
-
-using wacc::test::utils::as;
 
 using std::string;
 
@@ -44,31 +42,28 @@ TEST_F(AsmGeneratorTest, generateNegate) {
     auto generator = getAsmGenerator(src);
 
     // ACT
-    auto asmAst = generator.generate();
+    auto ast = generator.generate();
 
     // ASSERT
-    auto asmProg = as<AsmProg>(asmAst);
-    auto asmFun = as<AsmFun>(asmProg->function);
+    const auto& body = matchAsmProg(ast);
+    ASSERT_EQ(body.size(), 4);
 
-    auto& asmBody = asmFun->instructions;
-    ASSERT_EQ(asmBody.size(), 4);
-
-    matchAsmMov(asmBody[0], [](auto& src, auto& dest) {
+    matchAsmMov(body[0], [](auto& src, auto& dest) {
         matchAsmImm(src, 42);
         matchAsmPseudo(dest, "MAIN.TEMP.0");
     });
 
-    matchAsmUnary(asmBody[1], [](auto& op, auto& operand) {
+    matchAsmUnary(body[1], [](auto& op, auto& operand) {
         ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
         matchAsmPseudo(operand, "MAIN.TEMP.0");
     });
 
-    matchAsmMov(asmBody[2], [](auto& src, auto& dest) {
+    matchAsmMov(body[2], [](auto& src, auto& dest) {
         matchAsmPseudo(src, "MAIN.TEMP.0");
         matchAsmReg(dest, AsmRegisterType::AX);
     });
 
-    matchAsmRet(asmBody[3]);
+    matchAsmRet(body[3]);
 }
 
 TEST_F(AsmGeneratorTest, generate) {
@@ -76,49 +71,46 @@ TEST_F(AsmGeneratorTest, generate) {
     auto generator = getAsmGenerator();
 
     // ACT
-    auto asmAst = generator.generate();
+    auto ast = generator.generate();
 
     // ASSERT
-    auto asmProg = as<AsmProg>(asmAst);
-    auto asmFun = as<AsmFun>(asmProg->function);
+    const auto& body = matchAsmProg(ast);
+    ASSERT_EQ(body.size(), 8);
 
-    auto& asmBody = asmFun->instructions;
-    ASSERT_EQ(asmBody.size(), 8);
-
-    matchAsmMov(asmBody[0], [](auto& src, auto& dest) {
+    matchAsmMov(body[0], [](auto& src, auto& dest) {
         matchAsmImm(src, 25);
         matchAsmPseudo(dest, "MAIN.TEMP.0");
     });
 
-    matchAsmUnary(asmBody[1], [](auto& op, auto& operand) {
+    matchAsmUnary(body[1], [](auto& op, auto& operand) {
         ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
         matchAsmPseudo(operand, "MAIN.TEMP.0");
     });
 
-    matchAsmMov(asmBody[2], [](auto& src, auto& dest) {
+    matchAsmMov(body[2], [](auto& src, auto& dest) {
         matchAsmPseudo(src, "MAIN.TEMP.0");
         matchAsmPseudo(dest, "MAIN.TEMP.1");
     });
 
-    matchAsmUnary(asmBody[3], [](auto& op, auto& operand) {
+    matchAsmUnary(body[3], [](auto& op, auto& operand) {
         ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
         matchAsmPseudo(operand, "MAIN.TEMP.1");
     });
 
-    matchAsmMov(asmBody[4], [](auto& src, auto& dest) {
+    matchAsmMov(body[4], [](auto& src, auto& dest) {
         matchAsmPseudo(src, "MAIN.TEMP.1");
         matchAsmPseudo(dest, "MAIN.TEMP.2");
     });
 
-    matchAsmUnary(asmBody[5], [](auto& op, auto& operand) {
+    matchAsmUnary(body[5], [](auto& op, auto& operand) {
         ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
         matchAsmPseudo(operand, "MAIN.TEMP.2");
     });
 
-    matchAsmMov(asmBody[6], [](auto& src, auto& dest) {
+    matchAsmMov(body[6], [](auto& src, auto& dest) {
         matchAsmPseudo(src, "MAIN.TEMP.2");
         matchAsmReg(dest, AsmRegisterType::AX);
     });
 
-    matchAsmRet(asmBody[7]);
+    matchAsmRet(body[7]);
 }
