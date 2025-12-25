@@ -50,13 +50,14 @@ ast::AstReturnPtr Parser::parseReturn() {
 
 ast::AstExprPtr Parser::parseExpression(PrecedenceValue value) {
     auto left = parseFactor();
-    const auto precedence = getPrecedence(peek().type);
-    while (isBinaryOp(peek().type) && precedence >= value) {
+    while (isBinaryOp(peek().type) && getPrecedence(peek().type) >= value) {
+        const auto precedence = getPrecedence(peek().type);
         auto op = parseBinaryOperator();
         auto right = parseExpression(precedence + 1);
         left = std::make_unique<ast::AstBinary>(op, std::move(left),
                                                 std::move(right));
     }
+
     return left;
 }
 

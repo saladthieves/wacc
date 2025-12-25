@@ -97,7 +97,7 @@ TEST_F(ParserTest, parseProgram) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
-                return 3 + 9 * 8 - 7 / 1 % 3;
+               return 3 + 9 * 8 - 7 / 1 * 3;
            }
         )";
 
@@ -110,24 +110,24 @@ TEST_F(ParserTest, parseProgram) {
     const auto& body = matchAstProg(ptr);
     matchAstReturn(body, [](auto& expr) {
         matchAstBinary(expr, [](auto& op, auto& left, auto& right) {
-            ASSERT_EQ(op, AstBinaryOpType::BINARY_ADD);
-            matchAstConstInt(left, 3);
+            ASSERT_EQ(op, AstBinaryOpType::BINARY_SUBTRACT);
+            matchAstBinary(left, [](auto& op, auto& left, auto& right) {
+                ASSERT_EQ(op, AstBinaryOpType::BINARY_ADD);
+                matchAstConstInt(left, 3);
+                matchAstBinary(right, [](auto& op, auto& left, auto& right) {
+                    ASSERT_EQ(op, AstBinaryOpType::BINARY_MULTIPLY);
+                    matchAstConstInt(left, 9);
+                    matchAstConstInt(right, 8);
+                });
+            });
             matchAstBinary(right, [](auto& op, auto& left, auto& right) {
-                ASSERT_EQ(op, AstBinaryOpType::BINARY_REMAINDER);
-                matchAstConstInt(right, 3);
+                ASSERT_EQ(op, AstBinaryOpType::BINARY_MULTIPLY);
                 matchAstBinary(left, [](auto& op, auto& left, auto& right) {
                     ASSERT_EQ(op, AstBinaryOpType::BINARY_DIVIDE);
+                    matchAstConstInt(left, 7);
                     matchAstConstInt(right, 1);
-                    matchAstBinary(left, [](auto& op, auto& left, auto& right) {
-                        ASSERT_EQ(op, AstBinaryOpType::BINARY_SUBTRACT);
-                        matchAstConstInt(right, 7);
-                        matchAstBinary(left, [](auto& op, auto& l, auto& r) {
-                            ASSERT_EQ(op, AstBinaryOpType::BINARY_MULTIPLY);
-                            matchAstConstInt(l, 9);
-                            matchAstConstInt(r, 8);
-                        });
-                    });
                 });
+                matchAstConstInt(right, 3);
             });
         });
     });
@@ -262,14 +262,15 @@ TEST_F(ParserTest, parseBinPrecedence) {
         {"int main(void) { return 1 * 2 - 3; }", "[[1 * 2] - 3]"},
         {"int main(void) { return ~5 * 4 - -8; }", "[[[~5] * 4] - [-8]]"},
         {"int main(void) { return (-16) % (~4 + ~~8); }", "[[-16] % [[~4] + [~[~8]]]]"},
-        {"int main(void) { return 1 * 2 - 3 * (4 + 5); }", "[[[1 * 2] - 3] * [4 + 5]]"},
-        {"int main(void){return 3 + 9 * 8 - 7 / 1 % 3; }", "[3 + [[[[9 * 8] - 7] / 1] % 3]]"},
+        {"int main(void) { return 1 * 2 - 3 * (4 + 5); }", "[[1 * 2] - [3 * [4 + 5]]]"},
+        {"int main(void) { return 1 * 2 + 3 / 4;}", "[[1 * 2] + [3 / 4]]"},
+        {"int main(void) { return 3 + 9 * 8 - 7 / 1 * 3; }", "[[3 + [9 * 8]] - [[7 / 1] * 3]]"},
         // clang-format on
     };
 
     for (const auto& pair : tests) {
         auto parser = getParser(pair.first);
-        const auto& content = pair.second;
+        const auto& expected = pair.second;
 
         // ACT
         auto ptr = parser.parse();
@@ -277,8 +278,8 @@ TEST_F(ParserTest, parseBinPrecedence) {
         // ASSERT
         const auto& body = matchAstProg(ptr);
         matchAstReturn(body, [&](auto& expr) {
-            string data = formatAstExpr(expr);
-            ASSERT_STREQ(data.c_str(), content.c_str());
+            string actual = formatAstExpr(expr);
+            ASSERT_STREQ(actual.c_str(), expected.c_str());
         });
     }
 }
