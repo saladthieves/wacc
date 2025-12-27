@@ -33,6 +33,8 @@ using TackyBinaryMatcher = std::function<void(const TackyBinaryOpType&, const Ta
 
 using AsmMovMatcher = std::function<void(const AsmOperandPtr& src, const AsmOperandPtr& dest)>;
 using AsmUnaryMatcher = std::function<void(const AsmUnaryOpType&, const AsmOperandPtr&)>;
+using AsmBinaryMatcher = std::function<void(const AsmBinaryOpType&, const AsmOperandPtr&, const AsmOperandPtr&)>;
+using AsmIdivMatcher = std::function<void(const AsmOperandPtr& operand)>;
 using AsmAllocStackMatcher = std::function<void(const unsigned int&)>;
 // clang-format on
 } // namespace
@@ -68,6 +70,9 @@ void matchAsmStack(const AsmOperandPtr& ptr, signed value);
 // AsmInstr matchers
 void matchAsmMov(const AsmInstrPtr& ptr, AsmMovMatcher matcher);
 void matchAsmUnary(const AsmInstrPtr& ptr, AsmUnaryMatcher matcher);
+void matchAsmBinary(const AsmInstrPtr& ptr, AsmBinaryMatcher matcher);
+void matchAsmCdq(const AsmInstrPtr& ptr);
+void matchAsmIdiv(const AsmInstrPtr& ptr, AsmIdivMatcher matcher);
 void matchAsmRet(const AsmInstrPtr& ptr);
 void matchAsmAllocStack(const AsmInstrPtr& ptr, AsmAllocStackMatcher matcher);
 

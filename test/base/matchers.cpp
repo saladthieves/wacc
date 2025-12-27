@@ -115,6 +115,20 @@ void matchAsmUnary(const AsmInstrPtr& ptr, AsmUnaryMatcher matcher) {
     matcher(unary->op, unary->operand);
 }
 
+void matchAsmBinary(const AsmInstrPtr& ptr, AsmBinaryMatcher matcher) {
+    auto binary = as<AsmBinary>(ptr);
+    matcher(binary->op, binary->src, binary->dest);
+}
+
+void matchAsmCdq(const AsmInstrPtr& ptr) {
+    as<AsmCdq>(ptr);
+}
+
+void matchAsmIdiv(const AsmInstrPtr& ptr, AsmIdivMatcher matcher) {
+    auto idiv = as<AsmIdiv>(ptr);
+    matcher(idiv->operand);
+}
+
 void matchAsmRet(const AsmInstrPtr& ptr) {
     as<AsmRet>(ptr);
 }
