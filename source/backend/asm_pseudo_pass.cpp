@@ -27,46 +27,46 @@ void AsmPseudoPass::runPass(AsmInstrPtrs& instructions) {
         const auto& type = instr->type();
         if (type == INSTR_MOV) {
             auto& mov = static_cast<AsmMov&>(*instr);
-            runAsmMovPass(mov);
+            replace(mov.src);
+            replace(mov.dest);
             continue;
         }
 
         if (type == INSTR_UNARY) {
             auto& unary = static_cast<AsmUnary&>(*instr);
-            runAsmUnaryPass(unary);
+            replace(unary.operand);
+            continue;
+        }
+
+        if (type == INSTR_BINARY) {
+            auto& binary = static_cast<AsmBinary&>(*instr);
+            replace(binary.src);
+            replace(binary.dest);
+            continue;
+        }
+
+        if (type == INSTR_IDIV) {
+            auto& idiv = static_cast<AsmIdiv&>(*instr);
+            replace(idiv.operand);
             continue;
         }
     }
 }
 
-void AsmPseudoPass::runAsmMovPass(AsmMov& instr) {
-    if (instr.src->type() == AsmNodeType::OP_PSEUDO) {
-        instr.src = replace(instr.src);
-    }
+void AsmPseudoPass::replace(AsmOperandPtr& ptr) {
+    if (ptr->type() != AsmNodeType::OP_PSEUDO) return;
 
-    if (instr.dest->type() == AsmNodeType::OP_PSEUDO) {
-        instr.dest = replace(instr.dest);
-    }
-}
-
-void AsmPseudoPass::runAsmUnaryPass(AsmUnary& instr) {
-    if (instr.operand->type() == AsmNodeType::OP_PSEUDO) {
-        instr.operand = replace(instr.operand);
-    }
-}
-
-AsmStackPtr AsmPseudoPass::replace(AsmOperandPtr& ptr) {
     auto& obj = static_cast<AsmPseudo&>(*ptr);
     signed value{0};
     auto entry = stacks.find(obj.identifier);
     if (entry == stacks.end()) {
         value = getAdjustedOffset();
-        stacks[obj.identifier] = offset;
+        stacks[obj.identifier] = value;
     } else {
         value = entry->second;
     }
 
-    return std::make_unique<AsmStack>(value);
+    ptr = std::make_unique<AsmStack>(value);
 }
 
 signed int AsmPseudoPass::getAdjustedOffset() {

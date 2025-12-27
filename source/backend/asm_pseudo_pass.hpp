@@ -26,11 +26,7 @@ public:
 private:
     void runPass(AsmInstrPtrs& instructions);
 
-    void runAsmMovPass(AsmMov& instr);
-
-    void runAsmUnaryPass(AsmUnary& instr);
-
-    AsmStackPtr replace(AsmOperandPtr& ptr);
+    void replace(AsmOperandPtr& ptr);
 
     signed int getAdjustedOffset();
 
