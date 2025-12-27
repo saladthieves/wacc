@@ -27,6 +27,16 @@ AsmUnary::AsmUnary(AsmUnaryOpType op, AsmOperandPtr operand) :
     op{op}, operand{std::move(operand)} {
 }
 
+// AsmBinary
+AsmBinary::AsmBinary(AsmBinaryOpType op, AsmOperandPtr src,
+                     AsmOperandPtr dest) :
+    op{op}, src{std::move(src)}, dest{std::move(dest)} {
+}
+
+// AsmIdiv
+AsmIdiv::AsmIdiv(AsmOperandPtr operand) : operand{std::move(operand)} {
+}
+
 // AsmAllocStack
 AsmAllocStack::AsmAllocStack(unsigned value) : value{value} {
 }

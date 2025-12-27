@@ -42,6 +42,12 @@ AsmGenerator::genForTackyInstrs(const TackyInstrPtrs& tackyBody) const {
                 genForTackyUnary(tackyUnary, asmBody);
                 continue;
             }
+
+            case INSTR_BINARY: {
+                auto& tackyBinary = static_cast<const TackyBinary&>(*tacky);
+                genForTackyBinary(tackyBinary, asmBody);
+                continue;
+            }
             default: {
                 fail("Unhandled conversion from TackyInstr::[{}] to AsmInstr",
                      type);
@@ -74,6 +80,46 @@ void AsmGenerator::genForTackyUnary(const TackyUnary& tacky,
         std::make_unique<AsmUnary>(std::move(unaryOp), std::move(unaryDest)));
 }
 
+void AsmGenerator::genForTackyBinary(const TackyBinary& tacky,
+                                     AsmInstrPtrs& asmBody) const {
+    using enum TackyBinaryOpType;
+    const auto& op = tacky.op;
+    if (op == BINARY_DIVIDE || op == BINARY_REMAINDER) {
+        return genForTackyDivRem(tacky, asmBody);
+    } else {
+        auto movSrc = genForTackyVal(*tacky.src1);
+        auto movDest = genForTackyVal(*tacky.dest);
+        asmBody.emplace_back(
+            std::make_unique<AsmMov>(std::move(movSrc), std::move(movDest)));
+
+        auto binaryOp = genForTackyBinaryOp(tacky.op);
+        auto binarySrc = genForTackyVal(*tacky.src2);
+        auto binaryDest = genForTackyVal(*tacky.dest);
+        asmBody.emplace_back(std::make_unique<AsmBinary>(
+            binaryOp, std::move(binarySrc), std::move(binaryDest)));
+    }
+}
+
+void AsmGenerator::genForTackyDivRem(const TackyBinary& tacky,
+                                     AsmInstrPtrs& asmBody) const {
+    auto mov1Src = genForTackyVal(*tacky.src1);
+    auto mov1Dest = genAsmReg(AsmRegisterType::AX);
+    asmBody.emplace_back(
+        std::make_unique<AsmMov>(std::move(mov1Src), std::move(mov1Dest)));
+
+    asmBody.emplace_back(std::make_unique<AsmCdq>());
+
+    auto idivSrc = genForTackyVal(*tacky.src2);
+    asmBody.emplace_back(std::make_unique<AsmIdiv>(std::move(idivSrc)));
+
+    auto mov2Src = genAsmReg(tacky.op == TackyBinaryOpType::BINARY_DIVIDE
+                                 ? AsmRegisterType::AX
+                                 : AsmRegisterType::DX);
+    auto mov2Dest = genForTackyVal(*tacky.dest);
+    asmBody.emplace_back(
+        std::make_unique<AsmMov>(std::move(mov2Src), std::move(mov2Dest)));
+}
+
 AsmRegPtr AsmGenerator::genAsmReg(AsmRegisterType type) const {
     return std::make_unique<AsmReg>(type);
 }
@@ -104,6 +150,20 @@ AsmGenerator::genForTackyUnaryOp(const TackyUnaryOpType& type) const {
         using enum TackyUnaryOpType;
         case UNARY_COMPLEMENT: return AsmUnaryOpType::UNARY_NOT;
         case UNARY_NEGATE:     return AsmUnaryOpType::UNARY_NEGATE;
+    }
+}
+
+AsmBinaryOpType
+AsmGenerator::genForTackyBinaryOp(const TackyBinaryOpType& type) const {
+    switch (type) {
+        using enum TackyBinaryOpType;
+        case BINARY_ADD:       return AsmBinaryOpType::BINARY_ADD;
+        case BINARY_SUBTRACT:  return AsmBinaryOpType::BINARY_SUB;
+        case BINARY_MULTIPLY:  return AsmBinaryOpType::BINARY_MULT;
+        case BINARY_DIVIDE:
+        case BINARY_REMAINDER: {
+            fail("Division and remainder should be handled with AsmIdiv.");
+        }
     }
 }
 

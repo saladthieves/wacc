@@ -14,6 +14,9 @@ enum class AsmNodeType : unsigned {
     OP_STACK,
     INSTR_MOV,
     INSTR_UNARY,
+    INSTR_BINARY,
+    INSTR_IDIV,
+    INSTR_CDQ,
     INSTR_ALLOC,
     INSTR_RET,
     FUNCTION,
@@ -25,9 +28,17 @@ enum class AsmUnaryOpType : unsigned {
     UNARY_NOT,
 };
 
+enum class AsmBinaryOpType : unsigned {
+    BINARY_ADD = 1,
+    BINARY_SUB,
+    BINARY_MULT,
+};
+
 enum class AsmRegisterType : unsigned {
     AX = 1,
+    DX,
     R10,
+    R11,
 };
 
 // Forward declarations
@@ -40,6 +51,9 @@ class AsmStack;
 class AsmInstr;
 class AsmMov;
 class AsmUnary;
+class AsmBinary;
+class AsmIdiv;
+class AsmCdq;
 class AsmAllocStack;
 class AsmRet;
 class AsmFun;
@@ -55,6 +69,9 @@ using AsmStackPtr = std::unique_ptr<AsmStack>;
 using AsmInstrPtr = std::unique_ptr<AsmInstr>;
 using AsmMovPtr = std::unique_ptr<AsmMov>;
 using AsmUnaryPtr = std::unique_ptr<AsmUnary>;
+using AsmBinaryPtr = std::unique_ptr<AsmBinary>;
+using AsmIdivPtr = std::unique_ptr<AsmIdiv>;
+using AsmCdqPtr = std::unique_ptr<AsmCdq>;
 using AsmAllocStackPtr = std::unique_ptr<AsmAllocStack>;
 using AsmRetPtr = std::unique_ptr<AsmRet>;
 using AsmFunPtr = std::unique_ptr<AsmFun>;
@@ -148,6 +165,36 @@ public:
     AsmOperandPtr operand;
 };
 
+// AsmBinary
+class AsmBinary : public AsmInstr {
+public:
+    AsmBinary(AsmBinaryOpType op, AsmOperandPtr src, AsmOperandPtr dest);
+
+    virtual AsmNodeType type() const override { return INSTR_BINARY; }
+
+    AsmBinaryOpType op;
+    AsmOperandPtr src;
+    AsmOperandPtr dest;
+};
+
+// AsmIdiv
+class AsmIdiv : public AsmInstr {
+public:
+    AsmIdiv(AsmOperandPtr operand);
+
+    virtual AsmNodeType type() const override { return INSTR_IDIV; }
+
+    AsmOperandPtr operand;
+};
+
+// AsmCdq
+class AsmCdq : public AsmInstr {
+public:
+    AsmCdq() = default;
+
+    virtual AsmNodeType type() const override { return INSTR_CDQ; }
+};
+
 // AsmAllocStack
 class AsmAllocStack : public AsmInstr {
 public:
@@ -205,16 +252,19 @@ public:
 
         switch (type) {
             using enum AsmNodeType;
-            case OP_IMM:      value = "OP_IMM"; break;
-            case OP_REG:      value = "OP_REG"; break;
-            case OP_PSEUDO:   value = "OP_PSEUDO"; break;
-            case OP_STACK:    value = "OP_STACK"; break;
-            case INSTR_MOV:   value = "INSTR_MOV"; break;
-            case INSTR_UNARY: value = "INSTR_UNARY"; break;
-            case INSTR_ALLOC: value = "INSTR_ALLOC"; break;
-            case INSTR_RET:   value = "INSTR_RET"; break;
-            case FUNCTION:    value = "FUNCTION"; break;
-            case PROGRAM:     value = "PROGRAM"; break;
+            case OP_IMM:       value = "OP_IMM"; break;
+            case OP_REG:       value = "OP_REG"; break;
+            case OP_PSEUDO:    value = "OP_PSEUDO"; break;
+            case OP_STACK:     value = "OP_STACK"; break;
+            case INSTR_MOV:    value = "INSTR_MOV"; break;
+            case INSTR_UNARY:  value = "INSTR_UNARY"; break;
+            case INSTR_BINARY: value = "INSTR_BINARY"; break;
+            case INSTR_IDIV:   value = "INSTR_IDIV"; break;
+            case INSTR_CDQ:    value = "INSTR_CDQ"; break;
+            case INSTR_ALLOC:  value = "INSTR_ALLOC"; break;
+            case INSTR_RET:    value = "INSTR_RET"; break;
+            case FUNCTION:     value = "FUNCTION"; break;
+            case PROGRAM:      value = "PROGRAM"; break;
             default:
                 throw std::format_error(
                     "Unhandled back::ast::AsmNodeType enum");
@@ -245,6 +295,34 @@ public:
             default:
                 throw std::format_error(
                     "Unhandled back::ast::AsmUnaryOpType enum");
+        }
+
+        return std::format_to(context.out(), "{}", value);
+    }
+};
+
+namespace {
+using wacc::back::ast::AsmBinaryOpType;
+}
+
+template <>
+class formatter<AsmBinaryOpType> {
+public:
+    constexpr auto parse(format_parse_context& context) {
+        return context.begin();
+    }
+
+    auto format(const AsmBinaryOpType& type, format_context& context) const {
+        std::string value{};
+
+        switch (type) {
+            using enum AsmBinaryOpType;
+            case BINARY_ADD:  value = "BINARY_ADD"; break;
+            case BINARY_SUB:  value = "BINARY_SUB"; break;
+            case BINARY_MULT: value = "BINARY_MULT"; break;
+            default:
+                throw std::format_error(
+                    "Unhandled back::ast::AsmBinaryOpType enum");
         }
 
         return std::format_to(context.out(), "{}", value);

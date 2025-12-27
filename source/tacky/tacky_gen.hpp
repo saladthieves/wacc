@@ -12,13 +12,16 @@ using namespace wacc::front::ast;
 using namespace wacc::tacky::ast;
 } // namespace
 
-// S0A1B.MAIN.UNARY_NEGATE.TEMP.0
 class VariableGenerator {
 public:
     VariableGenerator();
+
     void reset();
+
     void resetSession(std::string session = "");
+
     void resetFunction(std::string function);
+
     std::string generate();
 
 private:
@@ -47,7 +50,8 @@ private:
 
     TackyValPtr genForAstUnary(const AstUnary& obj, TackyInstrPtrs& body) const;
 
-    TackyValPtr genForAstBinary(const AstBinary& obj, TackyInstrPtrs& body) const;
+    TackyValPtr genForAstBinary(const AstBinary& obj,
+                                TackyInstrPtrs& body) const;
 
     TackyConstant genForAstConstInt(const AstConstInt& obj) const;
 
