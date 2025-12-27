@@ -5,7 +5,9 @@ add_library(${TARGET})
 target_sources(${TARGET}
     PRIVATE
         base_test.cpp
-        formatters.cpp
+        asm_formatters.cpp
+        ast_formatters.cpp
+        tacky_formatters.cpp
         matchers.cpp
 
     PUBLIC

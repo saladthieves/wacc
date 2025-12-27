@@ -1,7 +1,7 @@
 #include "asm_ast.hpp"
 #include "asm_gen.hpp"
 #include "base_test.hpp"
-#include "formatters.hpp"
+#include "asm_formatters.hpp"
 #include "matchers.hpp"
 #include "tacky_ast.hpp"
 
