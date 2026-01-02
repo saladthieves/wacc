@@ -1,4 +1,5 @@
 #include "e2e_base.hpp"
+#include <print>
 
 using namespace wacc::test::e2e;
 
@@ -13,44 +14,45 @@ protected:
 
 TEST_F(Chapter2Test, chapter2e2e) {
     // ARRANGE
-    // ARRANGE
-    vector<string> tests = {
+    vector<pair<string, int>> tests = {
         // clang-format off
-        "int main(void) { return 1; }", 
-        "int main(void) { return (15); }", 
-        "int main(void) { return (42); }", 
-        "int main(void) { return -10; }", 
-        "int main(void) { return -80; }", 
-        "int main(void) { return ~25; }", 
-        "int main(void) { return ~9; }", 
-        "int main(void) { return ~~18; }", 
-        "int main(void) { return ~~27; }", 
-        "int main(void) { return -(30); }", 
-        "int main(void) { return -(5); }", 
-        "int main(void) { return -(~3); }", 
-        "int main(void) { return -(~9); }",
-        "int main(void) { return ~(-9); }", 
-        "int main(void) { return ~(-3); }",
-        "int main(void) { return ~~(-9); }", 
-        "int main(void) { return ~~(3); }",
-        "int main(void) { return ~~(99); }",
-        "int main(void) { return ~~(~98); }",
-        "int main(void) { return ~-(~5); }",
-        "int main(void) { return -~(-55); }",
-        "int main(void) { return -~(-(~6)); }",
-        "int main(void) { return ~(~(~12)); }",
-        "int main(void) { return -(~(-19)); }",
+        { "{ return 1; }", 1},
+        { "{ return (15); }", (15)},
+        { "{ return (42); }", (42)},
+        { "{ return 10; }", 10},
+        { "{ return 80; }", 80},
+        { "{ return ~~25; }", ~~25},
+        { "{ return ~~9; }", ~~9},
+        { "{ return ~~18; }", ~~18},
+        { "{ return ~~27; }", ~~27},
+        { "{ return -(-30); }", 30},
+        { "{ return (5); }", (5)},
+        { "{ return -(~3); }", -(~3)},
+        { "{ return -(~9); }", -(~9)},
+        { "{ return ~(-9); }", ~(-9)},
+        { "{ return ~(-3); }", ~(-3)},
+        { "{ return ~~(-9); }", 247},
+        { "{ return ~~(3); }", ~~(3)},
+        { "{ return ~~(99); }", ~~(99)},
+        { "{ return ~~(~98); }", 157},
+        { "{ return ~-(~5); }", 249},
+        { "{ return -~(-55); }", 202},
+        { "{ return -~(-(~6)); }", 8},
+        { "{ return ~(~(~12)); }", 243},
+        { "{ return -(~(-19)); }", 238},
         // clang-format on
     };
 
-    for (const auto& code : tests) {
-        // ACT
+    for (const auto& pair : tests) {
+        const auto expected = std::get<int>(pair);
+
+        auto code = std::format("int main(void) {}", std::get<string>(pair));
         auto compiled = compile(code, chapter);
         EXPECT_TRUE(compiled.has_value());
 
         // ASSERT
         auto binaryPath = compiled.value();
-        auto exitCode = run(binaryPath);
-        ASSERT_NE(exitCode, 0);
+        auto actual = run(binaryPath);
+        EXPECT_EQ(actual, expected);
     }
 }

@@ -23,31 +23,33 @@ protected:
 
 TEST_F(Chapter1Test, chapter1e2e) {
     // ARRANGE
-    vector<string> tests = {
+    vector<pair<string, int>> tests = {
         // clang-format off
-        "int main(void) { return 4; }", 
-        "int main(void) { return 8; }", 
-        "int main(void) { return 15; }",
-        "int main(void) { return 16; }",
-        "int main(void) { return 23; }",
-        "int main(void) { return 42; }",
-        "int main(void) { return 25; }",
-        "int main(void) { return 88; }",
-        "int main(void) { return 71; }",
-        "int main(void) { return 99; }",
-        "int main(void) { return 101; }",
-        "int main(void) { return 19; }",
+        { "{ return 4; }", 4}, 
+        { "{ return 8; }", 8}, 
+        { "{ return 15; }", 15},
+        { "{ return 16; }", 16},
+        { "{ return 23; }", 23},
+        { "{ return 42; }", 42},
+        { "{ return 25; }", 25},
+        { "{ return 88; }", 88},
+        { "{ return 71; }", 71},
+        { "{ return 99; }", 99},
+        { "{ return 101; }", 101},
+        { "{ return 19; }", 19},
         // clang-format on
     };
 
-    for (const auto& code : tests) {
-        // ACT
+    for (const auto& pair : tests) {
+        const auto expected = std::get<int>(pair);
+
+        auto code = std::format("int main(void) {}", std::get<string>(pair));
         auto compiled = compile(code, chapter);
         EXPECT_TRUE(compiled.has_value());
 
         // ASSERT
         auto binaryPath = compiled.value();
-        auto exitCode = run(binaryPath);
-        ASSERT_NE(exitCode, 0);
+        auto actual = run(binaryPath);
+        ASSERT_EQ(actual, expected);
     }
 }

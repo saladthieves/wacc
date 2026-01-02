@@ -11,6 +11,7 @@ using std::string_view;
 using std::unexpected;
 using std::vector;
 using std::filesystem::path;
+using std::pair;
 
 namespace wacc {
 namespace test {
@@ -19,6 +20,8 @@ namespace {
 static constexpr auto name = "program.c";
 static constexpr auto binary = "program";
 static constexpr auto e2eSampleRoot = "build/e2e_sample";
+static constexpr auto testerPath = "e2e/tester.sh";
+static constexpr auto exitCodePath = "build/e2e_sample/code.txt";
 } // namespace
 
 path rootPath();

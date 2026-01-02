@@ -1,9 +1,11 @@
 #include "e2e_base.hpp"
 #include "cmd.hpp"
 #include "driver.hpp"
+#include "utils.hpp"
 
 #include <fstream>
 #include <sstream>
+#include <string>
 
 namespace wacc::test::e2e {
 path rootPath() {
@@ -53,7 +55,14 @@ expected<path, string> compile(string_view code, string_view chapter) {
 }
 
 int run(const path& binaryPath) {
-    auto result = wacc::utils::runCommand(binaryPath.string(), {});
-    return result.exitCode;
+    std::initializer_list<string> args = {binaryPath, exitCodePath};
+    auto result = wacc::utils::runCommand(testerPath, args);
+    auto value = utils::readFile(exitCodePath);
+    value = value.erase(value.find_last_not_of('\n') + 1);
+    try {
+        return std::stoi(value);
+    } catch (const std::exception& ex) {
+        return result.exitCode;
+    }
 }
 } // namespace wacc::test::e2e
