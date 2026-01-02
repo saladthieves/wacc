@@ -8,6 +8,7 @@ target_sources(${TARGET}
     PRIVATE
         ch01.cpp
         ch02.cpp
+        ch03.cpp
         e2e_base.cpp
 )
 
