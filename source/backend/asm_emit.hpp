@@ -39,6 +39,12 @@ private:
     
     void emitAsmUnary(const AsmUnary& obj);
 
+    void emitAsmBinary(const AsmBinary& obj);
+
+    void emitAsmIdiv(const AsmIdiv& obj);
+
+    void emitAsmCdq();
+
     void emitAsmAllocStack(const AsmAllocStack& obj);
 
     std::string formatAsmOperand(const AsmOperand& obj) const;
@@ -46,6 +52,8 @@ private:
     std::string formatAsmReg(const AsmReg& obj) const;
 
     std::string formatAsmUnaryOp(const AsmUnary::Type& type) const;
+
+    std::string formatAsmBinaryOp(const AsmBinary::Type& type) const;
 
     template <typename... T>
     void pushLine(std::format_string<T...> str, T&&... args) {

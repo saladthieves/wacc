@@ -80,6 +80,23 @@ void AsmEmitter::emitAsmInstr(const AsmInstr& obj) {
             break;
         }
 
+        case INSTR_BINARY: {
+            auto& binary = static_cast<const AsmBinary&>(obj);
+            emitAsmBinary(binary);
+            break;
+        }
+
+        case INSTR_IDIV: {
+            auto& idiv = static_cast<const AsmIdiv&>(obj);
+            emitAsmIdiv(idiv);
+            break;
+        }
+
+        case INSTR_CDQ: {
+            emitAsmCdq();
+            break;
+        }
+
         default: fail("Failed to emit AsmInst::[type = {}]", type);
     }
 }
@@ -103,6 +120,22 @@ void AsmEmitter::emitAsmUnary(const AsmUnary& obj) {
     const auto op = formatAsmUnaryOp(obj.op);
     const auto operand = formatAsmOperand(*obj.operand);
     pushLine("{}{}{}{}", INDENT, op, INDENT, operand);
+}
+
+void AsmEmitter::emitAsmBinary(const AsmBinary& obj) {
+    const auto op = formatAsmBinaryOp(obj.op);
+    const auto src = formatAsmOperand(*obj.src);
+    const auto dest = formatAsmOperand(*obj.dest);
+    pushLine("{}{}{}{}, {}", INDENT, op, INDENT, src, dest);
+}
+
+void AsmEmitter::emitAsmIdiv(const AsmIdiv& obj) {
+    const auto operand = formatAsmOperand(*obj.operand);
+    pushLine("{}idivl{}{}", INDENT, INDENT, operand);
+}
+
+void AsmEmitter::emitAsmCdq() {
+    pushLine("{}cdq", INDENT);
 }
 
 void AsmEmitter::emitAsmAllocStack(const AsmAllocStack& obj) {
@@ -137,7 +170,9 @@ std::string AsmEmitter::formatAsmReg(const AsmReg& obj) const {
     switch (type) {
         using enum AsmReg::Type;
         case AX:  return "%eax";
+        case DX:  return "%edx";
         case R10: return "%r10d";
+        case R11: return "%r11d";
         default:  {
             fail("Failed to format AsmReg::Type::[{}]",
                  std::to_underlying(type));
@@ -150,9 +185,17 @@ std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) const {
         using enum AsmUnary::Type;
         case UNARY_NEGATE: return "negl";
         case UNARY_NOT:    return "notl";
-        default:           {
-            fail("Failed to format AsmUnaryOp::[type = {}]", type);
-        }
+        default:           fail("Failed to format AsmUnary::Type::[type = {}]", type);
+    }
+}
+
+std::string AsmEmitter::formatAsmBinaryOp(const AsmBinary::Type& type) const {
+    switch (type) {
+        using enum AsmBinary::Type;
+        case BINARY_ADD:  return "addl";
+        case BINARY_SUB:  return "subl";
+        case BINARY_MULT: return "imull";
+        default:          fail("Failed to format AsmBinary::Type::[type = {}]", type);
     }
 }
 } // namespace wacc::back::emit

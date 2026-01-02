@@ -7,7 +7,6 @@
 
 using wacc::back::emit::AsmEmitter;
 using wacc::utils::Platform;
-using wacc::utils::PlatformType;
 
 using std::string;
 using std::vector;
@@ -52,8 +51,49 @@ TEST_F(AsmEmitterTest, emitThrowOnNull) {
 
 TEST_F(AsmEmitterTest, emitLinux) {
     // ARRANGE
-    auto platform = Platform{PlatformType::LINUX};
-    auto emitter = getAsmEmitter(getLinuxPlatform());
+    const auto code = "int main(void) { return -15 * ~32; }";
+    auto emitter = getAsmEmitter(getLinuxPlatform(), code);
+
+    // ACT
+    auto ptr = emitter.emit();
+
+    // ASSERT
+    auto lines = *ptr;
+    ASSERT_EQ(lines.size(), 19);
+
+    // clang-format off
+    ASSERT_STREQ(lines[0].c_str(), "    .globl main");
+    ASSERT_STREQ(lines[1].c_str(), "main:");
+    // Prologue
+    ASSERT_STREQ(lines[2].c_str(), "    pushq    %rbp");
+    ASSERT_STREQ(lines[3].c_str(), "    movq    %rsp, %rbp");
+    ASSERT_STREQ(lines[4].c_str(), "    subq    $12, %rsp");
+    // Instructions
+    ASSERT_STREQ(lines[5].c_str(), "    movl    $15, -4(%rbp)");
+    ASSERT_STREQ(lines[6].c_str(), "    negl    -4(%rbp)");
+
+    ASSERT_STREQ(lines[7].c_str(), "    movl    $32, -8(%rbp)");
+    ASSERT_STREQ(lines[8].c_str(), "    notl    -8(%rbp)");
+    
+    ASSERT_STREQ(lines[9].c_str(), "    movl    -4(%rbp), %r10d");
+    ASSERT_STREQ(lines[10].c_str(), "    movl    %r10d, -12(%rbp)");
+    ASSERT_STREQ(lines[11].c_str(), "    movl    -12(%rbp), %r11d");
+    ASSERT_STREQ(lines[12].c_str(), "    imull    -8(%rbp), %r11d");
+    ASSERT_STREQ(lines[13].c_str(), "    movl    %r11d, -12(%rbp)");
+    ASSERT_STREQ(lines[14].c_str(), "    movl    -12(%rbp), %eax");
+    // Epilogue
+    ASSERT_STREQ(lines[15].c_str(), "    movq    %rbp, %rsp");
+    ASSERT_STREQ(lines[16].c_str(), "    popq    %rbp");
+    ASSERT_STREQ(lines[17].c_str(), "    ret");
+
+    ASSERT_STREQ(lines[18].c_str(), R"(    .section .note.GNU-stack,"",@progbits)");
+    // clang-format on
+}
+
+TEST_F(AsmEmitterTest, emitMacOS) {
+    // ARRANGE
+    const auto code = "int main(void) { return -15 * ~32; }";
+    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
 
     // ACT
     auto ptr = emitter.emit();
@@ -63,63 +103,29 @@ TEST_F(AsmEmitterTest, emitLinux) {
     ASSERT_EQ(lines.size(), 18);
 
     // clang-format off
-    ASSERT_TRUE(lines[0]  == "    .globl main");
-    ASSERT_TRUE(lines[1]  == "main:");
+    ASSERT_STREQ(lines[0].c_str(), "    .globl _main");
+    ASSERT_STREQ(lines[1].c_str(), "_main:");
     // Prologue
-    ASSERT_TRUE(lines[2]  == "    pushq    %rbp");
-    ASSERT_TRUE(lines[3]  == "    movq    %rsp, %rbp");
-    ASSERT_TRUE(lines[4]  == "    subq    $12, %rsp");
+    ASSERT_STREQ(lines[2].c_str(), "    pushq    %rbp");
+    ASSERT_STREQ(lines[3].c_str(), "    movq    %rsp, %rbp");
+    ASSERT_STREQ(lines[4].c_str(), "    subq    $12, %rsp");
     // Instructions
-    ASSERT_TRUE(lines[5]  == "    movl    $25, -4(%rbp)");
-    ASSERT_TRUE(lines[6]  == "    notl    -4(%rbp)");
-    ASSERT_TRUE(lines[7]  == "    movl    -4(%rbp), %r10d");
-    ASSERT_TRUE(lines[8]  == "    movl    %r10d, -8(%rbp)");
-    ASSERT_TRUE(lines[9]  == "    negl    -8(%rbp)");
-    ASSERT_TRUE(lines[10] == "    movl    -8(%rbp), %r10d");
-    ASSERT_TRUE(lines[11] == "    movl    %r10d, -12(%rbp)");
-    ASSERT_TRUE(lines[12] == "    notl    -12(%rbp)");
-    ASSERT_TRUE(lines[13] == "    movl    -12(%rbp), %eax");
+    ASSERT_STREQ(lines[5].c_str(), "    movl    $15, -4(%rbp)");
+    ASSERT_STREQ(lines[6].c_str(), "    negl    -4(%rbp)");
+
+    ASSERT_STREQ(lines[7].c_str(), "    movl    $32, -8(%rbp)");
+    ASSERT_STREQ(lines[8].c_str(), "    notl    -8(%rbp)");
+    
+    ASSERT_STREQ(lines[9].c_str(), "    movl    -4(%rbp), %r10d");
+    ASSERT_STREQ(lines[10].c_str(), "    movl    %r10d, -12(%rbp)");
+    ASSERT_STREQ(lines[11].c_str(), "    movl    -12(%rbp), %r11d");
+    ASSERT_STREQ(lines[12].c_str(), "    imull    -8(%rbp), %r11d");
+    ASSERT_STREQ(lines[13].c_str(), "    movl    %r11d, -12(%rbp)");
+    ASSERT_STREQ(lines[14].c_str(), "    movl    -12(%rbp), %eax");
     // Epilogue
-    ASSERT_TRUE(lines[14] == "    movq    %rbp, %rsp");
-    ASSERT_TRUE(lines[15] == "    popq    %rbp");
-    ASSERT_TRUE(lines[16] == "    ret");
-
-    ASSERT_TRUE(lines[17] == R"(    .section .note.GNU-stack,"",@progbits)");
-    // clang-format on
-}
-
-TEST_F(AsmEmitterTest, emitMacOS) {
-    // ARRANGE
-    auto emitter = getAsmEmitter(getMacOSPlatform());
-
-    // ACT
-    auto ptr = emitter.emit();
-
-    // ASSERT
-    auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 17);
-
-    // clang-format off
-    ASSERT_TRUE(lines[0]  == "    .globl _main");
-    ASSERT_TRUE(lines[1]  == "_main:");
-    // Prologue
-    ASSERT_TRUE(lines[2]  == "    pushq    %rbp");
-    ASSERT_TRUE(lines[3]  == "    movq    %rsp, %rbp");
-    ASSERT_TRUE(lines[4]  == "    subq    $12, %rsp");
-    // Instructions
-    ASSERT_TRUE(lines[5]  == "    movl    $25, -4(%rbp)");
-    ASSERT_TRUE(lines[6]  == "    notl    -4(%rbp)");
-    ASSERT_TRUE(lines[7]  == "    movl    -4(%rbp), %r10d");
-    ASSERT_TRUE(lines[8]  == "    movl    %r10d, -8(%rbp)");
-    ASSERT_TRUE(lines[9]  == "    negl    -8(%rbp)");
-    ASSERT_TRUE(lines[10] == "    movl    -8(%rbp), %r10d");
-    ASSERT_TRUE(lines[11] == "    movl    %r10d, -12(%rbp)");
-    ASSERT_TRUE(lines[12] == "    notl    -12(%rbp)");
-    ASSERT_TRUE(lines[13] == "    movl    -12(%rbp), %eax");
-    // Epilogue
-    ASSERT_TRUE(lines[14] == "    movq    %rbp, %rsp");
-    ASSERT_TRUE(lines[15] == "    popq    %rbp");
-    ASSERT_TRUE(lines[16] == "    ret");
+    ASSERT_STREQ(lines[15].c_str(), "    movq    %rbp, %rsp");
+    ASSERT_STREQ(lines[16].c_str(), "    popq    %rbp");
+    ASSERT_STREQ(lines[17].c_str(), "    ret");
     // clang-format on
 }
 
