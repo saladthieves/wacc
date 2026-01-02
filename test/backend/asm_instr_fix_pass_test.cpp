@@ -1,7 +1,7 @@
 #include "asm_ast.hpp"
 #include "asm_instr_fix_pass.hpp"
-#include "base_test.hpp"
 #include "asm_matchers.hpp"
+#include "base_test.hpp"
 
 #include <gtest/gtest.h>
 #include <memory>

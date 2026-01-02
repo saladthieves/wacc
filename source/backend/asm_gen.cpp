@@ -58,70 +58,64 @@ AsmGenerator::genForTackyInstrs(const TackyInstrPtrs& tackyBody) const {
     return asmBody;
 }
 
-// TODO: Simplify this
 void AsmGenerator::genForTackyReturn(const TackyReturn& tacky,
                                      AsmInstrPtrs& asmBody) const {
+
     auto src = genForTackyVal(*tacky.val);
     auto dest = genAsmReg(AsmReg::Type::AX);
+    // mov src, dest
     asmBody.emplace_back(
         std::make_unique<AsmMov>(std::move(src), std::move(dest)));
+    // ret
     asmBody.emplace_back(std::make_unique<AsmRet>());
 }
 
-// TODO: Simplify this
 void AsmGenerator::genForTackyUnary(const TackyUnary& tacky,
                                     AsmInstrPtrs& asmBody) const {
-    auto movSrc = genForTackyVal(*tacky.src);
-    auto movDest = genForTackyVal(*tacky.dest);
-    asmBody.emplace_back(
-        std::make_unique<AsmMov>(std::move(movSrc), std::move(movDest)));
-
-    auto unaryOp = genForTackyUnaryOp(tacky.op);
-    auto unaryDest = genForTackyVal(*tacky.dest);
-    asmBody.emplace_back(
-        std::make_unique<AsmUnary>(std::move(unaryOp), std::move(unaryDest)));
+    // mov src, dest
+    asmBody.emplace_back(std::make_unique<AsmMov>(genForTackyVal(*tacky.src),
+                                                  genForTackyVal(*tacky.dest)));
+    // unop dest
+    asmBody.emplace_back(std::make_unique<AsmUnary>(
+        genForTackyUnaryOp(tacky.op), genForTackyVal(*tacky.dest)));
 }
 
-// TODO: Simplify this
 void AsmGenerator::genForTackyBinary(const TackyBinary& tacky,
                                      AsmInstrPtrs& asmBody) const {
     using enum TackyBinary::Type;
     const auto& op = tacky.op;
     if (op == BINARY_DIVIDE || op == BINARY_REMAINDER) {
         return genForTackyDivRem(tacky, asmBody);
-    } else {
-        auto movSrc = genForTackyVal(*tacky.src1);
-        auto movDest = genForTackyVal(*tacky.dest);
-        asmBody.emplace_back(
-            std::make_unique<AsmMov>(std::move(movSrc), std::move(movDest)));
+    } else { // addition, subtraction or multiplication
+        // mov src1, dest
+        asmBody.emplace_back(std::make_unique<AsmMov>(
+            genForTackyVal(*tacky.src1), genForTackyVal(*tacky.dest)));
 
-        auto binaryOp = genForTackyBinaryOp(tacky.op);
-        auto binarySrc = genForTackyVal(*tacky.src2);
-        auto binaryDest = genForTackyVal(*tacky.dest);
+        // binop src2, dest |or| dest = dest binop src2
         asmBody.emplace_back(std::make_unique<AsmBinary>(
-            binaryOp, std::move(binarySrc), std::move(binaryDest)));
+            genForTackyBinaryOp(tacky.op), genForTackyVal(*tacky.src2),
+            genForTackyVal(*tacky.dest)));
     }
 }
 
-// TODO: Simplify this
 void AsmGenerator::genForTackyDivRem(const TackyBinary& tacky,
                                      AsmInstrPtrs& asmBody) const {
-    auto mov1Src = genForTackyVal(*tacky.src1);
-    auto mov1Dest = genAsmReg(AsmReg::Type::AX);
-    asmBody.emplace_back(
-        std::make_unique<AsmMov>(std::move(mov1Src), std::move(mov1Dest)));
-
+    // mov src1, %eax
+    asmBody.emplace_back(std::make_unique<AsmMov>(genForTackyVal(*tacky.src1),
+                                                  genAsmReg(AsmReg::Type::AX)));
+    // cdq
     asmBody.emplace_back(std::make_unique<AsmCdq>());
 
-    auto idivSrc = genForTackyVal(*tacky.src2);
-    asmBody.emplace_back(std::make_unique<AsmIdiv>(std::move(idivSrc)));
+    // idiv src2
+    asmBody.emplace_back(
+        std::make_unique<AsmIdiv>(genForTackyVal(*tacky.src2)));
 
     auto mov2Src = genAsmReg(tacky.op == TackyBinary::Type::BINARY_DIVIDE
                                  ? AsmReg::Type::AX
                                  : AsmReg::Type::DX);
-    auto mov2Dest = genForTackyVal(*tacky.dest);
-    asmBody.emplace_back(
-        std::make_unique<AsmMov>(std::move(mov2Src), std::move(mov2Dest)));
+    // mov [%eax | %edx], dest
+    asmBody.emplace_back(std::make_unique<AsmMov>(std::move(mov2Src),
+                                                  genForTackyVal(*tacky.dest)));
 }
 
 AsmRegPtr AsmGenerator::genAsmReg(AsmReg::Type type) const {
