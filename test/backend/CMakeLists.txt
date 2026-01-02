@@ -18,6 +18,7 @@ target_link_libraries(${TARGET}
         tacky
         test-utils
         test-base
+        test-matchers
         util
         GTest::gtest_main
 )

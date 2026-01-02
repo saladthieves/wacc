@@ -1,13 +1,12 @@
-set(TARGET test-base)
+set(TARGET test-matchers)
 
 add_library(${TARGET})
 
 target_sources(${TARGET}
     PRIVATE
-        base_test.cpp
-        asm_formatters.cpp
-        ast_formatters.cpp
-        tacky_formatters.cpp
+        asm_matchers.cpp
+        ast_matchers.cpp
+        tacky_matchers.cpp
 
     PUBLIC
         FILE_SET HEADERS
@@ -18,9 +17,6 @@ target_link_libraries(${TARGET}
         frontend
         tacky
         backend
-        util
         test-utils
         GTest::gtest_main
 )
-
-add_subdirectory(matchers)

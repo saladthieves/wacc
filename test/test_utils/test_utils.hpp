@@ -31,13 +31,13 @@ void cleanUpSamples(std::function<bool(const std::string&)> condition);
 template <typename T>
 inline constexpr T* as(auto& pointer) {
     if (pointer == nullptr) {
-        throw std::logic_error("Pointer is null before static_cast");
+        throw std::logic_error("Pointer is null before dynamic_cast");
     }
 
-    auto result = static_cast<T*>(pointer.get());
+    auto result = dynamic_cast<T*>(pointer.get());
 
     if (result == nullptr) {
-        throw std::logic_error("Pointer is null after static_cast");
+        throw std::logic_error("Pointer is null after dynamic_cast");
     }
 
     return result;

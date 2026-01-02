@@ -3,7 +3,15 @@
 TEST_ROOT="$HOME/dev/projects/cpp/personal/writing-a-c-compiler-tests"
 TEST_SCRIPT="test_compiler"
 TEST_CHAPTER="--chapter 3"
-CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage tacky"
+
+# echo "🧪 - Testing Chapter 1..."
+# CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 1"
+# eval ${CMD}
+
+# echo "🧪 - Testing Chapter 2..."
+# CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 2"
+# eval ${CMD}
 
 echo "🧪 - Testing compiler..."
+CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage tacky"
 eval ${CMD}

@@ -12,6 +12,7 @@ target_sources(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         test-base
+        test-matchers
         frontend
         test-utils
         GTest::gtest_main
