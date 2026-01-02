@@ -21,6 +21,8 @@ AsmNodePtr AsmInstrFixPass::run() {
 }
 
 void AsmInstrFixPass::runPass(AsmInstrPtrs& instructions) {
+    fixed.reserve(instructions.size());
+
     genAsmAllocStack();
 
     for (auto& instruction : instructions) {
@@ -121,7 +123,7 @@ void AsmInstrFixPass::fixAsmBinary(AsmInstrPtr ptr) {
 }
 
 void AsmInstrFixPass::fixAsmBinaryMult(AsmInstrPtr ptr) {
-    // imul src, [-x(%rbp)]
+    // imul src, [-x(%dest)]
     auto& bin = static_cast<AsmBinary&>(*ptr);
     if (bin.dest->type == OP_STACK) {
         const auto stackValue = static_cast<AsmStack&>(*bin.dest).value;
