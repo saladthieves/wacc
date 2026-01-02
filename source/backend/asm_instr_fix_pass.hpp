@@ -24,6 +24,14 @@ private:
 
     void fixAsmMov(StackPos pos, AsmInstrPtrs& instructions);
 
+    void fixAsmIdiv(StackPos pos, AsmInstrPtrs& instructions);
+
+    void fixAsmBinary(StackPos pos, AsmInstrPtrs& instructions);
+
+    void fixAsmBinaryMult(StackPos pos, AsmBinary& binary, AsmInstrPtrs& instructions); 
+
+    bool isFixable(const AsmInstrPtr& ptr) const;
+
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
                            T&&... args) const {
