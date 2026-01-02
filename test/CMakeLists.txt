@@ -21,5 +21,8 @@ add_subdirectory(tacky)
 add_subdirectory(test_utils)
 add_subdirectory(util)
 
+add_subdirectory(base/matchers)
+add_subdirectory(base/formatters)
+
 include(GoogleTest)
 gtest_discover_tests(${TARGET})

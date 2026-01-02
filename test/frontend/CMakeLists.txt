@@ -13,6 +13,7 @@ target_link_libraries(${TARGET}
     PUBLIC
         test-base
         test-matchers
+        test-formatters
         frontend
         test-utils
         GTest::gtest_main

@@ -1,10 +1,12 @@
-set(TARGET test-base)
+set(TARGET test-formatters)
 
 add_library(${TARGET})
 
 target_sources(${TARGET}
     PRIVATE
-        base_test.cpp
+        asm_formatters.cpp
+        ast_formatters.cpp
+        tacky_formatters.cpp
 
     PUBLIC
         FILE_SET HEADERS
@@ -15,7 +17,6 @@ target_link_libraries(${TARGET}
         frontend
         tacky
         backend
-        util
         test-utils
         GTest::gtest_main
 )

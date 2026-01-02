@@ -19,6 +19,7 @@ target_link_libraries(${TARGET}
         test-utils
         test-base
         test-matchers
+        test-formatters
         util
         GTest::gtest_main
 )
