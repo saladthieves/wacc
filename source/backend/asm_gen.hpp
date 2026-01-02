@@ -38,13 +38,13 @@ private:
     void genForTackyDivRem(const TackyBinary& tacky,
                            AsmInstrPtrs& asmBody) const;
 
-    AsmRegPtr genAsmReg(AsmRegisterType type) const;
+    AsmRegPtr genAsmReg(AsmReg::Type type) const;
 
     AsmOperandPtr genForTackyVal(const TackyVal& tacky) const;
 
-    AsmUnaryOpType genForTackyUnaryOp(const TackyUnaryOpType& type) const;
+    AsmUnary::Type genForTackyUnaryOp(const TackyUnary::Type& type) const;
 
-    AsmBinaryOpType genForTackyBinaryOp(const TackyBinaryOpType& type) const;
+    AsmBinary::Type genForTackyBinaryOp(const TackyBinary::Type& type) const;
 
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",

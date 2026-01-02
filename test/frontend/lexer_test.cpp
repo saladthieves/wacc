@@ -66,7 +66,7 @@ TEST_F(LexerTest, scanNumberConstant) {
         ASSERT_EQ(tokens.size(), 2);
 
         ASSERT_EQ(tokens.front().lineNo, 1);
-        ASSERT_EQ(tokens.front().type, CONSTANT_INT);
+        ASSERT_EQ(tokens.front().type, LITERAL_INT);
         ASSERT_TRUE(tokens.front().value == test.second);
 
         ASSERT_EQ(tokens.back().lineNo, 1);
@@ -93,7 +93,7 @@ TEST_F(LexerTest, scanNumberConstantInvalidAlpha) {
 
         // ASSERT
         ASSERT_FALSE(error.empty());
-        ASSERT_TRUE(error.contains("character in number constant"));
+        ASSERT_TRUE(error.contains("character in number literal"));
     }
 }
 
@@ -319,21 +319,21 @@ TEST_F(LexerTest, scanSource) {
     ASSERT_TRUE(check(tokens[6],  KEYWORD_RETURN, "return", 2));
     ASSERT_TRUE(check(tokens[7],  OPEN_PAREN,     "(",      2));
     ASSERT_TRUE(check(tokens[8],  OP_NEGATE,      "-",      2));
-    ASSERT_TRUE(check(tokens[9],  CONSTANT_INT,   "1",      2));
+    ASSERT_TRUE(check(tokens[9],  LITERAL_INT,   "1",      2));
     ASSERT_TRUE(check(tokens[10], OP_ADDITION,    "+",      2));
-    ASSERT_TRUE(check(tokens[11], CONSTANT_INT,   "2",      2));
+    ASSERT_TRUE(check(tokens[11], LITERAL_INT,   "2",      2));
     ASSERT_TRUE(check(tokens[12], CLOSE_PAREN,    ")",      2));
     ASSERT_TRUE(check(tokens[13], OP_MULTIPLY,    "*",      2));
     ASSERT_TRUE(check(tokens[14], OP_COMPLEMENT,  "~",      2));
-    ASSERT_TRUE(check(tokens[15], CONSTANT_INT,   "3",      2));
+    ASSERT_TRUE(check(tokens[15], LITERAL_INT,   "3",      2));
     ASSERT_TRUE(check(tokens[16], OP_NEGATE,      "-",      2));
-    ASSERT_TRUE(check(tokens[17], CONSTANT_INT,   "4",      2));
+    ASSERT_TRUE(check(tokens[17], LITERAL_INT,   "4",      2));
     ASSERT_TRUE(check(tokens[18], OP_DIVIDE,      "/",      2));
-    ASSERT_TRUE(check(tokens[19], CONSTANT_INT,   "5",      2));
+    ASSERT_TRUE(check(tokens[19], LITERAL_INT,   "5",      2));
     ASSERT_TRUE(check(tokens[20], OP_REMAINDER,   "%",      2));
     ASSERT_TRUE(check(tokens[21], OPEN_PAREN,     "(",      2));
     ASSERT_TRUE(check(tokens[22], OP_DECREMENT,   "--",     2));
-    ASSERT_TRUE(check(tokens[23], CONSTANT_INT,   "6",      2));
+    ASSERT_TRUE(check(tokens[23], LITERAL_INT,   "6",      2));
     ASSERT_TRUE(check(tokens[24], CLOSE_PAREN,    ")",      2));
     ASSERT_TRUE(check(tokens[25], SEMICOLON,      ";",      2));
     ASSERT_TRUE(check(tokens[26], CLOSE_BRACE,    "}",      3));

@@ -64,8 +64,8 @@ ast::AstExprPtr Parser::parseExpression(PrecedenceValue value) {
 ast::AstExprPtr Parser::parseFactor() {
     switch (peek().type) {
         using enum TokenType;
-        case CONSTANT_INT: {
-            return parseConstantInteger();
+        case LITERAL_INT: {
+            return parseLiteralInteger();
         }
         case OP_COMPLEMENT:
         case OP_NEGATE:     {
@@ -88,11 +88,11 @@ ast::AstIdentPtr Parser::parseIdentifier() {
     return std::make_unique<ast::AstIdent>(token, token.value);
 }
 
-ast::AstConstIntPtr Parser::parseConstantInteger() {
-    const auto& token = expect(TokenType::CONSTANT_INT);
+ast::AstLitIntPtr Parser::parseLiteralInteger() {
+    const auto& token = expect(TokenType::LITERAL_INT);
     int value = std::stoi(std::string{token.value});
 
-    return std::make_unique<ast::AstConstInt>(token, value);
+    return std::make_unique<ast::AstLitInt>(token, value);
 }
 
 ast::AstUnaryPtr Parser::parseUnaryExpression() {
@@ -101,19 +101,20 @@ ast::AstUnaryPtr Parser::parseUnaryExpression() {
     return std::make_unique<ast::AstUnary>(op, std::move(expr));
 }
 
-ast::AstUnaryOpType Parser::parseUnaryOperator() {
+ast::AstUnary::Type Parser::parseUnaryOperator() {
     using enum TokenType;
+    using ast::AstUnary;
     const auto& type = expectAny({OP_COMPLEMENT, OP_NEGATE}).type;
 
     switch (type) {
-        case OP_COMPLEMENT: return ast::AstUnaryOpType::UNARY_COMPLEMENT;
-        case OP_NEGATE:     return ast::AstUnaryOpType::UNARY_NEGATE;
+        case OP_COMPLEMENT: return AstUnary::Type::UNARY_COMPLEMENT;
+        case OP_NEGATE:     return AstUnary::Type::UNARY_NEGATE;
         default:
             fail("Cannot parse AstUnaryOpType from ast::TokenType[{}]", type);
     }
 }
 
-ast::AstBinaryOpType Parser::parseBinaryOperator() {
+ast::AstBinary::Type Parser::parseBinaryOperator() {
     using enum TokenType;
     const auto& token = expectAny({
         OP_ADDITION,
@@ -124,7 +125,7 @@ ast::AstBinaryOpType Parser::parseBinaryOperator() {
     });
 
     switch (token.type) {
-        using enum ast::AstBinaryOpType;
+        using enum ast::AstBinary::Type;
         case OP_ADDITION:  return BINARY_ADD;
         case OP_NEGATE:    return BINARY_SUBTRACT;
         case OP_MULTIPLY:  return BINARY_MULTIPLY;

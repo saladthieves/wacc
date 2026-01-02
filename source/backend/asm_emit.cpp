@@ -55,9 +55,9 @@ void AsmEmitter::emitAsmFun(const AsmFun& obj) {
 }
 
 void AsmEmitter::emitAsmInstr(const AsmInstr& obj) {
-    const auto& type = obj.type();
+    const auto& type = obj.type;
     switch (type) {
-        using enum AsmNodeType;
+        using enum AsmNode::Type;
         case INSTR_ALLOC: {
             auto& alloc = static_cast<const AsmAllocStack&>(obj);
             emitAsmAllocStack(alloc);
@@ -110,9 +110,9 @@ void AsmEmitter::emitAsmAllocStack(const AsmAllocStack& obj) {
 }
 
 std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) const {
-    const auto& type = obj.type();
+    const auto& type = obj.type;
     switch (type) {
-        using enum AsmNodeType;
+        using enum AsmNode::Type;
         case OP_REG: {
             auto& reg = static_cast<const AsmReg&>(obj);
             return formatAsmReg(reg);
@@ -135,19 +135,19 @@ std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) const {
 std::string AsmEmitter::formatAsmReg(const AsmReg& obj) const {
     const auto& type = obj.reg;
     switch (type) {
-        using enum AsmRegisterType;
+        using enum AsmReg::Type;
         case AX:  return "%eax";
         case R10: return "%r10d";
         default:  {
-            fail("Failed to format AsmRegisterType::[{}]",
+            fail("Failed to format AsmReg::Type::[{}]",
                  std::to_underlying(type));
         }
     }
 }
 
-std::string AsmEmitter::formatAsmUnaryOp(const AsmUnaryOpType& type) const {
+std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) const {
     switch (type) {
-        using enum AsmUnaryOpType;
+        using enum AsmUnary::Type;
         case UNARY_NEGATE: return "negl";
         case UNARY_NOT:    return "notl";
         default:           {

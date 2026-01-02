@@ -55,7 +55,7 @@ TEST_F(AsmInstrFixPassTest, genAsmAllocStack) {
     // ARRANGE
     addInstr(
         make_unique<AsmMov>(std::make_unique<AsmStack>(-4),
-                            std::make_unique<AsmReg>(AsmRegisterType::AX)));
+                            std::make_unique<AsmReg>(AsmReg::Type::AX)));
     auto program = getProgram();
     auto pass = AsmInstrFixPass{std::move(program), 4};
 
@@ -70,7 +70,7 @@ TEST_F(AsmInstrFixPassTest, genAsmAllocStack) {
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
-        matchAsmReg(dest, AsmRegisterType::AX);
+        matchAsmReg(dest, AsmReg::Type::AX);
     });
 }
 
@@ -92,11 +92,11 @@ TEST_F(AsmInstrFixPassTest, fixAsmMov) {
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
-        matchAsmReg(dest, AsmRegisterType::R10);
+        matchAsmReg(dest, AsmReg::Type::R10);
     });
 
     matchAsmMov(body[2], [](auto& src, auto& dest) {
-        matchAsmReg(src, AsmRegisterType::R10);
+        matchAsmReg(src, AsmReg::Type::R10);
         matchAsmStack(dest, -4);
     });
 }

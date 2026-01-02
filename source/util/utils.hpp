@@ -23,7 +23,7 @@ using ConstIter = std::string_view::const_iterator;
 
 unsigned int getLineStop(ConstIter next, ConstIter begin, ConstIter end);
 
-enum class PlatformType {
+enum class PlatformType : std::uint8_t {
     MACOS = 1,
     LINUX,
     UNKNOWN,

@@ -62,13 +62,13 @@ TEST_F(AsmGeneratorTest, generateNegate) {
     });
 
     matchAsmUnary(body[1], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_NEGATE);
         matchAsmPseudo(operand, "MAIN.TEMP.0");
     });
 
     matchAsmMov(body[2], [](auto& src, auto& dest) {
         matchAsmPseudo(src, "MAIN.TEMP.0");
-        matchAsmReg(dest, AsmRegisterType::AX);
+        matchAsmReg(dest, AsmReg::Type::AX);
     });
 
     matchAsmRet(body[3]);
@@ -91,7 +91,7 @@ TEST_F(AsmGeneratorTest, generateUnary) {
     });
 
     matchAsmUnary(body[1], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_NOT);
         matchAsmPseudo(operand, "MAIN.TEMP.0");
     });
 
@@ -101,7 +101,7 @@ TEST_F(AsmGeneratorTest, generateUnary) {
     });
 
     matchAsmUnary(body[3], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_NEGATE);
         matchAsmPseudo(operand, "MAIN.TEMP.1");
     });
 
@@ -111,13 +111,13 @@ TEST_F(AsmGeneratorTest, generateUnary) {
     });
 
     matchAsmUnary(body[5], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NOT);
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_NOT);
         matchAsmPseudo(operand, "MAIN.TEMP.2");
     });
 
     matchAsmMov(body[6], [](auto& src, auto& dest) {
         matchAsmPseudo(src, "MAIN.TEMP.2");
-        matchAsmReg(dest, AsmRegisterType::AX);
+        matchAsmReg(dest, AsmReg::Type::AX);
     });
 
     matchAsmRet(body[7]);
@@ -125,8 +125,8 @@ TEST_F(AsmGeneratorTest, generateUnary) {
 
 TEST_F(AsmGeneratorTest, generateBinarySimple) {
     // ARRANGE
-    using enum AsmBinaryOpType;
-    const auto tests = vector<tuple<string, int, AsmBinaryOpType, int>>{
+    using enum AsmBinary::Type;
+    const auto tests = vector<tuple<string, int, AsmBinary::Type, int>>{
         {"{ return 1 + 2; }",           1, BINARY_ADD,  2},
         {"{ return 2 - 1; }",           2, BINARY_SUB,  1},
         {"{ return 7 * 0; }",           7, BINARY_MULT, 0},
@@ -159,7 +159,7 @@ TEST_F(AsmGeneratorTest, generateBinarySimple) {
 
 TEST_F(AsmGeneratorTest, generateBinaryDivRem) {
     // ARRANGE
-    using enum AsmBinaryOpType;
+    using enum AsmBinary::Type;
     const auto tests = vector<tuple<string, int, bool, int>>{
         {"{ return 5 / 2; }",    5,  true,  2 },
         {"{ return (15) % 3; }", 15, false, 3 },
@@ -181,7 +181,7 @@ TEST_F(AsmGeneratorTest, generateBinaryDivRem) {
 
         matchAsmMov(body[0], [&](auto& src, auto& dest) {
             matchAsmImm(src, std::get<1>(test));
-            matchAsmReg(dest, AsmRegisterType::AX);
+            matchAsmReg(dest, AsmReg::Type::AX);
         });
 
         matchAsmCdq(body[1]);
@@ -191,8 +191,8 @@ TEST_F(AsmGeneratorTest, generateBinaryDivRem) {
         });
 
         matchAsmMov(body[3], [&](auto& src, auto& dest) {
-            matchAsmReg(src, std::get<bool>(test) ? AsmRegisterType::AX
-                                                  : AsmRegisterType::DX);
+            matchAsmReg(src, std::get<bool>(test) ? AsmReg::Type::AX
+                                                  : AsmReg::Type::DX);
             matchAsmPseudo(dest, ".MAIN.TEMP.0");
         });
     }

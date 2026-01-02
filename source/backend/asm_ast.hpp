@@ -7,39 +7,6 @@
 namespace wacc {
 namespace back {
 namespace ast {
-enum class AsmNodeType : unsigned {
-    OP_IMM = 1,
-    OP_REG,
-    OP_PSEUDO,
-    OP_STACK,
-    INSTR_MOV,
-    INSTR_UNARY,
-    INSTR_BINARY,
-    INSTR_IDIV,
-    INSTR_CDQ,
-    INSTR_ALLOC,
-    INSTR_RET,
-    FUNCTION,
-    PROGRAM,
-};
-
-enum class AsmUnaryOpType : unsigned {
-    UNARY_NEGATE = 1,
-    UNARY_NOT,
-};
-
-enum class AsmBinaryOpType : unsigned {
-    BINARY_ADD = 1,
-    BINARY_SUB,
-    BINARY_MULT,
-};
-
-enum class AsmRegisterType : unsigned {
-    AX = 1,
-    DX,
-    R10,
-    R11,
-};
 
 // Forward declarations
 class AsmNode;
@@ -79,22 +46,40 @@ using AsmProgPtr = std::unique_ptr<AsmProg>;
 
 using AsmInstrPtrs = std::vector<AsmInstrPtr>;
 
-namespace {
-using enum AsmNodeType;
-}
-
 // AsmNode
 class AsmNode {
 public:
-    virtual AsmNodeType type() const = 0;
+    enum class Type : std::uint8_t {
+        OP_IMM = 1,
+        OP_REG,
+        OP_PSEUDO,
+        OP_STACK,
+        INSTR_MOV,
+        INSTR_UNARY,
+        INSTR_BINARY,
+        INSTR_IDIV,
+        INSTR_CDQ,
+        INSTR_ALLOC,
+        INSTR_RET,
+        FUNCTION,
+        PROGRAM,
+    };
+
+    AsmNode(Type type);
 
     virtual ~AsmNode() = default;
+
+    Type type;
 };
+
+namespace {
+using enum AsmNode::Type;
+}
 
 // AsmOperand
 class AsmOperand : public AsmNode {
 public:
-    virtual AsmNodeType type() const override = 0;
+    AsmOperand(Type type);
 };
 
 // AsmImm
@@ -102,27 +87,28 @@ class AsmImm : public AsmOperand {
 public:
     AsmImm(int value);
 
-    virtual AsmNodeType type() const override { return OP_IMM; };
-
     int value;
 };
 
 // AsmReg
 class AsmReg : public AsmOperand {
 public:
-    AsmReg(AsmRegisterType reg);
+    enum class Type : std::uint8_t {
+        AX = 1,
+        DX,
+        R10,
+        R11,
+    };
 
-    virtual AsmNodeType type() const override { return OP_REG; };
+    AsmReg(Type reg);
 
-    AsmRegisterType reg;
+    Type reg;
 };
 
 // AsmPseudo
 class AsmPseudo : public AsmOperand {
 public:
     AsmPseudo(std::string identifier);
-
-    virtual AsmNodeType type() const override { return OP_PSEUDO; }
 
     std::string identifier;
 };
@@ -132,23 +118,19 @@ class AsmStack : public AsmOperand {
 public:
     AsmStack(signed value);
 
-    virtual AsmNodeType type() const override { return OP_STACK; }
-
     signed value;
 };
 
 // AsmInstr
 class AsmInstr : public AsmNode {
 public:
-    virtual AsmNodeType type() const override = 0;
+    AsmInstr(Type type);
 };
 
 // AsmMov
 class AsmMov : public AsmInstr {
 public:
     AsmMov(AsmOperandPtr src, AsmOperandPtr dest);
-
-    virtual AsmNodeType type() const override { return INSTR_MOV; };
 
     AsmOperandPtr src;
     AsmOperandPtr dest;
@@ -157,22 +139,29 @@ public:
 // AsmUnary
 class AsmUnary : public AsmInstr {
 public:
-    AsmUnary(AsmUnaryOpType op, AsmOperandPtr operand);
+    enum class Type : std::uint8_t {
+        UNARY_NEGATE = 1,
+        UNARY_NOT,
+    };
 
-    virtual AsmNodeType type() const override { return INSTR_UNARY; };
+    AsmUnary(Type op, AsmOperandPtr operand);
 
-    AsmUnaryOpType op;
+    Type op;
     AsmOperandPtr operand;
 };
 
 // AsmBinary
 class AsmBinary : public AsmInstr {
 public:
-    AsmBinary(AsmBinaryOpType op, AsmOperandPtr src, AsmOperandPtr dest);
+    enum class Type : std::uint8_t {
+        BINARY_ADD = 1,
+        BINARY_SUB,
+        BINARY_MULT,
+    };
 
-    virtual AsmNodeType type() const override { return INSTR_BINARY; }
+    AsmBinary(Type op, AsmOperandPtr src, AsmOperandPtr dest);
 
-    AsmBinaryOpType op;
+    Type op;
     AsmOperandPtr src;
     AsmOperandPtr dest;
 };
@@ -182,17 +171,13 @@ class AsmIdiv : public AsmInstr {
 public:
     AsmIdiv(AsmOperandPtr operand);
 
-    virtual AsmNodeType type() const override { return INSTR_IDIV; }
-
     AsmOperandPtr operand;
 };
 
 // AsmCdq
 class AsmCdq : public AsmInstr {
 public:
-    AsmCdq() = default;
-
-    virtual AsmNodeType type() const override { return INSTR_CDQ; }
+    AsmCdq();
 };
 
 // AsmAllocStack
@@ -200,23 +185,19 @@ class AsmAllocStack : public AsmInstr {
 public:
     AsmAllocStack(unsigned value);
 
-    virtual AsmNodeType type() const override { return INSTR_ALLOC; };
-
     unsigned value;
 };
 
 // AsmRet
 class AsmRet : public AsmInstr {
 public:
-    virtual AsmNodeType type() const override { return INSTR_RET; };
+    AsmRet();
 };
 
 // AsmFun
 class AsmFun : public AsmNode {
 public:
     AsmFun(std::string name, AsmInstrPtrs instructions);
-
-    virtual AsmNodeType type() const override { return FUNCTION; };
 
     std::string name;
     AsmInstrPtrs instructions;
@@ -227,8 +208,6 @@ class AsmProg : public AsmNode {
 public:
     AsmProg(AsmFunPtr function);
 
-    virtual AsmNodeType type() const override { return PROGRAM; };
-
     AsmFunPtr function;
 };
 } // namespace ast
@@ -237,21 +216,21 @@ public:
 
 namespace std {
 namespace {
-using wacc::back::ast::AsmNodeType;
+using wacc::back::ast::AsmNode;
 }
 
 template <>
-class formatter<AsmNodeType> {
+class formatter<AsmNode::Type> {
 public:
     constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AsmNodeType& type, format_context& context) const {
+    auto format(const AsmNode::Type& type, format_context& context) const {
         std::string value{};
 
         switch (type) {
-            using enum AsmNodeType;
+            using enum AsmNode::Type;
             case OP_IMM:       value = "OP_IMM"; break;
             case OP_REG:       value = "OP_REG"; break;
             case OP_PSEUDO:    value = "OP_PSEUDO"; break;
@@ -265,9 +244,7 @@ public:
             case INSTR_RET:    value = "INSTR_RET"; break;
             case FUNCTION:     value = "FUNCTION"; break;
             case PROGRAM:      value = "PROGRAM"; break;
-            default:
-                throw std::format_error(
-                    "Unhandled back::ast::AsmNodeType enum");
+            default:           throw std::format_error("Unhandled AsmNode::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);
@@ -275,26 +252,24 @@ public:
 };
 
 namespace {
-using wacc::back::ast::AsmUnaryOpType;
+using wacc::back::ast::AsmUnary;
 }
 
 template <>
-class formatter<AsmUnaryOpType> {
+class formatter<AsmUnary::Type> {
 public:
     constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AsmUnaryOpType& type, format_context& context) const {
+    auto format(const AsmUnary::Type& type, format_context& context) const {
         std::string value{};
 
         switch (type) {
-            using enum AsmUnaryOpType;
+            using enum AsmUnary::Type;
             case UNARY_NEGATE: value = "UNARY_NEGATE"; break;
             case UNARY_NOT:    value = "UNARY_NOT"; break;
-            default:
-                throw std::format_error(
-                    "Unhandled back::ast::AsmUnaryOpType enum");
+            default:           throw std::format_error("Unhandled AsmUnary::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);
@@ -302,27 +277,25 @@ public:
 };
 
 namespace {
-using wacc::back::ast::AsmBinaryOpType;
+using wacc::back::ast::AsmBinary;
 }
 
 template <>
-class formatter<AsmBinaryOpType> {
+class formatter<AsmBinary::Type> {
 public:
     constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AsmBinaryOpType& type, format_context& context) const {
+    auto format(const AsmBinary::Type& type, format_context& context) const {
         std::string value{};
 
         switch (type) {
-            using enum AsmBinaryOpType;
+            using enum AsmBinary::Type;
             case BINARY_ADD:  value = "BINARY_ADD"; break;
             case BINARY_SUB:  value = "BINARY_SUB"; break;
             case BINARY_MULT: value = "BINARY_MULT"; break;
-            default:
-                throw std::format_error(
-                    "Unhandled back::ast::AsmBinaryOpType enum");
+            default:          throw std::format_error("Unhandled AsmBinary::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);

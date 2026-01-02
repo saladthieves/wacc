@@ -91,7 +91,7 @@ void Lexer::scanContent() {
     if (isAlpha(c)) {
         scanIdentifiers();
     } else {
-        scanNumberConstant();
+        scanNumberLiteral();
     }
 }
 
@@ -108,16 +108,16 @@ void Lexer::scanIdentifiers() {
     }
 }
 
-void Lexer::scanNumberConstant() {
+void Lexer::scanNumberLiteral() {
     while (!isAtEnd() && isNumeric(peekNext())) {
         advance();
     }
 
     const char& c = peekNext();
     if (isAlpha(c)) {
-        fail("Unexpected character in number constant: [{}]", c);
+        fail("Unexpected character in number literal: [{}]", c);
     }
 
-    makeToken(token::TokenType::CONSTANT_INT);
+    makeToken(token::TokenType::LITERAL_INT);
 }
 } // namespace wacc::front::lex

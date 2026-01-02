@@ -1,11 +1,11 @@
 #include "tacky_formatters.hpp"
-#include "ast.hpp"
+#include "tacky_ast.hpp"
 
 namespace wacc::test::fmt {
 std::string formatTackyInstr(const TackyInstrPtr& ptr) {
-    const auto& type = ptr->type();
+    const auto& type = ptr->type;
     switch (type) {
-        using enum TackyNodeType;
+        using enum TackyNode::Type;
         case INSTR_RETURN: {
             auto& ast = static_cast<TackyReturn&>(*ptr);
             return formatTackyReturn(ast);
@@ -46,15 +46,14 @@ std::string formatTackyBinary(const TackyBinary& ast) {
 }
 
 std::string formatTackyVal(const TackyVal& ast) {
-    const auto& type = ast.type();
+    const auto& type = ast.type;
     switch (type) {
-        using enum front::ast::AstNodeType;
         case VARIABLE: {
             auto& var = static_cast<const TackyVariable&>(ast);
             return var.identifier.substr(6);
         }
-        case CONSTANT: {
-            auto& con = static_cast<const TackyConstant&>(ast);
+        case LITERAL_INT: {
+            auto& con = static_cast<const TackyLitInt&>(ast);
             return std::to_string(con.value);
         }
         default: {
@@ -64,18 +63,18 @@ std::string formatTackyVal(const TackyVal& ast) {
     }
 }
 
-std::string formatTackyUnaryOp(const TackyUnaryOpType& type) {
+std::string formatTackyUnaryOp(const TackyUnary::Type& type) {
     switch (type) {
-        using enum TackyUnaryOpType;
+        using enum TackyUnary::Type;
         case UNARY_COMPLEMENT: return "~";
         case UNARY_NEGATE:     return "-";
         default:               throw std::runtime_error("Unimplemented formatTackyUnaryOp");
     }
 }
 
-std::string formatTackyBinaryOp(const TackyBinaryOpType& type) {
+std::string formatTackyBinaryOp(const TackyBinary::Type& type) {
     switch (type) {
-        using enum TackyBinaryOpType;
+        using enum TackyBinary::Type;
         case BINARY_ADD:       return "+";
         case BINARY_SUBTRACT:  return "-";
         case BINARY_MULTIPLY:  return "*";

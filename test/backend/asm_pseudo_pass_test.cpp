@@ -73,7 +73,7 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPassSingleIdent) {
     // ARRANGE
     const auto identifier = "MAIN.TEMP.0";
     auto operand = make_unique<AsmPseudo>(identifier);
-    addInstr(make_unique<AsmUnary>(AsmUnaryOpType::UNARY_NEGATE,
+    addInstr(make_unique<AsmUnary>(AsmUnary::Type::UNARY_NEGATE,
                                    std::move(operand)));
 
     auto pass = AsmPseudoPass{getProgram()};
@@ -86,7 +86,7 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPassSingleIdent) {
     ASSERT_EQ(body.size(), 1);
 
     matchAsmUnary(body[0], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_NEGATE);
         matchAsmStack(operand, -4);
     });
 }
@@ -96,10 +96,10 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPassMultiIdent) {
     const auto identifier1 = "MAIN.TEMP.0";
     const auto identifier2 = "TMAIN.EMP.1";
     auto operand1 = make_unique<AsmPseudo>(identifier1);
-    addInstr(make_unique<AsmUnary>(AsmUnaryOpType::UNARY_NEGATE,
+    addInstr(make_unique<AsmUnary>(AsmUnary::Type::UNARY_NEGATE,
                                    std::move(operand1)));
     auto operand2 = make_unique<AsmPseudo>(identifier2);
-    addInstr(make_unique<AsmUnary>(AsmUnaryOpType::UNARY_NEGATE,
+    addInstr(make_unique<AsmUnary>(AsmUnary::Type::UNARY_NEGATE,
                                    std::move(operand2)));
 
     auto pass = AsmPseudoPass{getProgram()};
@@ -112,12 +112,12 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPassMultiIdent) {
     ASSERT_EQ(body.size(), 2);
 
     matchAsmUnary(body[0], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_NEGATE);
         matchAsmStack(operand, -4);
     });
 
     matchAsmUnary(body[1], [](auto& op, auto& operand) {
-        ASSERT_EQ(op, AsmUnaryOpType::UNARY_NEGATE);
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_NEGATE);
         matchAsmStack(operand, -8);
     });
 }
@@ -127,7 +127,7 @@ TEST_F(AsmPseudoPassTest, runAsmBinaryPassSingleIdent) {
     const auto identifier = "MAIN.TEMP.0";
     auto src = make_unique<AsmPseudo>(identifier);
     auto dest = make_unique<AsmPseudo>(identifier);
-    addInstr(make_unique<AsmBinary>(AsmBinaryOpType::BINARY_MULT,
+    addInstr(make_unique<AsmBinary>(AsmBinary::Type::BINARY_MULT,
                                     std::move(src), std::move(dest)));
 
     auto pass = AsmPseudoPass{getProgram()};
@@ -139,7 +139,7 @@ TEST_F(AsmPseudoPassTest, runAsmBinaryPassSingleIdent) {
     const auto& body = matchAsmProg(node);
 
     matchAsmBinary(body[0], [](auto& op, auto& src, auto& dest) {
-        ASSERT_EQ(op, AsmBinaryOpType::BINARY_MULT);
+        ASSERT_EQ(op, AsmBinary::Type::BINARY_MULT);
         matchAsmStack(src, -4);
         matchAsmStack(dest, -4);
     });
@@ -149,7 +149,7 @@ TEST_F(AsmPseudoPassTest, runAsmBinaryPassMultiIdent) {
     // ARRANGE
     auto src = make_unique<AsmPseudo>("MAIN.TEMP.0");
     auto dest = make_unique<AsmPseudo>("MAIN.TEMP.1");
-    addInstr(make_unique<AsmBinary>(AsmBinaryOpType::BINARY_ADD,
+    addInstr(make_unique<AsmBinary>(AsmBinary::Type::BINARY_ADD,
                                     std::move(src), std::move(dest)));
 
     auto pass = AsmPseudoPass{getProgram()};
@@ -161,7 +161,7 @@ TEST_F(AsmPseudoPassTest, runAsmBinaryPassMultiIdent) {
     const auto& body = matchAsmProg(node);
 
     matchAsmBinary(body[0], [](auto& op, auto& src, auto& dest) {
-        ASSERT_EQ(op, AsmBinaryOpType::BINARY_ADD);
+        ASSERT_EQ(op, AsmBinary::Type::BINARY_ADD);
         matchAsmStack(src, -4);
         matchAsmStack(dest, -8);
     });

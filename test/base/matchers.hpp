@@ -22,18 +22,20 @@ using utils::as;
 using std::string;
 using std::string_view;
 
+// TODO: Split matchers into separate files
+
 // clang-format off
-using AstUnaryMatcher = std::function<void(const AstUnaryOpType& op, const AstExprPtr& expr)>;
-using AstBinaryMatcher = std::function<void(const AstBinaryOpType& op, const AstExprPtr& left, const AstExprPtr& right)>;
+using AstUnaryMatcher = std::function<void(const AstUnary::Type& op, const AstExprPtr& expr)>;
+using AstBinaryMatcher = std::function<void(const AstBinary::Type& op, const AstExprPtr& left, const AstExprPtr& right)>;
 using AstReturnMatcher = std::function<void(const AstExprPtr& expr)>;
 
 using TackyReturnMatcher = std::function<void(const TackyValPtr&)>;
-using TackyUnaryMatcher = std::function<void(const TackyUnaryOpType&, const TackyValPtr& src, const TackyValPtr& dest)>;
-using TackyBinaryMatcher = std::function<void(const TackyBinaryOpType&, const TackyValPtr& src1, const TackyValPtr& src2, const TackyValPtr& dest)>;
+using TackyUnaryMatcher = std::function<void(const TackyUnary::Type&, const TackyValPtr& src, const TackyValPtr& dest)>;
+using TackyBinaryMatcher = std::function<void(const TackyBinary::Type&, const TackyValPtr& src1, const TackyValPtr& src2, const TackyValPtr& dest)>;
 
 using AsmMovMatcher = std::function<void(const AsmOperandPtr& src, const AsmOperandPtr& dest)>;
-using AsmUnaryMatcher = std::function<void(const AsmUnaryOpType&, const AsmOperandPtr&)>;
-using AsmBinaryMatcher = std::function<void(const AsmBinaryOpType&, const AsmOperandPtr&, const AsmOperandPtr&)>;
+using AsmUnaryMatcher = std::function<void(const AsmUnary::Type&, const AsmOperandPtr&)>;
+using AsmBinaryMatcher = std::function<void(const AsmBinary::Type&, const AsmOperandPtr&, const AsmOperandPtr&)>;
 using AsmIdivMatcher = std::function<void(const AsmOperandPtr& operand)>;
 using AsmAllocStackMatcher = std::function<void(const unsigned int&)>;
 // clang-format on
@@ -42,7 +44,7 @@ using AsmAllocStackMatcher = std::function<void(const unsigned int&)>;
 // AST
 const AstStmtPtr& matchAstProg(const AstNodePtr& ptr);
 // AstExpr matchers
-void matchAstConstInt(const AstExprPtr& ptr, int value);
+void matchAstLitInt(const AstExprPtr& ptr, int value);
 void matchAstUnary(const AstExprPtr& ptr, AstUnaryMatcher matcher);
 void matchAstBinary(const AstExprPtr& ptr, AstBinaryMatcher matcher);
 // AstNode matchers
@@ -53,7 +55,7 @@ void matchAstReturn(const AstStmtPtr& ptr, AstReturnMatcher matcher);
 // TACKY
 const TackyInstrPtrs& matchTackyProg(const TackyNodePtr& ptr);
 // TackyVal matchers
-void matchTackyConstant(const TackyValPtr& ptr, int value);
+void matchTackyLitInt(const TackyValPtr& ptr, int value);
 void matchTackyVariable(const TackyValPtr& ptr, string identifier);
 // TackyInstr matchers
 void matchTackyReturn(const TackyInstrPtr& ptr, TackyReturnMatcher matcher);
@@ -64,7 +66,7 @@ void matchTackyBinary(const TackyInstrPtr& ptr, TackyBinaryMatcher matcher);
 const AsmInstrPtrs& matchAsmProg(const AsmNodePtr& ptr);
 // AsmOperand matchers
 void matchAsmImm(const AsmOperandPtr& ptr, int value);
-void matchAsmReg(const AsmOperandPtr& ptr, AsmRegisterType type);
+void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type);
 void matchAsmPseudo(const AsmOperandPtr& ptr, const string& value);
 void matchAsmStack(const AsmOperandPtr& ptr, signed value);
 // AsmInstr matchers

@@ -20,7 +20,7 @@ AsmNodePtr AsmInstrFixPass::run() {
 }
 
 void AsmInstrFixPass::runPass(AsmInstrPtrs& instructions) { // TODO: Optimize
-    using enum AsmNodeType;
+    using enum AsmNode::Type;
 
     const auto getFixableInstr = [&]() -> StackPos {
         auto pos = instructions.begin();
@@ -33,7 +33,7 @@ void AsmInstrFixPass::runPass(AsmInstrPtrs& instructions) { // TODO: Optimize
 
     StackPos pos{};
     while ((pos = getFixableInstr()) != instructions.end()) {
-        const auto& type = pos->get()->type();
+        const auto& type = pos->get()->type;
         if (type == INSTR_MOV) {
             fixAsmMov(pos, instructions);
             continue;
@@ -58,9 +58,10 @@ void AsmInstrFixPass::genAsmAllocStack(AsmInstrPtrs& instructions) {
     instructions.insert(instructions.begin(), std::move(alloc));
 }
 
+// TODO: Simplify this
 void AsmInstrFixPass::fixAsmMov(StackPos pos, AsmInstrPtrs& instructions) {
     auto& mov = static_cast<AsmMov&>(*pos->get());
-    const auto reg = AsmRegisterType::R10;
+    const auto reg = AsmReg::Type::R10;
     auto movToR10 = std::make_unique<AsmMov>(std::move(mov.src),
                                              std::make_unique<AsmReg>(reg));
     auto movFromR10 = std::make_unique<AsmMov>(std::make_unique<AsmReg>(reg),
@@ -70,10 +71,11 @@ void AsmInstrFixPass::fixAsmMov(StackPos pos, AsmInstrPtrs& instructions) {
     instructions.insert(pos, std::move(movFromR10));
 }
 
+// TODO: Simplify this
 void AsmInstrFixPass::fixAsmIdiv(StackPos pos, AsmInstrPtrs& instructions) {
     auto& idiv = static_cast<AsmIdiv&>(*pos->get());
     const auto value = static_cast<AsmImm&>(*idiv.operand).value;
-    const auto reg = AsmRegisterType::R10;
+    const auto reg = AsmReg::Type::R10;
     *pos++ = std::make_unique<AsmMov>(std::make_unique<AsmImm>(value),
                                       std::make_unique<AsmReg>(reg));
 
@@ -81,14 +83,15 @@ void AsmInstrFixPass::fixAsmIdiv(StackPos pos, AsmInstrPtrs& instructions) {
     instructions.insert(pos, std::move(idivNew));
 }
 
+// TODO: Simplify this
 void AsmInstrFixPass::fixAsmBinary(StackPos pos, AsmInstrPtrs& instructions) {
     auto& binary = static_cast<AsmBinary&>(*pos->get());
-    if (binary.op == AsmBinaryOpType::BINARY_MULT) {
+    if (binary.op == AsmBinary::Type::BINARY_MULT) {
         fixAsmBinaryMult(pos, binary, instructions);
     } else {
         const auto srcValue = static_cast<AsmStack&>(*binary.src).value;
         const auto destValue = static_cast<AsmStack&>(*binary.dest).value;
-        const auto reg = AsmRegisterType::R10;
+        const auto reg = AsmReg::Type::R10;
         const auto op = binary.op;
         *pos++ = std::make_unique<AsmMov>(std::make_unique<AsmStack>(srcValue),
                                           std::make_unique<AsmReg>(reg));
@@ -99,12 +102,13 @@ void AsmInstrFixPass::fixAsmBinary(StackPos pos, AsmInstrPtrs& instructions) {
     }
 }
 
+// TODO: Simplify this
 void AsmInstrFixPass::fixAsmBinaryMult(StackPos pos, AsmBinary& binary,
                                        AsmInstrPtrs& instructions) {
     const auto stackValue = static_cast<AsmStack&>(*binary.dest).value;
     auto src = std::move(binary.src);
     const auto op = binary.op;
-    const auto reg = AsmRegisterType::R11;
+    const auto reg = AsmReg::Type::R11;
 
     auto mov1 = std::make_unique<AsmMov>(std::make_unique<AsmStack>(stackValue),
                                          std::make_unique<AsmReg>(reg));
@@ -119,23 +123,23 @@ void AsmInstrFixPass::fixAsmBinaryMult(StackPos pos, AsmBinary& binary,
 }
 
 bool AsmInstrFixPass::isFixable(const AsmInstrPtr& ptr) const {
-    switch (ptr->type()) {
-        using enum AsmNodeType;
+    switch (ptr->type) {
+        using enum AsmNode::Type;
         case INSTR_MOV: {
             auto& mov = static_cast<AsmMov&>(*ptr);
-            return mov.src->type() == OP_STACK && mov.dest->type() == OP_STACK;
+            return mov.src->type == OP_STACK && mov.dest->type == OP_STACK;
         }
         case INSTR_IDIV: {
             auto& idiv = static_cast<AsmIdiv&>(*ptr);
-            return idiv.operand->type() == OP_IMM;
+            return idiv.operand->type == OP_IMM;
         }
         case INSTR_BINARY: {
             auto& binary = static_cast<AsmBinary&>(*ptr);
-            if (binary.op == AsmBinaryOpType::BINARY_MULT) {
-                return binary.dest->type() == OP_STACK;
+            if (binary.op == AsmBinary::Type::BINARY_MULT) {
+                return binary.dest->type == OP_STACK;
             } else {
-                return binary.src->type() == OP_STACK &&
-                       binary.dest->type() == OP_STACK;
+                return binary.src->type == OP_STACK &&
+                       binary.dest->type == OP_STACK;
             }
         }
 

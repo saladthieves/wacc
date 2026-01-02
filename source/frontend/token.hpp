@@ -7,7 +7,7 @@
 namespace wacc {
 namespace front {
 namespace token {
-enum class TokenType : unsigned {
+enum class TokenType : std::uint8_t {
     // clang-format off
     KEYWORD_INT = 1,
     KEYWORD_VOID,
@@ -26,7 +26,7 @@ enum class TokenType : unsigned {
     OP_DIVIDE,
     OP_REMAINDER,
 
-    CONSTANT_INT,
+    LITERAL_INT,
 
     SEMICOLON,
     // clang-format on
@@ -85,7 +85,7 @@ public:
             case CLOSE_PAREN:    value = "CLOSE_PAREN"; break;
             case OPEN_BRACE:     value = "OPEN_BRACE"; break;
             case CLOSE_BRACE:    value = "CLOSE_BRACE"; break;
-            case CONSTANT_INT:   value = "CONSTANT_INT"; break;
+            case LITERAL_INT:    value = "LITERAL_INT"; break;
             case SEMICOLON:      value = "SEMICOLON"; break;
             case INVALID_TOKEN:  value = "INVALID_TOKEN"; break;
             case END:            value = "END"; break;

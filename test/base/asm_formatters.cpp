@@ -2,9 +2,9 @@
 
 namespace wacc::test::fmt {
 std::string formatAsmInstr(const AsmInstrPtr& ptr) {
-    const auto& type = ptr->type();
+    const auto& type = ptr->type;
     switch (type) {
-        using enum AsmNodeType;
+        using enum AsmNode::Type;
         case INSTR_MOV: {
             auto& mov = static_cast<AsmMov&>(*ptr);
             return formatAsmMov(mov);
@@ -39,9 +39,9 @@ std::string formatAsmInstr(const AsmInstrPtr& ptr) {
 
 namespace {
 std::string formatAsmOperand(const AsmOperand& op) {
-    const auto& type = op.type();
+    const auto& type = op.type;
     switch (type) {
-        using enum AsmNodeType;
+        using enum AsmNode::Type;
         case OP_IMM: {
             auto imm = static_cast<const AsmImm&>(op);
             return std::to_string(imm.value);
@@ -64,9 +64,9 @@ std::string formatAsmOperand(const AsmOperand& op) {
     }
 }
 
-std::string formatAsmRegister(const AsmRegisterType& type) {
+std::string formatAsmRegister(const AsmReg::Type& type) {
     switch (type) {
-        using enum AsmRegisterType;
+        using enum AsmReg::Type;
         case AX:  return "AX";
         case DX:  return "DX";
         case R10: return "R10";
@@ -111,18 +111,18 @@ std::string formatAsmRet() {
     return "<RET>";
 }
 
-std::string formatAsmUnaryOp(const AsmUnaryOpType& type) {
+std::string formatAsmUnaryOp(const AsmUnary::Type& type) {
     switch (type) {
-        using enum AsmUnaryOpType;
+        using enum AsmUnary::Type;
         case UNARY_NEGATE: return "NEG";
         case UNARY_NOT:    return "NOT";
         default:           throw std::runtime_error("Unimplemented formatAsmUnaryOp");
     }
 }
 
-std::string formatAsmBinaryOp(const AsmBinaryOpType& type) {
+std::string formatAsmBinaryOp(const AsmBinary::Type& type) {
     switch (type) {
-        using enum AsmBinaryOpType;
+        using enum AsmBinary::Type;
         case BINARY_ADD:  return "ADD";
         case BINARY_SUB:  return "SUB";
         case BINARY_MULT: return "MULT";

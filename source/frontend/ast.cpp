@@ -1,36 +1,50 @@
 #include "ast.hpp"
 
 namespace wacc::front::ast {
-// AstConstInt
-AstConstInt::AstConstInt(Token token, int value) : token{token}, value{value} {
+// AstNode
+AstNode::AstNode(Type type) : type{type} {
+}
+
+// AstExpr
+AstExpr::AstExpr(Type type) : AstNode(type) {
+}
+
+// AstLitInt
+AstLitInt::AstLitInt(Token token, int value) :
+    AstExpr(LITERAL_INT), token{token}, value{value} {
 }
 
 // AstUnary
-AstUnary::AstUnary(AstUnaryOpType op, AstExprPtr expr) :
-    op{op}, expr{std::move(expr)} {
+AstUnary::AstUnary(Type op, AstExprPtr expr) :
+    AstExpr(UNARY), op{op}, expr{std::move(expr)} {
 }
 
 // AstBinary
-AstBinary::AstBinary(AstBinaryOpType op, AstExprPtr left, AstExprPtr right) :
-    op{op}, left{std::move(left)}, right{std::move(right)} {
+AstBinary::AstBinary(Type op, AstExprPtr left, AstExprPtr right) :
+    AstExpr(BINARY), op{op}, left{std::move(left)}, right{std::move(right)} {
 }
 
 // AstIdent
 AstIdent::AstIdent(Token token, std::string_view value) :
-    token{token}, value{value} {
+    AstNode(IDENT), token{token}, value{value} {
+}
+
+// AstStmt
+AstStmt::AstStmt(Type type) : AstNode(type) {
 }
 
 // AstReturn
-AstReturn::AstReturn(AstExprPtr expr) : expr{std::move(expr)} {
+AstReturn::AstReturn(AstExprPtr expr) : AstStmt(RETURN), expr{std::move(expr)} {
 }
 
 // AstFun
 AstFun::AstFun(AstIdentPtr name, AstStmtPtr body) :
-    name{std::move(name)}, body{std::move(body)} {
+    AstNode(FUNCTION), name{std::move(name)}, body{std::move(body)} {
 }
 
 // AstProg
-AstProg::AstProg(AstFunPtr function) : function{std::move(function)} {
+AstProg::AstProg(AstFunPtr function) :
+    AstNode(PROGRAM), function{std::move(function)} {
 }
 
 // AstTree

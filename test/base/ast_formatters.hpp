@@ -13,11 +13,11 @@ using namespace wacc::front::ast;
 std::string formatAstExpr(const AstExprPtr& ptr);
 
 namespace {
-std::string formatAstConstInt(const AstConstInt& ast);
+std::string formatAstLitInt(const AstLitInt& ast);
 std::string formatAstUnary(const AstUnary& ast);
 std::string formatAstBinary(const AstBinary& ast);
-std::string formatAstUnaryOp(const AstUnaryOpType& type);
-std::string formatAstBinaryOp(const AstBinaryOpType& type);
+std::string formatAstUnaryOp(const AstUnary::Type& type);
+std::string formatAstBinaryOp(const AstBinary::Type& type);
 } // namespace
 } // namespace fmt
 } // namespace test

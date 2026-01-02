@@ -62,10 +62,10 @@ TackyFunPtr TackyGenerator::genForAstFun(const AstFun& obj) const {
 }
 
 TackyInstrPtrs TackyGenerator::genForAstStmt(const AstStmt& obj) const {
-    const auto& type = obj.type();
+    const auto& type = obj.type;
     auto body = TackyInstrPtrs{};
     switch (type) {
-        using enum AstNodeType;
+        using enum AstNode::Type;
         case RETURN: {
             auto& retObj = static_cast<const AstReturn&>(obj);
             genForAstReturn(retObj, body);
@@ -89,12 +89,12 @@ void TackyGenerator::genForAstReturn(const AstReturn& obj,
 
 TackyValPtr TackyGenerator::genForAstExpr(const AstExpr& obj,
                                           TackyInstrPtrs& body) const {
-    const auto& type = obj.type();
+    const auto& type = obj.type;
     switch (type) {
-        using enum AstNodeType;
-        case CONST_INTEGER: {
-            auto& it = static_cast<const AstConstInt&>(obj);
-            return std::make_unique<TackyConstant>(genForAstConstInt(it));
+        using enum AstNode::Type;
+        case LITERAL_INT: {
+            auto& it = static_cast<const AstLitInt&>(obj);
+            return std::make_unique<TackyLitInt>(genForAstLitInt(it));
         }
         case UNARY: {
             auto& unary = static_cast<const AstUnary&>(obj);
@@ -138,16 +138,16 @@ TackyValPtr TackyGenerator::genForAstBinary(const AstBinary& obj,
     return std::make_unique<TackyVariable>(name);
 }
 
-TackyConstant TackyGenerator::genForAstConstInt(const AstConstInt& obj) const {
+TackyLitInt TackyGenerator::genForAstLitInt(const AstLitInt& obj) const {
     return {obj.value};
 }
 
-TackyUnaryOpType
-TackyGenerator::genForAstUnaryOp(const AstUnaryOpType& type) const {
+TackyUnary::Type
+TackyGenerator::genForAstUnaryOp(const AstUnary::Type& type) const {
     switch (type) {
-        using enum AstUnaryOpType;
-        case UNARY_COMPLEMENT: return TackyUnaryOpType::UNARY_COMPLEMENT;
-        case UNARY_NEGATE:     return TackyUnaryOpType::UNARY_NEGATE;
+        using enum AstUnary::Type;
+        case UNARY_COMPLEMENT: return TackyUnary::Type::UNARY_COMPLEMENT;
+        case UNARY_NEGATE:     return TackyUnary::Type::UNARY_NEGATE;
         default:
             fail("Conversion from AstUnaryOpType::[{}] to TackyUnaryOpType "
                  "failed:",
@@ -155,15 +155,15 @@ TackyGenerator::genForAstUnaryOp(const AstUnaryOpType& type) const {
     }
 }
 
-TackyBinaryOpType
-TackyGenerator::genForAstBinaryOp(const AstBinaryOpType& type) const {
+TackyBinary::Type
+TackyGenerator::genForAstBinaryOp(const AstBinary::Type& type) const {
     switch (type) {
-        using enum AstBinaryOpType;
-        case BINARY_ADD:       return TackyBinaryOpType::BINARY_ADD;
-        case BINARY_SUBTRACT:  return TackyBinaryOpType::BINARY_SUBTRACT;
-        case BINARY_MULTIPLY:  return TackyBinaryOpType::BINARY_MULTIPLY;
-        case BINARY_DIVIDE:    return TackyBinaryOpType::BINARY_DIVIDE;
-        case BINARY_REMAINDER: return TackyBinaryOpType::BINARY_REMAINDER;
+        using enum AstBinary::Type;
+        case BINARY_ADD:       return TackyBinary::Type::BINARY_ADD;
+        case BINARY_SUBTRACT:  return TackyBinary::Type::BINARY_SUBTRACT;
+        case BINARY_MULTIPLY:  return TackyBinary::Type::BINARY_MULTIPLY;
+        case BINARY_DIVIDE:    return TackyBinary::Type::BINARY_DIVIDE;
+        case BINARY_REMAINDER: return TackyBinary::Type::BINARY_REMAINDER;
         default:
             fail("Conversion from AstBinaryOpType::[{}] to TackyBinaryOpType "
                  "failed:",

@@ -1,13 +1,14 @@
 #include "ast_formatters.hpp"
+#include "ast.hpp"
 
 namespace wacc::test::fmt {
 std::string formatAstExpr(const AstExprPtr& ptr) {
-    const auto& type = ptr->type();
-    using enum AstNodeType;
+    const auto& type = ptr->type;
+    using enum AstNode::Type;
     switch (type) {
-        case CONST_INTEGER: {
-            auto& ast = static_cast<const AstConstInt&>(*ptr);
-            return formatAstConstInt(ast);
+        case LITERAL_INT: {
+            auto& ast = static_cast<const AstLitInt&>(*ptr);
+            return formatAstLitInt(ast);
         }
         case UNARY: {
             auto& ast = static_cast<const AstUnary&>(*ptr);
@@ -25,7 +26,7 @@ std::string formatAstExpr(const AstExprPtr& ptr) {
 }
 
 namespace {
-std::string formatAstConstInt(const AstConstInt& ast) {
+std::string formatAstLitInt(const AstLitInt& ast) {
     return std::to_string(ast.value);
 }
 
@@ -42,17 +43,17 @@ std::string formatAstBinary(const AstBinary& ast) {
     return std::format("[{} {} {}]", left, op, right);
 }
 
-std::string formatAstUnaryOp(const AstUnaryOpType& type) {
+std::string formatAstUnaryOp(const AstUnary::Type& type) {
     switch (type) {
-        using enum AstUnaryOpType;
+        using enum AstUnary::Type;
         case UNARY_COMPLEMENT: return "~";
         case UNARY_NEGATE:     return "-";
     }
 }
 
-std::string formatAstBinaryOp(const AstBinaryOpType& type) {
+std::string formatAstBinaryOp(const AstBinary::Type& type) {
     switch (type) {
-        using enum AstBinaryOpType;
+        using enum AstBinary::Type;
         case BINARY_ADD:       return "+";
         case BINARY_SUBTRACT:  return "-";
         case BINARY_MULTIPLY:  return "*";

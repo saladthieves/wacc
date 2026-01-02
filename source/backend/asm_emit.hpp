@@ -45,7 +45,7 @@ private:
 
     std::string formatAsmReg(const AsmReg& obj) const;
 
-    std::string formatAsmUnaryOp(const AsmUnaryOpType& type) const;
+    std::string formatAsmUnaryOp(const AsmUnary::Type& type) const;
 
     template <typename... T>
     void pushLine(std::format_string<T...> str, T&&... args) {

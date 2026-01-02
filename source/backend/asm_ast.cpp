@@ -1,52 +1,75 @@
 #include "asm_ast.hpp"
 
 namespace wacc::back::ast {
+// AsmNode
+AsmNode::AsmNode(Type type) : type{type} {
+}
+
+// AsmOperand
+AsmOperand::AsmOperand(Type type) : AsmNode(type) {
+}
+
 // AsmImm
-AsmImm::AsmImm(int value) : value{value} {
+AsmImm::AsmImm(int value) : AsmOperand(OP_IMM), value{value} {
 }
 
 // AsmReg
-AsmReg::AsmReg(AsmRegisterType reg) : reg{reg} {
+AsmReg::AsmReg(Type reg) : AsmOperand(OP_REG), reg{reg} {
 }
 
 // AsmPseudo
-AsmPseudo::AsmPseudo(std::string identifier) : identifier{identifier} {
+AsmPseudo::AsmPseudo(std::string identifier) :
+    AsmOperand(OP_PSEUDO), identifier{identifier} {
 }
 
 // AsmStack
-AsmStack::AsmStack(signed value) : value{value} {
+AsmStack::AsmStack(signed value) : AsmOperand(OP_STACK), value{value} {
+}
+
+// AsmInstr
+AsmInstr::AsmInstr(Type type) : AsmNode(type) {
 }
 
 // AsmMov
 AsmMov::AsmMov(AsmOperandPtr src, AsmOperandPtr dest) :
-    src{std::move(src)}, dest{std::move(dest)} {
+    AsmInstr(INSTR_MOV), src{std::move(src)}, dest{std::move(dest)} {
 }
 
 // AsmUnary
-AsmUnary::AsmUnary(AsmUnaryOpType op, AsmOperandPtr operand) :
-    op{op}, operand{std::move(operand)} {
+AsmUnary::AsmUnary(Type op, AsmOperandPtr operand) :
+    AsmInstr(INSTR_UNARY), op{op}, operand{std::move(operand)} {
 }
 
 // AsmBinary
-AsmBinary::AsmBinary(AsmBinaryOpType op, AsmOperandPtr src,
-                     AsmOperandPtr dest) :
-    op{op}, src{std::move(src)}, dest{std::move(dest)} {
+AsmBinary::AsmBinary(Type op, AsmOperandPtr src, AsmOperandPtr dest) :
+    AsmInstr(INSTR_BINARY), op{op}, src{std::move(src)}, dest{std::move(dest)} {
 }
 
 // AsmIdiv
-AsmIdiv::AsmIdiv(AsmOperandPtr operand) : operand{std::move(operand)} {
+AsmIdiv::AsmIdiv(AsmOperandPtr operand) :
+    AsmInstr(INSTR_IDIV), operand{std::move(operand)} {
+}
+
+// AsmCdq
+AsmCdq::AsmCdq() : AsmInstr(INSTR_CDQ) {
 }
 
 // AsmAllocStack
-AsmAllocStack::AsmAllocStack(unsigned value) : value{value} {
+AsmAllocStack::AsmAllocStack(unsigned value) :
+    AsmInstr(INSTR_ALLOC), value{value} {
+}
+
+// AsmRet
+AsmRet::AsmRet() : AsmInstr(INSTR_RET) {
 }
 
 // AsmFun
 AsmFun::AsmFun(std::string name, AsmInstrPtrs instructions) :
-    name{name}, instructions{std::move(instructions)} {
+    AsmNode(FUNCTION), name{name}, instructions{std::move(instructions)} {
 }
 
 // AsmProg
-AsmProg::AsmProg(AsmFunPtr function) : function{std::move(function)} {
+AsmProg::AsmProg(AsmFunPtr function) :
+    AsmNode(PROGRAM), function{std::move(function)} {
 }
 } // namespace wacc::back::ast

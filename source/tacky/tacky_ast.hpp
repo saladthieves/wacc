@@ -12,7 +12,7 @@ namespace ast {
 // Forward declarations
 class TackyNode;
 class TackyVal;
-class TackyConstant;
+class TackyLitInt;
 class TackyVariable;
 class TackyInstr;
 class TackyReturn;
@@ -24,7 +24,7 @@ class TackyProg;
 // Aliases
 using TackyNodePtr = std::unique_ptr<TackyNode>;
 using TackyValPtr = std::unique_ptr<TackyVal>;
-using TackyConstPtr = std::unique_ptr<TackyConstant>;
+using TackyLitIntPtr = std::unique_ptr<TackyLitInt>;
 using TackyVarPtr = std::unique_ptr<TackyVariable>;
 using TackyInstrPtr = std::unique_ptr<TackyInstr>;
 using TackyReturnPtr = std::unique_ptr<TackyReturn>;
@@ -35,53 +35,39 @@ using TackyProgPtr = std::unique_ptr<TackyProg>;
 
 using TackyInstrPtrs = std::vector<TackyInstrPtr>;
 
-enum class TackyNodeType : unsigned {
-    CONSTANT = 1,
-    VARIABLE,
-    INSTR_RETURN,
-    INSTR_UNARY,
-    INSTR_BINARY,
-    FUNCTION,
-    PROGRAM,
-};
-
-enum class TackyUnaryOpType : unsigned {
-    UNARY_COMPLEMENT = 1,
-    UNARY_NEGATE,
-};
-
-enum class TackyBinaryOpType : unsigned {
-    BINARY_ADD = 1,
-    BINARY_SUBTRACT,
-    BINARY_MULTIPLY,
-    BINARY_DIVIDE,
-    BINARY_REMAINDER,
-};
-
-namespace {
-using enum TackyNodeType;
-}
-
 // TackyNode
 class TackyNode {
 public:
-    virtual TackyNodeType type() const = 0;
+    enum class Type : std::uint8_t {
+        LITERAL_INT = 1,
+        VARIABLE,
+        INSTR_RETURN,
+        INSTR_UNARY,
+        INSTR_BINARY,
+        FUNCTION,
+        PROGRAM,
+    };
+    TackyNode(Type type);
 
     virtual ~TackyNode() = default;
+
+    Type type;
 };
+
+namespace {
+using enum TackyNode::Type;
+}
 
 // TackyVal
 class TackyVal : public TackyNode {
 public:
-    virtual TackyNodeType type() const override = 0;
+    TackyVal(Type type);
 };
 
-// TackyConstant
-class TackyConstant : public TackyVal {
+// TackyLitInt
+class TackyLitInt : public TackyVal {
 public:
-    TackyConstant(int value);
-
-    virtual TackyNodeType type() const override { return CONSTANT; }
+    TackyLitInt(int value);
 
     int value;
 };
@@ -91,15 +77,13 @@ class TackyVariable : public TackyVal {
 public:
     TackyVariable(std::string identifier);
 
-    virtual TackyNodeType type() const override { return VARIABLE; }
-
     std::string identifier;
 };
 
 // TackyInstr
 class TackyInstr : public TackyNode {
 public:
-    virtual TackyNodeType type() const override = 0;
+    TackyInstr(Type type);
 };
 
 // TackyReturn
@@ -107,19 +91,20 @@ class TackyReturn : public TackyInstr {
 public:
     TackyReturn(TackyValPtr val);
 
-    virtual TackyNodeType type() const override { return INSTR_RETURN; }
-
     TackyValPtr val;
 };
 
 // TackyUnary
 class TackyUnary : public TackyInstr {
 public:
-    TackyUnary(TackyUnaryOpType op, TackyValPtr src, TackyValPtr dest);
+    enum class Type : std::uint8_t {
+        UNARY_COMPLEMENT = 1,
+        UNARY_NEGATE,
+    };
 
-    virtual TackyNodeType type() const override { return INSTR_UNARY; }
+    TackyUnary(Type op, TackyValPtr src, TackyValPtr dest);
 
-    TackyUnaryOpType op;
+    Type op;
     TackyValPtr src;
     TackyValPtr dest;
 };
@@ -127,12 +112,17 @@ public:
 // TackyBinary
 class TackyBinary : public TackyInstr {
 public:
-    TackyBinary(TackyBinaryOpType op, TackyValPtr src1, TackyValPtr src2,
-                TackyValPtr dest);
+    enum class Type : std::uint8_t {
+        BINARY_ADD = 1,
+        BINARY_SUBTRACT,
+        BINARY_MULTIPLY,
+        BINARY_DIVIDE,
+        BINARY_REMAINDER,
+    };
 
-    virtual TackyNodeType type() const override { return INSTR_BINARY; }
+    TackyBinary(Type op, TackyValPtr src1, TackyValPtr src2, TackyValPtr dest);
 
-    TackyBinaryOpType op;
+    Type op;
     TackyValPtr src1;
     TackyValPtr src2;
     TackyValPtr dest;
@@ -143,8 +133,6 @@ class TackyFun : public TackyNode {
 public:
     TackyFun(std::string identifier, TackyInstrPtrs body);
 
-    virtual TackyNodeType type() const override { return FUNCTION; }
-
     std::string identifier;
     TackyInstrPtrs body;
 };
@@ -154,43 +142,38 @@ class TackyProg : public TackyNode {
 public:
     TackyProg(TackyFunPtr function);
 
-    virtual TackyNodeType type() const override { return PROGRAM; }
-
     TackyFunPtr function;
 };
-
 } // namespace ast
 } // namespace tacky
 } // namespace wacc
 
 namespace std {
 namespace {
-using wacc::tacky::ast::TackyNodeType;
+using wacc::tacky::ast::TackyNode;
 }
 
 template <>
-class formatter<TackyNodeType> {
+class formatter<TackyNode::Type> {
 public:
     constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const TackyNodeType& type, format_context& context) const {
+    auto format(const TackyNode::Type& type, format_context& context) const {
         std::string value{};
 
         switch (type) {
-            using enum TackyNodeType;
+            using enum TackyNode::Type;
 
-            case CONSTANT:     value = "CONSTANT"; break;
+            case LITERAL_INT:  value = "LITERAL_INT"; break;
             case VARIABLE:     value = "VARIABLE"; break;
             case INSTR_RETURN: value = "INSTR_RETURN"; break;
             case INSTR_UNARY:  value = "INSTR_UNARY"; break;
             case INSTR_BINARY: value = "INSTR_BINARY"; break;
             case FUNCTION:     value = "FUNCTION"; break;
             case PROGRAM:      value = "PROGRAM"; break;
-            default:
-                throw std::format_error(
-                    "Unhandled tacky::ast::TackyNodeType enum");
+            default:           throw std::format_error("Unhandled TackyNode::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);
@@ -198,27 +181,25 @@ public:
 };
 
 namespace {
-using wacc::tacky::ast::TackyUnaryOpType;
+using wacc::tacky::ast::TackyUnary;
 }
 
 template <>
-class formatter<TackyUnaryOpType> {
+class formatter<TackyUnary::Type> {
 public:
     constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const TackyUnaryOpType& type, format_context& context) const {
+    auto format(const TackyUnary::Type& type, format_context& context) const {
         std::string value{};
 
         switch (type) {
-            using enum TackyUnaryOpType;
+            using enum TackyUnary::Type;
 
             case UNARY_COMPLEMENT: value = "UNARY_COMPLEMENT"; break;
             case UNARY_NEGATE:     value = "UNARY_NEGATE"; break;
-            default:
-                throw std::format_error(
-                    "Unhandled tacky::ast::TackyUnaryOpType enum");
+            default:               throw std::format_error("Unhandled TackyUnary::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);
@@ -226,21 +207,21 @@ public:
 };
 
 namespace {
-using wacc::tacky::ast::TackyBinaryOpType;
+using wacc::tacky::ast::TackyBinary;
 }
 
 template <>
-class formatter<TackyBinaryOpType> {
+class formatter<TackyBinary::Type> {
 public:
     constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const TackyBinaryOpType& type, format_context& context) const {
+    auto format(const TackyBinary::Type& type, format_context& context) const {
         std::string value{};
 
         switch (type) {
-            using enum TackyBinaryOpType;
+            using enum TackyBinary::Type;
 
             case BINARY_ADD:       value = "BINARY_ADD"; break;
             case BINARY_SUBTRACT:  value = "BINARY_SUBTRACT"; break;
@@ -248,8 +229,7 @@ public:
             case BINARY_DIVIDE:    value = "BINARY_DIVIDE"; break;
             case BINARY_REMAINDER: value = "BINARY_REMAINDER"; break;
             default:
-                throw std::format_error(
-                    "Unhandled tacky::ast::TackyBinaryOpType enum");
+                throw std::format_error("Unhandled TackyBinary::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);

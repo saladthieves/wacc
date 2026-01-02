@@ -15,8 +15,8 @@ const AstStmtPtr& matchAstProg(const AstNodePtr& ptr) {
 }
 
 // AstExpr matchers
-void matchAstConstInt(const AstExprPtr& ptr, int value) {
-    auto ast = as<AstConstInt>(ptr);
+void matchAstLitInt(const AstExprPtr& ptr, int value) {
+    auto ast = as<AstLitInt>(ptr);
     ASSERT_EQ(ast->value, value);
 }
 
@@ -51,7 +51,7 @@ const TackyInstrPtrs& matchTackyProg(const TackyNodePtr& ptr) {
 
 // TackyVal matchers
 void matchTackyConstant(const TackyValPtr& ptr, int value) {
-    auto constant = as<TackyConstant>(ptr);
+    auto constant = as<TackyLitInt>(ptr);
     ASSERT_EQ(constant->value, value);
 }
 
@@ -89,7 +89,7 @@ void matchAsmImm(const AsmOperandPtr& ptr, int value) {
     ASSERT_EQ(imm->value, value);
 }
 
-void matchAsmReg(const AsmOperandPtr& ptr, AsmRegisterType type) {
+void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type) {
     auto reg = as<AsmReg>(ptr);
     ASSERT_EQ(reg->reg, type);
 }

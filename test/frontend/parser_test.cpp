@@ -13,8 +13,8 @@
 #include <vector>
 
 using enum wacc::front::token::TokenType;
-using enum wacc::front::ast::AstUnaryOpType;
-using enum wacc::front::ast::AstBinaryOpType;
+using enum wacc::front::ast::AstUnary::Type;
+using enum wacc::front::ast::AstBinary::Type;
 
 using wacc::front::parse::Parser;
 using wacc::front::src::Source;

@@ -51,13 +51,13 @@ private:
 
     ast::AstIdentPtr parseIdentifier();
 
-    ast::AstConstIntPtr parseConstantInteger();
+    ast::AstLitIntPtr parseLiteralInteger();
 
     ast::AstUnaryPtr parseUnaryExpression();
 
-    ast::AstUnaryOpType parseUnaryOperator();
+    ast::AstUnary::Type parseUnaryOperator();
 
-    ast::AstBinaryOpType parseBinaryOperator();
+    ast::AstBinary::Type parseBinaryOperator();
 
     bool isFactor(const TokenType& type) const;
 
@@ -90,6 +90,7 @@ private:
     ConstIter current;
     ConstIter next;
     ConstIter end;
+
     static const PrecedenceMap precedences;
 };
 } // namespace parse

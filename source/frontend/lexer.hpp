@@ -51,7 +51,7 @@ private:
 
     void scanIdentifiers();
 
-    void scanNumberConstant();
+    void scanNumberLiteral();
 
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",

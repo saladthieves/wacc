@@ -28,9 +28,9 @@ AsmGenerator::genForTackyInstrs(const TackyInstrPtrs& tackyBody) const {
     auto asmBody = AsmInstrPtrs{};
 
     for (const auto& tacky : tackyBody) {
-        const auto& type = tacky->type();
+        const auto& type = tacky->type;
         switch (type) {
-            using enum TackyNodeType;
+            using enum TackyNode::Type;
             case INSTR_RETURN: {
                 auto& tackyRet = static_cast<const TackyReturn&>(*tacky);
                 genForTackyReturn(tackyRet, asmBody);
@@ -58,15 +58,17 @@ AsmGenerator::genForTackyInstrs(const TackyInstrPtrs& tackyBody) const {
     return asmBody;
 }
 
+// TODO: Simplify this
 void AsmGenerator::genForTackyReturn(const TackyReturn& tacky,
                                      AsmInstrPtrs& asmBody) const {
     auto src = genForTackyVal(*tacky.val);
-    auto dest = genAsmReg(AsmRegisterType::AX);
+    auto dest = genAsmReg(AsmReg::Type::AX);
     asmBody.emplace_back(
         std::make_unique<AsmMov>(std::move(src), std::move(dest)));
     asmBody.emplace_back(std::make_unique<AsmRet>());
 }
 
+// TODO: Simplify this
 void AsmGenerator::genForTackyUnary(const TackyUnary& tacky,
                                     AsmInstrPtrs& asmBody) const {
     auto movSrc = genForTackyVal(*tacky.src);
@@ -80,9 +82,10 @@ void AsmGenerator::genForTackyUnary(const TackyUnary& tacky,
         std::make_unique<AsmUnary>(std::move(unaryOp), std::move(unaryDest)));
 }
 
+// TODO: Simplify this
 void AsmGenerator::genForTackyBinary(const TackyBinary& tacky,
                                      AsmInstrPtrs& asmBody) const {
-    using enum TackyBinaryOpType;
+    using enum TackyBinary::Type;
     const auto& op = tacky.op;
     if (op == BINARY_DIVIDE || op == BINARY_REMAINDER) {
         return genForTackyDivRem(tacky, asmBody);
@@ -100,10 +103,11 @@ void AsmGenerator::genForTackyBinary(const TackyBinary& tacky,
     }
 }
 
+// TODO: Simplify this
 void AsmGenerator::genForTackyDivRem(const TackyBinary& tacky,
                                      AsmInstrPtrs& asmBody) const {
     auto mov1Src = genForTackyVal(*tacky.src1);
-    auto mov1Dest = genAsmReg(AsmRegisterType::AX);
+    auto mov1Dest = genAsmReg(AsmReg::Type::AX);
     asmBody.emplace_back(
         std::make_unique<AsmMov>(std::move(mov1Src), std::move(mov1Dest)));
 
@@ -112,24 +116,24 @@ void AsmGenerator::genForTackyDivRem(const TackyBinary& tacky,
     auto idivSrc = genForTackyVal(*tacky.src2);
     asmBody.emplace_back(std::make_unique<AsmIdiv>(std::move(idivSrc)));
 
-    auto mov2Src = genAsmReg(tacky.op == TackyBinaryOpType::BINARY_DIVIDE
-                                 ? AsmRegisterType::AX
-                                 : AsmRegisterType::DX);
+    auto mov2Src = genAsmReg(tacky.op == TackyBinary::Type::BINARY_DIVIDE
+                                 ? AsmReg::Type::AX
+                                 : AsmReg::Type::DX);
     auto mov2Dest = genForTackyVal(*tacky.dest);
     asmBody.emplace_back(
         std::make_unique<AsmMov>(std::move(mov2Src), std::move(mov2Dest)));
 }
 
-AsmRegPtr AsmGenerator::genAsmReg(AsmRegisterType type) const {
+AsmRegPtr AsmGenerator::genAsmReg(AsmReg::Type type) const {
     return std::make_unique<AsmReg>(type);
 }
 
 AsmOperandPtr AsmGenerator::genForTackyVal(const TackyVal& tacky) const {
-    const auto& type = tacky.type();
+    const auto& type = tacky.type;
     switch (type) {
-        using enum TackyNodeType;
-        case CONSTANT: {
-            auto& tackyConst = static_cast<const TackyConstant&>(tacky);
+        using enum TackyNode::Type;
+        case LITERAL_INT: {
+            auto& tackyConst = static_cast<const TackyLitInt&>(tacky);
             return std::make_unique<AsmImm>(tackyConst.value);
         }
         case VARIABLE: {
@@ -144,22 +148,22 @@ AsmOperandPtr AsmGenerator::genForTackyVal(const TackyVal& tacky) const {
     }
 }
 
-AsmUnaryOpType
-AsmGenerator::genForTackyUnaryOp(const TackyUnaryOpType& type) const {
+AsmUnary::Type
+AsmGenerator::genForTackyUnaryOp(const TackyUnary::Type& type) const {
     switch (type) {
-        using enum TackyUnaryOpType;
-        case UNARY_COMPLEMENT: return AsmUnaryOpType::UNARY_NOT;
-        case UNARY_NEGATE:     return AsmUnaryOpType::UNARY_NEGATE;
+        using enum TackyUnary::Type;
+        case UNARY_COMPLEMENT: return AsmUnary::Type::UNARY_NOT;
+        case UNARY_NEGATE:     return AsmUnary::Type::UNARY_NEGATE;
     }
 }
 
-AsmBinaryOpType
-AsmGenerator::genForTackyBinaryOp(const TackyBinaryOpType& type) const {
+AsmBinary::Type
+AsmGenerator::genForTackyBinaryOp(const TackyBinary::Type& type) const {
     switch (type) {
-        using enum TackyBinaryOpType;
-        case BINARY_ADD:       return AsmBinaryOpType::BINARY_ADD;
-        case BINARY_SUBTRACT:  return AsmBinaryOpType::BINARY_SUB;
-        case BINARY_MULTIPLY:  return AsmBinaryOpType::BINARY_MULT;
+        using enum TackyBinary::Type;
+        case BINARY_ADD:       return AsmBinary::Type::BINARY_ADD;
+        case BINARY_SUBTRACT:  return AsmBinary::Type::BINARY_SUB;
+        case BINARY_MULTIPLY:  return AsmBinary::Type::BINARY_MULT;
         case BINARY_DIVIDE:
         case BINARY_REMAINDER: {
             fail("Division and remainder should be handled with AsmIdiv.");
