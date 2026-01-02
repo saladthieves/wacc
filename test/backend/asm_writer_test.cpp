@@ -78,7 +78,7 @@ TEST_F(AsmWriterTest, writeThrowOnEmptyPath) {
 TEST_F(AsmWriterTest, write) {
     // ARRANGE
     const auto code = "int main(void) { return 15 + -30; }";
-    auto emitter = getAsmEmitter(code);
+    auto emitter = getAsmEmitter(getLinuxPlatform(), code);
     auto lines = *emitter.emit();
     auto copy = make_unique<decltype(lines)>(lines);
     auto writer = AsmWriter{std::move(copy), sampleAsm};

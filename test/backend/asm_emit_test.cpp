@@ -17,7 +17,8 @@ class AsmEmitterTest :
 
 TEST_F(AsmEmitterTest, emitThrowOnUnknownPlatform) {
     // ARRANGE
-    auto emitter = getAsmEmitter(getUnknownPlatform());
+    const auto code = "int main(void) { return -15 * ~32; }";
+    auto emitter = getAsmEmitter(getUnknownPlatform(), code);
     string error{};
 
     // ACT
@@ -131,7 +132,8 @@ TEST_F(AsmEmitterTest, emitMacOS) {
 
 TEST_F(AsmEmitterTest, emitInstrIndent) {
     // ARRANGE
-    auto emitter = getAsmEmitter(getMacOSPlatform());
+    const auto code = "int main(void) { return -15 * ~32; }";
+    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
     auto locations = vector<std::size_t>{};
 
     // ACT

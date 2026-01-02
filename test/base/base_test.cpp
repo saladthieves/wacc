@@ -42,16 +42,6 @@ AsmInstrFixPass BaseTest::getAsmInstrFixPass(string_view code) const {
     return AsmInstrFixPass{pass.run(), pass.getAbsoluteOffset()};
 }
 
-AsmEmitter BaseTest::getAsmEmitter(Platform platform) const {
-    auto pass = getAsmInstrFixPass();
-    return AsmEmitter{pass.run(), platform};
-}
-
-AsmEmitter BaseTest::getAsmEmitter(string_view code) const {
-    auto pass = getAsmInstrFixPass(code);
-    return AsmEmitter{pass.run(), getPlatform()};
-}
-
 AsmEmitter BaseTest::getAsmEmitter(Platform platform, string_view code) const {
     auto pass = getAsmInstrFixPass(code);
     return AsmEmitter{pass.run(), platform};

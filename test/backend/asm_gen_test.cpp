@@ -76,7 +76,8 @@ TEST_F(AsmGeneratorTest, generateNegate) {
 
 TEST_F(AsmGeneratorTest, generateUnary) {
     // ARRANGE
-    auto generator = getAsmGenerator();
+    const auto code = "int main(void) { return ~(-(~25)); }";
+    auto generator = getAsmGenerator(code);
 
     // ACT
     auto ast = generator.generate();

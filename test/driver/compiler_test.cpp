@@ -13,7 +13,6 @@ using wacc::driver::runCompiler;
 
 using wacc::test::utils::samples::cleanUpSamples;
 using wacc::test::utils::samples::sampleAsm;
-using wacc::test::utils::samples::sampleCode;
 using wacc::test::utils::samples::samplePrep;
 using wacc::test::utils::samples::sampleSource;
 
@@ -35,6 +34,8 @@ protected:
 
     DriverArgs sampleArgs{false, false, false,        false,
                           false, false, sampleSource, "gcc"};
+
+    static constexpr auto sampleCode = "int main(void) { return 1 * 2; }";
 };
 
 TEST_F(CompilerTest, throwOnNonExistentFile) {

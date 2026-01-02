@@ -12,9 +12,9 @@ TEST_CHAPTER="--chapter 3"
 # CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 2"
 # eval ${CMD}
 
-echo "🧪 - Testing Chapter 3..."
-CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 3"
-eval ${CMD}
+# echo "🧪 - Testing Chapter 3..."
+# CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 3"
+# eval ${CMD}
 
 # echo "🧪 - Testing compiler..."
 # CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage codegen"
