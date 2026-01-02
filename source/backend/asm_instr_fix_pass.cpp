@@ -15,135 +15,136 @@ AsmNodePtr AsmInstrFixPass::run() {
     auto& asmFun = *asmProg.function;
 
     runPass(asmFun.instructions);
+    asmFun.instructions.swap(fixed);
 
     return std::move(ast);
 }
 
-void AsmInstrFixPass::runPass(AsmInstrPtrs& instructions) { // TODO: Optimize
-    using enum AsmNode::Type;
+void AsmInstrFixPass::runPass(AsmInstrPtrs& instructions) {
+    genAsmAllocStack();
 
-    const auto getFixableInstr = [&]() -> StackPos {
-        auto pos = instructions.begin();
-        for (; pos != instructions.end(); ++pos) {
-            if (isFixable(*pos)) return pos;
-        }
-
-        return pos;
-    };
-
-    StackPos pos{};
-    while ((pos = getFixableInstr()) != instructions.end()) {
-        const auto& type = pos->get()->type;
-        if (type == INSTR_MOV) {
-            fixAsmMov(pos, instructions);
-            continue;
-        }
-
-        if (type == INSTR_IDIV) {
-            fixAsmIdiv(pos, instructions);
-            continue;
-        }
-
-        if (type == INSTR_BINARY) {
-            fixAsmBinary(pos, instructions);
-            continue;
-        }
-    }
-
-    genAsmAllocStack(instructions);
-}
-
-void AsmInstrFixPass::genAsmAllocStack(AsmInstrPtrs& instructions) {
-    auto alloc = std::make_unique<AsmAllocStack>(stackOffset);
-    instructions.insert(instructions.begin(), std::move(alloc));
-}
-
-// TODO: Simplify this
-void AsmInstrFixPass::fixAsmMov(StackPos pos, AsmInstrPtrs& instructions) {
-    auto& mov = static_cast<AsmMov&>(*pos->get());
-    const auto reg = AsmReg::Type::R10;
-    auto movToR10 = std::make_unique<AsmMov>(std::move(mov.src),
-                                             std::make_unique<AsmReg>(reg));
-    auto movFromR10 = std::make_unique<AsmMov>(std::make_unique<AsmReg>(reg),
-                                               std::move(mov.dest));
-    *pos++ = std::move(movToR10);
-
-    instructions.insert(pos, std::move(movFromR10));
-}
-
-// TODO: Simplify this
-void AsmInstrFixPass::fixAsmIdiv(StackPos pos, AsmInstrPtrs& instructions) {
-    auto& idiv = static_cast<AsmIdiv&>(*pos->get());
-    const auto value = static_cast<AsmImm&>(*idiv.operand).value;
-    const auto reg = AsmReg::Type::R10;
-    *pos++ = std::make_unique<AsmMov>(std::make_unique<AsmImm>(value),
-                                      std::make_unique<AsmReg>(reg));
-
-    auto idivNew = std::make_unique<AsmIdiv>(std::make_unique<AsmReg>(reg));
-    instructions.insert(pos, std::move(idivNew));
-}
-
-// TODO: Simplify this
-void AsmInstrFixPass::fixAsmBinary(StackPos pos, AsmInstrPtrs& instructions) {
-    auto& binary = static_cast<AsmBinary&>(*pos->get());
-    if (binary.op == AsmBinary::Type::BINARY_MULT) {
-        fixAsmBinaryMult(pos, binary, instructions);
-    } else {
-        const auto srcValue = static_cast<AsmStack&>(*binary.src).value;
-        const auto destValue = static_cast<AsmStack&>(*binary.dest).value;
-        const auto reg = AsmReg::Type::R10;
-        const auto op = binary.op;
-        *pos++ = std::make_unique<AsmMov>(std::make_unique<AsmStack>(srcValue),
-                                          std::make_unique<AsmReg>(reg));
-        auto binary2 =
-            std::make_unique<AsmBinary>(op, std::make_unique<AsmReg>(reg),
-                                        std::make_unique<AsmStack>(destValue));
-        instructions.insert(pos, std::move(binary2));
-    }
-}
-
-// TODO: Simplify this
-void AsmInstrFixPass::fixAsmBinaryMult(StackPos pos, AsmBinary& binary,
-                                       AsmInstrPtrs& instructions) {
-    const auto stackValue = static_cast<AsmStack&>(*binary.dest).value;
-    auto src = std::move(binary.src);
-    const auto op = binary.op;
-    const auto reg = AsmReg::Type::R11;
-
-    auto mov1 = std::make_unique<AsmMov>(std::make_unique<AsmStack>(stackValue),
-                                         std::make_unique<AsmReg>(reg));
-    auto mul = std::make_unique<AsmBinary>(op, std::move(src),
-                                           std::make_unique<AsmReg>(reg));
-    auto mov2 = std::make_unique<AsmMov>(
-        std::make_unique<AsmReg>(reg), std::make_unique<AsmStack>(stackValue));
-
-    *pos++ = std::move(mov1);
-    pos = instructions.insert(pos, std::move(mul));
-    instructions.insert(pos + 1, std::move(mov2));
-}
-
-bool AsmInstrFixPass::isFixable(const AsmInstrPtr& ptr) const {
-    switch (ptr->type) {
-        using enum AsmNode::Type;
-        case INSTR_MOV: {
-            auto& mov = static_cast<AsmMov&>(*ptr);
-            return mov.src->type == OP_STACK && mov.dest->type == OP_STACK;
-        }
-        case INSTR_IDIV: {
-            auto& idiv = static_cast<AsmIdiv&>(*ptr);
-            return idiv.operand->type == OP_IMM;
-        }
-        case INSTR_BINARY: {
-            auto& binary = static_cast<AsmBinary&>(*ptr);
-            if (binary.op == AsmBinary::Type::BINARY_MULT) {
-                return binary.dest->type == OP_STACK;
-            } else {
-                return binary.src->type == OP_STACK &&
-                       binary.dest->type == OP_STACK;
+    for (auto& instruction : instructions) {
+        const auto& type = instruction->type;
+        switch (type) {
+            case INSTR_MOV: {
+                fixAsmMov(std::move(instruction));
+                continue;
+            }
+            case INSTR_IDIV: {
+                fixAsmIdiv(std::move(instruction));
+                continue;
+            }
+            case INSTR_BINARY: {
+                fixAsmBinary(std::move(instruction));
+                continue;
+            }
+            default: {
+                fixed.push_back(std::move(instruction));
             }
         }
+    }
+}
 
-        default: return false;
+void AsmInstrFixPass::genAsmAllocStack() {
+    // sub $value, %rsp
+    fixed.emplace_back(std::make_unique<AsmAllocStack>(stackOffset));
+}
+
+void AsmInstrFixPass::fixAsmMov(AsmInstrPtr ptr) {
+    auto& mov = static_cast<AsmMov&>(*ptr);
+
+    // mov [-x(%rbp)], [-y(%rbp)]
+    if (mov.src->type == OP_STACK && mov.dest->type == OP_STACK) {
+        const auto reg = AsmReg::Type::R10;
+        // mov src, %r10d
+        auto movToR10 = std::make_unique<AsmMov>(std::move(mov.src),
+                                                 std::make_unique<AsmReg>(reg));
+        // mov %r10d, dest
+        auto movFromR10 = std::make_unique<AsmMov>(
+            std::make_unique<AsmReg>(reg), std::move(mov.dest));
+
+        fixed.push_back(std::move(movToR10));
+        fixed.push_back(std::move(movFromR10));
+    } else {
+        fixed.push_back(std::move(ptr));
+    }
+}
+
+void AsmInstrFixPass::fixAsmIdiv(AsmInstrPtr ptr) {
+    auto& idiv = static_cast<AsmIdiv&>(*ptr);
+
+    // mov [$x]
+    if (idiv.operand->type == OP_IMM) {
+        const auto value = static_cast<AsmImm&>(*idiv.operand).value;
+        const auto reg = AsmReg::Type::R10;
+        // mov $x, %r10d
+        auto mov = std::make_unique<AsmMov>(std::make_unique<AsmImm>(value),
+                                            std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(mov));
+
+        // idiv %r10d
+        auto idivNew = std::make_unique<AsmIdiv>(std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(idivNew));
+    } else {
+        fixed.push_back(std::move(ptr));
+    }
+}
+
+void AsmInstrFixPass::fixAsmBinary(AsmInstrPtr ptr) {
+    auto& bin = static_cast<AsmBinary&>(*ptr);
+    if (bin.op == AsmBinary::Type::BINARY_MULT) {
+        fixAsmBinaryMult(std::move(ptr));
+        return;
+    }
+
+    // [add|sub] [-x(%rbp)], [-y(%rbp)]
+    if (bin.src->type == OP_STACK && bin.dest->type == OP_STACK) {
+        // copy all needed by value first before overwriting via *pos++
+        const auto src = static_cast<AsmStack&>(*bin.src).value;
+        const auto dest = static_cast<AsmStack&>(*bin.dest).value;
+        const auto reg = AsmReg::Type::R10;
+        const auto op = bin.op;
+
+        // mov -x(%rbp), %r10d
+        auto fixedMov = std::make_unique<AsmMov>(
+            std::make_unique<AsmStack>(src), std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(fixedMov));
+
+        // [add|sub] %r10d, -y(%rbp) |or| -y(%rbp) = -y(%rbp) [add|sub] %r10d
+        auto fixedBin =
+            std::make_unique<AsmBinary>(op, std::make_unique<AsmReg>(reg),
+                                        std::make_unique<AsmStack>(dest));
+        fixed.push_back(std::move(fixedBin));
+    } else {
+        fixed.push_back(std::move(ptr));
+    }
+}
+
+void AsmInstrFixPass::fixAsmBinaryMult(AsmInstrPtr ptr) {
+    // imul src, [-x(%rbp)]
+    auto& bin = static_cast<AsmBinary&>(*ptr);
+    if (bin.dest->type == OP_STACK) {
+        const auto stackValue = static_cast<AsmStack&>(*bin.dest).value;
+        const auto op = bin.op;
+        const auto reg = AsmReg::Type::R11;
+        // mov -x(%dest), %r11d
+        auto mov1 =
+            std::make_unique<AsmMov>(std::make_unique<AsmStack>(stackValue),
+                                     std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(mov1));
+
+        // imul src, %r11d |or| %r11d = %r11d x src
+        auto mul = std::make_unique<AsmBinary>(op, std::move(bin.src),
+                                               std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(mul));
+
+        // mov %r11d, -x(%dest)
+        auto mov2 =
+            std::make_unique<AsmMov>(std::make_unique<AsmReg>(reg),
+                                     std::make_unique<AsmStack>(stackValue));
+        fixed.push_back(std::move(mov2));
+    } else {
+        fixed.push_back(std::move(ptr));
     }
 }
 } // namespace wacc::back::pass

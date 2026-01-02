@@ -20,17 +20,15 @@ public:
 private:
     void runPass(AsmInstrPtrs& instructions);
 
-    void genAsmAllocStack(AsmInstrPtrs& instructions);
+    void genAsmAllocStack();
 
-    void fixAsmMov(StackPos pos, AsmInstrPtrs& instructions);
+    void fixAsmMov(AsmInstrPtr ptr);
 
-    void fixAsmIdiv(StackPos pos, AsmInstrPtrs& instructions);
+    void fixAsmIdiv(AsmInstrPtr ptr);
 
-    void fixAsmBinary(StackPos pos, AsmInstrPtrs& instructions);
+    void fixAsmBinary(AsmInstrPtr ptr);
 
-    void fixAsmBinaryMult(StackPos pos, AsmBinary& binary, AsmInstrPtrs& instructions); 
-
-    bool isFixable(const AsmInstrPtr& ptr) const;
+    void fixAsmBinaryMult(AsmInstrPtr ptr); 
 
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
@@ -41,6 +39,7 @@ private:
     }
 
     AsmNodePtr ast{nullptr};
+    AsmInstrPtrs fixed{};
     unsigned int stackOffset{0};
 };
 } // namespace pass
