@@ -164,6 +164,11 @@ TackyGenerator::genForAstBinaryOp(const AstBinary::Type& type) const {
         case BINARY_MULTIPLY:  return TackyBinary::Type::BINARY_MULTIPLY;
         case BINARY_DIVIDE:    return TackyBinary::Type::BINARY_DIVIDE;
         case BINARY_REMAINDER: return TackyBinary::Type::BINARY_REMAINDER;
+        case BINARY_BIT_AND:   return TackyBinary::Type::BINARY_BIT_AND;
+        case BINARY_BIT_OR:    return TackyBinary::Type::BINARY_BIT_OR;
+        case BINARY_BIT_XOR:   return TackyBinary::Type::BINARY_BIT_XOR;
+        case BINARY_BIT_LSH:   return TackyBinary::Type::BINARY_BIT_LSH;
+        case BINARY_BIT_RSH:   return TackyBinary::Type::BINARY_BIT_RSH;
         default:
             fail("Conversion from AstBinaryOpType::[{}] to TackyBinaryOpType "
                  "failed:",

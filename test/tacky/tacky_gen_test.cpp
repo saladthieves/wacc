@@ -1,8 +1,8 @@
 #include "ast.hpp"
 #include "base_test.hpp"
 #include "tacky_formatters.hpp"
-#include "tacky_matchers.hpp"
 #include "tacky_gen.hpp"
+#include "tacky_matchers.hpp"
 
 #include <gtest/gtest.h>
 #include <tuple>
@@ -85,22 +85,22 @@ TEST_F(TackyGeneratorTest, generateUnary) {
         {"{ return 15; }", {"[R:15]"}},
         {"{ return 80; }", {"[R:80]"}},
         {"{ return -3; }", {
-            "[O:- S:3 D:MAIN.TEMP.0]",
+            "[-3 -> MAIN.TEMP.0]",
             "[R:MAIN.TEMP.0]",
          }},
         {"{ return ~8; }", {
-            "[O:~ S:8 D:MAIN.TEMP.0]",
+            "[~8 -> MAIN.TEMP.0]",
             "[R:MAIN.TEMP.0]",
          }},
         {"{ return ~(-15); }", {
-            "[O:- S:15 D:MAIN.TEMP.0]",
-            "[O:~ S:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[-15 -> MAIN.TEMP.0]",
+            "[~MAIN.TEMP.0 -> MAIN.TEMP.1]",
             "[R:MAIN.TEMP.1]",
          }},
         {"{ return -(~(-80)); }", {
-            "[O:- S:80 D:MAIN.TEMP.0]",
-            "[O:~ S:MAIN.TEMP.0 D:MAIN.TEMP.1]",
-            "[O:- S:MAIN.TEMP.1 D:MAIN.TEMP.2]",
+            "[-80 -> MAIN.TEMP.0]",
+            "[~MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[-MAIN.TEMP.1 -> MAIN.TEMP.2]",
             "[R:MAIN.TEMP.2]",
          }},
         // clang-format on
@@ -128,41 +128,71 @@ TEST_F(TackyGeneratorTest, generateBinary) {
     const auto tests = vector<pair<string, vector<string>>>{
         // clang-format off
         {"{ return 1 + 2; }", {
-            "[S1:1 O:+ S2:2 D:MAIN.TEMP.0]",
+            "[1 + 2 -> MAIN.TEMP.0]",
             "[R:MAIN.TEMP.0]",
          }},
         {"{ return 1 + 2 + 3; }", {
-            "[S1:1 O:+ S2:2 D:MAIN.TEMP.0]",
-            "[S1:MAIN.TEMP.0 O:+ S2:3 D:MAIN.TEMP.1]",
+            "[1 + 2 -> MAIN.TEMP.0]",
+            "[MAIN.TEMP.0 + 3 -> MAIN.TEMP.1]",
             "[R:MAIN.TEMP.1]",
          }},
         {"{ return 1 - (2 + 3); }", {
-            "[S1:2 O:+ S2:3 D:MAIN.TEMP.0]",
-            "[S1:1 O:- S2:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[2 + 3 -> MAIN.TEMP.0]",
+            "[1 - MAIN.TEMP.0 -> MAIN.TEMP.1]",
             "[R:MAIN.TEMP.1]",
          }},
         {"{ return 1 * 2 + 3; }", {
-            "[S1:1 O:* S2:2 D:MAIN.TEMP.0]",
-            "[S1:MAIN.TEMP.0 O:+ S2:3 D:MAIN.TEMP.1]",
+            "[1 * 2 -> MAIN.TEMP.0]",
+            "[MAIN.TEMP.0 + 3 -> MAIN.TEMP.1]",
             "[R:MAIN.TEMP.1]",
          }},
         {"{ return 3 - 2 % 1; }", {
-            "[S1:2 O:% S2:1 D:MAIN.TEMP.0]",
-            "[S1:3 O:- S2:MAIN.TEMP.0 D:MAIN.TEMP.1]",
+            "[2 % 1 -> MAIN.TEMP.0]",
+            "[3 - MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+        {"{ return 3 - 2 % 1; }", {
+            "[2 % 1 -> MAIN.TEMP.0]",
+            "[3 - MAIN.TEMP.0 -> MAIN.TEMP.1]",
             "[R:MAIN.TEMP.1]",
          }},
         {"{ return 1 * 2 + 3 / 4; }", {
-            "[S1:1 O:* S2:2 D:MAIN.TEMP.0]",
-            "[S1:3 O:/ S2:4 D:MAIN.TEMP.1]",
-            "[S1:MAIN.TEMP.0 O:+ S2:MAIN.TEMP.1 D:MAIN.TEMP.2]",
+            "[1 * 2 -> MAIN.TEMP.0]",
+            "[3 / 4 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.0 + MAIN.TEMP.1 -> MAIN.TEMP.2]",
             "[R:MAIN.TEMP.2]",
          }},
         {"{ return (5 + -8) / ~3; }", {
-            "[O:- S:8 D:MAIN.TEMP.0]",
-            "[S1:5 O:+ S2:MAIN.TEMP.0 D:MAIN.TEMP.1]",
-            "[O:~ S:3 D:MAIN.TEMP.2]",
-            "[S1:MAIN.TEMP.1 O:/ S2:MAIN.TEMP.2 D:MAIN.TEMP.3]",
+            "[-8 -> MAIN.TEMP.0]",
+            "[5 + MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[~3 -> MAIN.TEMP.2]",
+            "[MAIN.TEMP.1 / MAIN.TEMP.2 -> MAIN.TEMP.3]",
             "[R:MAIN.TEMP.3]",
+         }},
+         {"{ return 8 << 2; }", {
+            "[8 << 2 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+         {"{ return 1 >> 2 << 3; }", {
+            "[1 >> 2 -> MAIN.TEMP.0]",
+            "[MAIN.TEMP.0 << 3 -> MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+         {"{ return 2 & -32 | 3; }", {
+            "[-32 -> MAIN.TEMP.0]",
+            "[2 & MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.1 | 3 -> MAIN.TEMP.2]",
+            "[R:MAIN.TEMP.2]",
+         }},
+         {"{ return 15 * (8 + 9) >> -1 + ~5 / 8; }", {
+             "[8 + 9 -> MAIN.TEMP.0]",
+             "[15 * MAIN.TEMP.0 -> MAIN.TEMP.1]",
+             "[-1 -> MAIN.TEMP.2]",
+             "[~5 -> MAIN.TEMP.3]",
+             "[MAIN.TEMP.3 / 8 -> MAIN.TEMP.4]",
+             "[MAIN.TEMP.2 + MAIN.TEMP.4 -> MAIN.TEMP.5]",
+             "[MAIN.TEMP.1 >> MAIN.TEMP.5 -> MAIN.TEMP.6]",
+             "[R:MAIN.TEMP.6]",
          }},
         // clang-format on
     };

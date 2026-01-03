@@ -34,7 +34,7 @@ std::string formatTackyUnary(const TackyUnary& ast) {
     auto op = formatTackyUnaryOp(ast.op);
     auto src = formatTackyVal(*ast.src);
     auto dest = formatTackyVal(*ast.dest);
-    return std::format("[O:{} S:{} D:{}]", op, src, dest);
+    return std::format("[{}{} -> {}]", op, src, dest);
 }
 
 std::string formatTackyBinary(const TackyBinary& ast) {
@@ -42,7 +42,7 @@ std::string formatTackyBinary(const TackyBinary& ast) {
     auto src1 = formatTackyVal(*ast.src1);
     auto src2 = formatTackyVal(*ast.src2);
     auto dest = formatTackyVal(*ast.dest);
-    return std::format("[S1:{} O:{} S2:{} D:{}]", src1, op, src2, dest);
+    return std::format("[{} {} {} -> {}]", src1, op, src2, dest);
 }
 
 std::string formatTackyVal(const TackyVal& ast) {
@@ -80,7 +80,13 @@ std::string formatTackyBinaryOp(const TackyBinary::Type& type) {
         case BINARY_MULTIPLY:  return "*";
         case BINARY_DIVIDE:    return "/";
         case BINARY_REMAINDER: return "%";
-        default:               throw std::runtime_error("Unimplemented formatTackyBinaryOp");
+        case BINARY_BIT_AND:   return "&";
+        case BINARY_BIT_OR:    return "|";
+        case BINARY_BIT_XOR:   return "^";
+        case BINARY_BIT_LSH:   return "<<";
+        case BINARY_BIT_RSH:   return ">>";
+
+        default: throw std::runtime_error("Unimplemented formatTackyBinaryOp");
     }
 }
 } // namespace
