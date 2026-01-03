@@ -97,6 +97,11 @@ public:
         BINARY_MULTIPLY,
         BINARY_DIVIDE,
         BINARY_REMAINDER,
+        BINARY_BIT_AND,
+        BINARY_BIT_OR,
+        BINARY_BIT_XOR,
+        BINARY_BIT_LSH,
+        BINARY_BIT_RSH,
     };
 
     AstBinary(Type op, AstExprPtr left, AstExprPtr right);
@@ -240,6 +245,11 @@ public:
             case BINARY_MULTIPLY:  value = "BINARY_MULTIPLY"; break;
             case BINARY_DIVIDE:    value = "BINARY_DIVIDE"; break;
             case BINARY_REMAINDER: value = "BINARY_REMAINDER"; break;
+            case BINARY_BIT_AND:   value = "BINARY_BIT_AND"; break;
+            case BINARY_BIT_OR:    value = "BINARY_BIT_OR"; break;
+            case BINARY_BIT_XOR:   value = "BINARY_BIT_XOR"; break;
+            case BINARY_BIT_LSH:   value = "BINARY_BIT_LSH"; break;
+            case BINARY_BIT_RSH:   value = "BINARY_BIT_RSH"; break;
             default:               {
                 throw std::format_error("Unhandled AstBinary::Type enum");
             }

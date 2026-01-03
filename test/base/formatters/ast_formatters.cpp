@@ -59,6 +59,11 @@ std::string formatAstBinaryOp(const AstBinary::Type& type) {
         case BINARY_MULTIPLY:  return "*";
         case BINARY_DIVIDE:    return "/";
         case BINARY_REMAINDER: return "%";
+        case BINARY_BIT_AND:   return "&";
+        case BINARY_BIT_OR:    return "|";
+        case BINARY_BIT_XOR:   return "^";
+        case BINARY_BIT_LSH:   return "<<";
+        case BINARY_BIT_RSH:   return ">>";
     }
 }
 } // namespace

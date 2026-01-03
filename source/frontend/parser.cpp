@@ -68,7 +68,7 @@ ast::AstExprPtr Parser::parseFactor() {
             return parseLiteralInteger();
         }
         case OP_BIT_COMPLEMENT:
-        case OP_NEGATE:     {
+        case OP_NEGATE:         {
             return parseUnaryExpression();
         }
         case OPEN_PAREN: {
@@ -122,6 +122,11 @@ ast::AstBinary::Type Parser::parseBinaryOperator() {
         OP_MULTIPLY,
         OP_DIVIDE,
         OP_REMAINDER,
+        OP_BIT_AND,
+        OP_BIT_OR,
+        OP_BIT_XOR,
+        OP_BIT_LSH,
+        OP_BIT_RSH,
     });
 
     switch (token.type) {
@@ -131,6 +136,11 @@ ast::AstBinary::Type Parser::parseBinaryOperator() {
         case OP_MULTIPLY:  return BINARY_MULTIPLY;
         case OP_DIVIDE:    return BINARY_DIVIDE;
         case OP_REMAINDER: return BINARY_REMAINDER;
+        case OP_BIT_AND:   return BINARY_BIT_AND;
+        case OP_BIT_OR:    return BINARY_BIT_OR;
+        case OP_BIT_XOR:   return BINARY_BIT_XOR;
+        case OP_BIT_LSH:   return BINARY_BIT_LSH;
+        case OP_BIT_RSH:   return BINARY_BIT_RSH;
         default:
             fail("Cannot parse AstBinaryOpType from TokenType[{}]", token.type);
     }
@@ -143,7 +153,12 @@ bool Parser::isBinaryOp(const TokenType& type) const {
         case OP_NEGATE:
         case OP_MULTIPLY:
         case OP_DIVIDE:
-        case OP_REMAINDER: return true;
+        case OP_REMAINDER:
+        case OP_BIT_AND:
+        case OP_BIT_OR:
+        case OP_BIT_XOR:
+        case OP_BIT_LSH:
+        case OP_BIT_RSH:   return true;
         default:           return false;
     }
 }
@@ -206,11 +221,18 @@ auto Parser::expectAny(std::initializer_list<const TokenType> types)
 }
 
 const Parser::PrecedenceMap Parser::precedences{
-    {TokenType::OP_MULTIPLY,  50},
-    {TokenType::OP_DIVIDE,    50},
-    {TokenType::OP_REMAINDER, 50},
+    {TokenType::OP_MULTIPLY,  100},
+    {TokenType::OP_DIVIDE,    100},
+    {TokenType::OP_REMAINDER, 100},
 
-    {TokenType::OP_ADDITION,  40},
-    {TokenType::OP_NEGATE,    40},
+    {TokenType::OP_ADDITION,  95 },
+    {TokenType::OP_NEGATE,    95 },
+
+    {TokenType::OP_BIT_LSH,   90 },
+    {TokenType::OP_BIT_RSH,   90 },
+
+    {TokenType::OP_BIT_AND,   85 },
+    {TokenType::OP_BIT_XOR,   80 },
+    {TokenType::OP_BIT_OR,    75 },
 };
 } // namespace wacc::front::parse
