@@ -86,16 +86,17 @@ void AsmGenerator::genForTackyBinary(const TackyBinary& tacky,
     const auto& op = tacky.op;
     if (op == BINARY_DIVIDE || op == BINARY_REMAINDER) {
         return genForTackyDivRem(tacky, asmBody);
-    } else { // addition, subtraction or multiplication
-        // mov src1, dest
-        asmBody.emplace_back(std::make_unique<AsmMov>(
-            genForTackyVal(*tacky.src1), genForTackyVal(*tacky.dest)));
-
-        // binop src2, dest |or| dest = dest binop src2
-        asmBody.emplace_back(std::make_unique<AsmBinary>(
-            genForTackyBinaryOp(tacky.op), genForTackyVal(*tacky.src2),
-            genForTackyVal(*tacky.dest)));
     }
+
+    // add, sub, mult, bitwise (AND, OR, XOR, left shift, right shift)
+    // mov src1, dest
+    asmBody.emplace_back(std::make_unique<AsmMov>(genForTackyVal(*tacky.src1),
+                                                  genForTackyVal(*tacky.dest)));
+
+    // binop src2, dest |or| dest = dest binop src2
+    asmBody.emplace_back(std::make_unique<AsmBinary>(
+        genForTackyBinaryOp(tacky.op), genForTackyVal(*tacky.src2),
+        genForTackyVal(*tacky.dest)));
 }
 
 void AsmGenerator::genForTackyDivRem(const TackyBinary& tacky,
@@ -158,6 +159,11 @@ AsmGenerator::genForTackyBinaryOp(const TackyBinary::Type& type) const {
         case BINARY_ADD:       return AsmBinary::Type::BINARY_ADD;
         case BINARY_SUBTRACT:  return AsmBinary::Type::BINARY_SUB;
         case BINARY_MULTIPLY:  return AsmBinary::Type::BINARY_MULT;
+        case BINARY_BIT_AND:   return AsmBinary::Type::BINARY_BIT_AND;
+        case BINARY_BIT_OR:    return AsmBinary::Type::BINARY_BIT_OR;
+        case BINARY_BIT_XOR:   return AsmBinary::Type::BINARY_BIT_XOR;
+        case BINARY_BIT_LSH:   return AsmBinary::Type::BINARY_BIT_LSH;
+        case BINARY_BIT_RSH:   return AsmBinary::Type::BINARY_BIT_RSH;
         case BINARY_DIVIDE:
         case BINARY_REMAINDER: {
             fail("Division and remainder should be handled with AsmIdiv.");

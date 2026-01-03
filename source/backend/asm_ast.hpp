@@ -157,6 +157,11 @@ public:
         BINARY_ADD = 1,
         BINARY_SUB,
         BINARY_MULT,
+        BINARY_BIT_AND,
+        BINARY_BIT_OR,
+        BINARY_BIT_XOR,
+        BINARY_BIT_LSH,
+        BINARY_BIT_RSH,
     };
 
     AsmBinary(Type op, AsmOperandPtr src, AsmOperandPtr dest);
@@ -292,10 +297,15 @@ public:
 
         switch (type) {
             using enum AsmBinary::Type;
-            case BINARY_ADD:  value = "BINARY_ADD"; break;
-            case BINARY_SUB:  value = "BINARY_SUB"; break;
-            case BINARY_MULT: value = "BINARY_MULT"; break;
-            default:          throw std::format_error("Unhandled AsmBinary::Type enum");
+            case BINARY_ADD:     value = "BINARY_ADD"; break;
+            case BINARY_SUB:     value = "BINARY_SUB"; break;
+            case BINARY_MULT:    value = "BINARY_MULT"; break;
+            case BINARY_BIT_AND: value = "BINARY_BIT_AND"; break;
+            case BINARY_BIT_OR:  value = "BINARY_BIT_OR"; break;
+            case BINARY_BIT_XOR: value = "BINARY_BIT_XOR"; break;
+            case BINARY_BIT_LSH: value = "BINARY_BIT_LSH"; break;
+            case BINARY_BIT_RSH: value = "BINARY_BIT_RSH"; break;
+            default:             throw std::format_error("Unhandled AsmBinary::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);
