@@ -78,25 +78,25 @@ std::string formatAsmRegister(const AsmReg::Type& type) {
 std::string formatAsmMov(const AsmMov& mov) {
     auto src = formatAsmOperand(*mov.src);
     auto dest = formatAsmOperand(*mov.dest);
-    return std::format("<MOV S:{} D:{}>", src, dest);
+    return std::format("<MOV {} -> {}>", src, dest);
 }
 
 std::string formatAsmUnary(const AsmUnary& unary) {
     auto op = formatAsmUnaryOp(unary.op);
     auto operand = formatAsmOperand(*unary.operand);
-    return std::format("<UNARY O:{} O:{}>", op, operand);
+    return std::format("<UNARY {} {}>", op, operand);
 }
 
 std::string formatAsmBinary(const AsmBinary& binary) {
     auto op = formatAsmBinaryOp(binary.op);
     auto src = formatAsmOperand(*binary.src);
     auto dest = formatAsmOperand(*binary.dest);
-    return std::format("<BINARY S:{} O:{} D:{}>", src, op, dest);
+    return std::format("<BINARY {} {} {}>", src, op, dest);
 }
 
 std::string formatAsmIdiv(const AsmIdiv& idiv) {
     auto operand = formatAsmOperand(*idiv.operand);
-    return std::format("<IDIV O:{}>", operand);
+    return std::format("<IDIV {}>", operand);
 }
 
 std::string formatAsmCdq() {
@@ -104,7 +104,7 @@ std::string formatAsmCdq() {
 }
 
 std::string formatAsmAllocStack(const AsmAllocStack& stack) {
-    return std::format("<ALLOC O:{} >", stack.value);
+    return std::format("<ALLOC {} >", stack.value);
 }
 
 std::string formatAsmRet() {
@@ -123,10 +123,15 @@ std::string formatAsmUnaryOp(const AsmUnary::Type& type) {
 std::string formatAsmBinaryOp(const AsmBinary::Type& type) {
     switch (type) {
         using enum AsmBinary::Type;
-        case BINARY_ADD:  return "ADD";
-        case BINARY_SUB:  return "SUB";
-        case BINARY_MULT: return "MULT";
-        default:          throw std::runtime_error("Unimplemented formatAsmBinaryOp");
+        case BINARY_ADD:     return "ADD";
+        case BINARY_SUB:     return "SUB";
+        case BINARY_MULT:    return "MULT";
+        case BINARY_BIT_AND: return "AND";
+        case BINARY_BIT_OR:  return "OR";
+        case BINARY_BIT_XOR: return "XOR";
+        case BINARY_BIT_LSH: return "LSH";
+        case BINARY_BIT_RSH: return "RSH";
+        default:             throw std::runtime_error("Unimplemented formatAsmBinaryOp");
     }
 }
 } // namespace
