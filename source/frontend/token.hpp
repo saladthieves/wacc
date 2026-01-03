@@ -18,13 +18,17 @@ enum class TokenType : std::uint8_t {
     OPEN_PAREN, CLOSE_PAREN,
     OPEN_BRACE, CLOSE_BRACE,
 
-    OP_COMPLEMENT,
-    OP_NEGATE,
+    OP_BIT_AND, OP_BIT_OR, OP_BIT_XOR,
+    OP_BIT_LSH, OP_BIT_RSH,
+    OP_BIT_COMPLEMENT,
+    
+    OP_NEGATE, OP_ADDITION, 
+    OP_MULTIPLY, OP_DIVIDE, OP_REMAINDER,
+    
+    OP_LESS_THAN, OP_LESS_EQUAL,
+    OP_GREATER_THAN, OP_GREATER_EQUAL,
+
     OP_DECREMENT,
-    OP_ADDITION,
-    OP_MULTIPLY,
-    OP_DIVIDE,
-    OP_REMAINDER,
 
     LITERAL_INT,
 
@@ -77,26 +81,35 @@ public:
         switch (type) {
             using enum TokenType;
 
-            case KEYWORD_INT:    value = "KEYWORD_INT"; break;
-            case KEYWORD_VOID:   value = "KEYWORD_VOID"; break;
-            case KEYWORD_RETURN: value = "KEYWORD_RETURN"; break;
-            case IDENTIFIER:     value = "IDENTIFIER"; break;
-            case OPEN_PAREN:     value = "OPEN_PAREN"; break;
-            case CLOSE_PAREN:    value = "CLOSE_PAREN"; break;
-            case OPEN_BRACE:     value = "OPEN_BRACE"; break;
-            case CLOSE_BRACE:    value = "CLOSE_BRACE"; break;
-            case LITERAL_INT:    value = "LITERAL_INT"; break;
-            case SEMICOLON:      value = "SEMICOLON"; break;
-            case INVALID_TOKEN:  value = "INVALID_TOKEN"; break;
-            case END:            value = "END"; break;
-            case OP_COMPLEMENT:  value = "OP_COMPLEMENT"; break;
-            case OP_NEGATE:      value = "OP_NEGATE"; break;
-            case OP_DECREMENT:   value = "OP_DECREMENT"; break;
-            case OP_ADDITION:    value = "OP_ADDITION";
-            case OP_MULTIPLY:    value = "OP_MULTIPLY";
-            case OP_DIVIDE:      value = "OP_DIVIDE";
-            case OP_REMAINDER:   value = "OP_REMAINDER";
-            default:             throw std::format_error("Unhandled token::TokenType enum");
+            case KEYWORD_INT:       value = "KEYWORD_INT"; break;
+            case KEYWORD_VOID:      value = "KEYWORD_VOID"; break;
+            case KEYWORD_RETURN:    value = "KEYWORD_RETURN"; break;
+            case IDENTIFIER:        value = "IDENTIFIER"; break;
+            case OPEN_PAREN:        value = "OPEN_PAREN"; break;
+            case CLOSE_PAREN:       value = "CLOSE_PAREN"; break;
+            case OPEN_BRACE:        value = "OPEN_BRACE"; break;
+            case CLOSE_BRACE:       value = "CLOSE_BRACE"; break;
+            case OP_BIT_AND:        value = "OP_BIT_AND"; break;
+            case OP_BIT_OR:         value = "OP_BIT_OR"; break;
+            case OP_BIT_XOR:        value = "OP_BIT_XOR"; break;
+            case OP_BIT_LSH:        value = "OP_BIT_LSH"; break;
+            case OP_BIT_RSH:        value = "OP_BIT_RSH"; break;
+            case OP_BIT_COMPLEMENT: value = "OP_BIT_COMPLEMENT"; break;
+            case OP_NEGATE:         value = "OP_NEGATE"; break;
+            case OP_ADDITION:       value = "OP_ADDITION"; break;
+            case OP_MULTIPLY:       value = "OP_MULTIPLY"; break;
+            case OP_DIVIDE:         value = "OP_DIVIDE"; break;
+            case OP_REMAINDER:      value = "OP_REMAINDER"; break;
+            case OP_LESS_THAN:      value = "OP_LESS_THAN"; break;
+            case OP_LESS_EQUAL:     value = "OP_LESS_EQUAL"; break;
+            case OP_GREATER_THAN:   value = "OP_GREATER_THAN"; break;
+            case OP_GREATER_EQUAL:  value = "OP_GREATER_EQUAL"; break;
+            case OP_DECREMENT:      value = "OP_DECREMENT"; break;
+            case LITERAL_INT:       value = "LITERAL_INT"; break;
+            case SEMICOLON:         value = "SEMICOLON"; break;
+            case INVALID_TOKEN:     value = "INVALID_TOKEN"; break;
+            case END:               value = "END"; break;
+            default:                throw std::format_error("Unhandled token::TokenType enum");
         }
         return std::format_to(context.out(), "{}", value);
     }

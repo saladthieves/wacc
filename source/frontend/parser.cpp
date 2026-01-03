@@ -67,7 +67,7 @@ ast::AstExprPtr Parser::parseFactor() {
         case LITERAL_INT: {
             return parseLiteralInteger();
         }
-        case OP_COMPLEMENT:
+        case OP_BIT_COMPLEMENT:
         case OP_NEGATE:     {
             return parseUnaryExpression();
         }
@@ -104,11 +104,11 @@ ast::AstUnaryPtr Parser::parseUnaryExpression() {
 ast::AstUnary::Type Parser::parseUnaryOperator() {
     using enum TokenType;
     using ast::AstUnary;
-    const auto& type = expectAny({OP_COMPLEMENT, OP_NEGATE}).type;
+    const auto& type = expectAny({OP_BIT_COMPLEMENT, OP_NEGATE}).type;
 
     switch (type) {
-        case OP_COMPLEMENT: return AstUnary::Type::UNARY_COMPLEMENT;
-        case OP_NEGATE:     return AstUnary::Type::UNARY_NEGATE;
+        case OP_BIT_COMPLEMENT: return AstUnary::Type::UNARY_COMPLEMENT;
+        case OP_NEGATE:         return AstUnary::Type::UNARY_NEGATE;
         default:
             fail("Cannot parse AstUnaryOpType from ast::TokenType[{}]", type);
     }

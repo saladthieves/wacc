@@ -230,14 +230,23 @@ TEST_F(LexerTest, scanKeywordsInvalid) {
 TEST_F(LexerTest, scanSingleToken) {
     // ARRANGE
     auto tests = vector<pair<string, TokenType>>{
-        {"(",  OPEN_PAREN   },
-        {")",  CLOSE_PAREN  },
-        {"{",  OPEN_BRACE   },
-        {"}",  CLOSE_BRACE  },
-        {";",  SEMICOLON    },
-        {"~",  OP_COMPLEMENT},
-        {"-",  OP_NEGATE    },
-        {"--", OP_DECREMENT },
+        {"(",  OPEN_PAREN       },
+        {")",  CLOSE_PAREN      },
+        {"{",  OPEN_BRACE       },
+        {"}",  CLOSE_BRACE      },
+        {";",  SEMICOLON        },
+        {"~",  OP_BIT_COMPLEMENT},
+        {"-",  OP_NEGATE        },
+        {"--", OP_DECREMENT     },
+        {"&",  OP_BIT_AND       },
+        {"|",  OP_BIT_OR        },
+        {"^",  OP_BIT_XOR       },
+        {"<<", OP_BIT_LSH       },
+        {">>", OP_BIT_RSH       },
+        {"<",  OP_LESS_THAN     },
+        {"<=", OP_LESS_EQUAL    },
+        {">",  OP_GREATER_THAN  },
+        {">=", OP_GREATER_EQUAL },
     };
 
     for (const auto& test : tests) {
@@ -286,7 +295,7 @@ TEST_F(LexerTest, scanSource) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
-            return (-1 + 2) * ~3 - 4 / 5 % (--6);
+            return (-1 + 2) * ~3 - 4 / 5 % (--6) < > <= >= << >> & | ^;
         })";
 
     auto lexer = getLexer(source);
@@ -308,35 +317,44 @@ TEST_F(LexerTest, scanSource) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    ASSERT_EQ(tokens.size(), 28);
+    ASSERT_EQ(tokens.size(), 37);
     // clang-format off
-    ASSERT_TRUE(check(tokens[0],  KEYWORD_INT,    "int",    1));
-    ASSERT_TRUE(check(tokens[1],  IDENTIFIER,     "main",   1));
-    ASSERT_TRUE(check(tokens[2],  OPEN_PAREN,     "(",      1));
-    ASSERT_TRUE(check(tokens[3],  KEYWORD_VOID,   "void",   1));
-    ASSERT_TRUE(check(tokens[4],  CLOSE_PAREN,    ")",      1));
-    ASSERT_TRUE(check(tokens[5],  OPEN_BRACE,     "{",      1));
-    ASSERT_TRUE(check(tokens[6],  KEYWORD_RETURN, "return", 2));
-    ASSERT_TRUE(check(tokens[7],  OPEN_PAREN,     "(",      2));
-    ASSERT_TRUE(check(tokens[8],  OP_NEGATE,      "-",      2));
-    ASSERT_TRUE(check(tokens[9],  LITERAL_INT,   "1",      2));
-    ASSERT_TRUE(check(tokens[10], OP_ADDITION,    "+",      2));
-    ASSERT_TRUE(check(tokens[11], LITERAL_INT,   "2",      2));
-    ASSERT_TRUE(check(tokens[12], CLOSE_PAREN,    ")",      2));
-    ASSERT_TRUE(check(tokens[13], OP_MULTIPLY,    "*",      2));
-    ASSERT_TRUE(check(tokens[14], OP_COMPLEMENT,  "~",      2));
-    ASSERT_TRUE(check(tokens[15], LITERAL_INT,   "3",      2));
-    ASSERT_TRUE(check(tokens[16], OP_NEGATE,      "-",      2));
-    ASSERT_TRUE(check(tokens[17], LITERAL_INT,   "4",      2));
-    ASSERT_TRUE(check(tokens[18], OP_DIVIDE,      "/",      2));
-    ASSERT_TRUE(check(tokens[19], LITERAL_INT,   "5",      2));
-    ASSERT_TRUE(check(tokens[20], OP_REMAINDER,   "%",      2));
-    ASSERT_TRUE(check(tokens[21], OPEN_PAREN,     "(",      2));
-    ASSERT_TRUE(check(tokens[22], OP_DECREMENT,   "--",     2));
-    ASSERT_TRUE(check(tokens[23], LITERAL_INT,   "6",      2));
-    ASSERT_TRUE(check(tokens[24], CLOSE_PAREN,    ")",      2));
-    ASSERT_TRUE(check(tokens[25], SEMICOLON,      ";",      2));
-    ASSERT_TRUE(check(tokens[26], CLOSE_BRACE,    "}",      3));
-    ASSERT_TRUE(check(tokens[27], END,            "END",    3));
+    ASSERT_TRUE(check(tokens[0],  KEYWORD_INT,       "int",    1));
+    ASSERT_TRUE(check(tokens[1],  IDENTIFIER,        "main",   1));
+    ASSERT_TRUE(check(tokens[2],  OPEN_PAREN,        "(",      1));
+    ASSERT_TRUE(check(tokens[3],  KEYWORD_VOID,      "void",   1));
+    ASSERT_TRUE(check(tokens[4],  CLOSE_PAREN,       ")",      1));
+    ASSERT_TRUE(check(tokens[5],  OPEN_BRACE,        "{",      1));
+    ASSERT_TRUE(check(tokens[6],  KEYWORD_RETURN,    "return", 2));
+    ASSERT_TRUE(check(tokens[7],  OPEN_PAREN,        "(",      2));
+    ASSERT_TRUE(check(tokens[8],  OP_NEGATE,         "-",      2));
+    ASSERT_TRUE(check(tokens[9],  LITERAL_INT,       "1",      2));
+    ASSERT_TRUE(check(tokens[10], OP_ADDITION,       "+",      2));
+    ASSERT_TRUE(check(tokens[11], LITERAL_INT,       "2",      2));
+    ASSERT_TRUE(check(tokens[12], CLOSE_PAREN,       ")",      2));
+    ASSERT_TRUE(check(tokens[13], OP_MULTIPLY,       "*",      2));
+    ASSERT_TRUE(check(tokens[14], OP_BIT_COMPLEMENT, "~",      2));
+    ASSERT_TRUE(check(tokens[15], LITERAL_INT,       "3",      2));
+    ASSERT_TRUE(check(tokens[16], OP_NEGATE,         "-",      2));
+    ASSERT_TRUE(check(tokens[17], LITERAL_INT,       "4",      2));
+    ASSERT_TRUE(check(tokens[18], OP_DIVIDE,         "/",      2));
+    ASSERT_TRUE(check(tokens[19], LITERAL_INT,       "5",      2));
+    ASSERT_TRUE(check(tokens[20], OP_REMAINDER,      "%",      2));
+    ASSERT_TRUE(check(tokens[21], OPEN_PAREN,        "(",      2));
+    ASSERT_TRUE(check(tokens[22], OP_DECREMENT,      "--",     2));
+    ASSERT_TRUE(check(tokens[23], LITERAL_INT,       "6",      2));
+    ASSERT_TRUE(check(tokens[24], CLOSE_PAREN,       ")",      2));
+    ASSERT_TRUE(check(tokens[25], OP_LESS_THAN,      "<",      2));
+    ASSERT_TRUE(check(tokens[26], OP_GREATER_THAN,   ">",      2));
+    ASSERT_TRUE(check(tokens[27], OP_LESS_EQUAL,     "<=",     2));
+    ASSERT_TRUE(check(tokens[28], OP_GREATER_EQUAL,  ">=",     2));
+    ASSERT_TRUE(check(tokens[29], OP_BIT_LSH,        "<<",     2));
+    ASSERT_TRUE(check(tokens[30], OP_BIT_RSH,        ">>",     2));
+    ASSERT_TRUE(check(tokens[31], OP_BIT_AND,        "&",      2));
+    ASSERT_TRUE(check(tokens[32], OP_BIT_OR,         "|",      2));
+    ASSERT_TRUE(check(tokens[33], OP_BIT_XOR,        "^",      2));
+    ASSERT_TRUE(check(tokens[34], SEMICOLON,         ";",      2));
+    ASSERT_TRUE(check(tokens[35], CLOSE_BRACE,       "}",      3));
+    ASSERT_TRUE(check(tokens[36], END,               "END",    3));
     // clang-format on
 }

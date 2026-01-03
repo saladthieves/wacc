@@ -28,8 +28,34 @@ Lexer::TokensPtr Lexer::scan() {
             case ')': makeToken(CLOSE_PAREN); break;
             case '{': makeToken(OPEN_BRACE); break;
             case '}': makeToken(CLOSE_BRACE); break;
-            case ';': makeToken(SEMICOLON); break;
-            case '~': makeToken(OP_COMPLEMENT); break;
+            case '~': makeToken(OP_BIT_COMPLEMENT); break;
+            case '&': makeToken(OP_BIT_AND); break;
+            case '|': makeToken(OP_BIT_OR); break;
+            case '^': makeToken(OP_BIT_XOR); break;
+            case '+': makeToken(OP_ADDITION); break;
+            case '*': makeToken(OP_MULTIPLY); break;
+            case '/': makeToken(OP_DIVIDE); break;
+            case '%': makeToken(OP_REMAINDER); break;
+            case '<': {
+                const auto& next = peekNext();
+                if (next == '<' || next == '=') {
+                    advance();
+                    makeToken(next == '<' ? OP_BIT_LSH : OP_LESS_EQUAL);
+                    break;
+                }
+                makeToken(OP_LESS_THAN);
+                break;
+            }
+            case '>': {
+                const auto& next = peekNext();
+                if (next == '>' || next == '=') {
+                    advance();
+                    makeToken(next == '>' ? OP_BIT_RSH : OP_GREATER_EQUAL);
+                    break;
+                }
+                makeToken(OP_GREATER_THAN);
+                break;
+            }
             case '-': {
                 if (peekNext() == '-') {
                     advance();
@@ -39,10 +65,7 @@ Lexer::TokensPtr Lexer::scan() {
                 }
                 break;
             }
-            case '+': makeToken(OP_ADDITION); break;
-            case '*': makeToken(OP_MULTIPLY); break;
-            case '/': makeToken(OP_DIVIDE); break;
-            case '%': makeToken(OP_REMAINDER); break;
+            case ';': makeToken(SEMICOLON); break;
 
             default: fail("Unexpected token character: [{}]", c);
         }
