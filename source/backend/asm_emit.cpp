@@ -166,18 +166,58 @@ std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) const {
 }
 
 std::string AsmEmitter::formatAsmReg(const AsmReg& obj) const {
+    using enum AsmReg::Type;
+    using enum AsmReg::Size;
+
     const auto& type = obj.reg;
-    switch (type) {
-        using enum AsmReg::Type;
-        case AX:  return "%eax";
-        case DX:  return "%edx";
-        case R10: return "%r10d";
-        case R11: return "%r11d";
-        default:  {
-            fail("Failed to format AsmReg::Type::[{}]",
-                 std::to_underlying(type));
+    const auto& size = obj.size;
+
+    if (type == AX) {
+        switch (size) {
+            case BYTE:        return "%al";
+            case WORD:        return "%ax";
+            case DOUBLE_WORD: return "%eax";
+            case QUAD_WORD:   return "%rax";
         }
     }
+
+    if (type == CX) {
+        switch (size) {
+            case BYTE:        return "%cl";
+            case WORD:        return "%cx";
+            case DOUBLE_WORD: return "%ecx";
+            case QUAD_WORD:   return "%rcx";
+        }
+    }
+
+    if (type == DX) {
+        switch (size) {
+            case BYTE:        return "%dl";
+            case WORD:        return "%dx";
+            case DOUBLE_WORD: return "%edx";
+            case QUAD_WORD:   return "%rdx";
+        }
+    }
+
+    if (type == R10) {
+        switch (size) {
+            case BYTE:        return "%r10b";
+            case WORD:        return "%r10w";
+            case DOUBLE_WORD: return "%r10d";
+            case QUAD_WORD:   return "%r10";
+        }
+    }
+
+    if (type == R11) {
+        switch (size) {
+            case BYTE:        return "%r11b";
+            case WORD:        return "%r11w";
+            case DOUBLE_WORD: return "%r11d";
+            case QUAD_WORD:   return "%r11";
+        }
+    }
+
+    fail("Failed to format AsmReg::Type::[{}]", std::to_underlying(type));
 }
 
 std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) const {
@@ -192,10 +232,12 @@ std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) const {
 std::string AsmEmitter::formatAsmBinaryOp(const AsmBinary::Type& type) const {
     switch (type) {
         using enum AsmBinary::Type;
-        case BINARY_ADD:  return "addl";
-        case BINARY_SUB:  return "subl";
-        case BINARY_MULT: return "imull";
-        default:          fail("Failed to format AsmBinary::Type::[type = {}]", type);
+        case BINARY_ADD:     return "addl";
+        case BINARY_SUB:     return "subl";
+        case BINARY_MULT:    return "imull";
+        case BINARY_BIT_LSH: return "sall";
+        case BINARY_BIT_RSH: return "sarl";
+        default:             fail("Failed to format AsmBinary::Type::[type = {}]", type);
     }
 }
 } // namespace wacc::back::emit

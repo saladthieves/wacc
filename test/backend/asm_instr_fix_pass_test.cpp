@@ -218,7 +218,7 @@ TEST_F(AsmInstrFixPassTest, noFixAsmBinaryMult) {
     });
 }
 
-TEST_F(AsmInstrFixPassTest, fixAsmBinaryAdd) {
+TEST_F(AsmInstrFixPassTest, fixAsmBinaryAddSub) {
     // ARRANGE
     addInstr(make_unique<AsmBinary>(AsmBinary::Type::BINARY_ADD,
                                     make_unique<AsmStack>(-4),
@@ -246,7 +246,7 @@ TEST_F(AsmInstrFixPassTest, fixAsmBinaryAdd) {
     });
 }
 
-TEST_F(AsmInstrFixPassTest, noFixAsmBinarySub) {
+TEST_F(AsmInstrFixPassTest, noFixAsmBinaryAddSub) {
     // ARRANGE
     addInstr(make_unique<AsmBinary>(AsmBinary::Type::BINARY_SUB,
                                     make_unique<AsmStack>(-4),
@@ -266,5 +266,57 @@ TEST_F(AsmInstrFixPassTest, noFixAsmBinarySub) {
         ASSERT_EQ(op, AsmBinary::Type::BINARY_SUB);
         matchAsmStack(src, -4);
         matchAsmReg(dest, AsmReg::Type::R10);
+    });
+}
+
+TEST_F(AsmInstrFixPassTest, fixAsmBinaryShiftLR) {
+    // ARRANGE
+    const auto binOp = AsmBinary::Type::BINARY_BIT_LSH;
+    addInstr(make_unique<AsmBinary>(binOp, make_unique<AsmStack>(-4),
+                                    make_unique<AsmStack>(-8)));
+    auto pass = AsmInstrFixPass{getProgram(), 4};
+
+    // ACT
+    auto ast = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(ast);
+    ASSERT_EQ(body.size(), 3);
+
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+
+    matchAsmMov(body[1], [](auto& src, auto& dest) {
+        matchAsmStack(src, -4);
+        matchAsmReg(dest, AsmReg::Type::CX);
+    });
+
+    matchAsmBinary(body[2], [&](auto& op, auto& src, auto& dest) {
+        ASSERT_EQ(op, binOp);
+        matchAsmReg(src, AsmReg::Type::CX, AsmReg::Size::BYTE);
+        matchAsmStack(dest, -8);
+    });
+}
+
+TEST_F(AsmInstrFixPassTest, noFixAsmBinaryShiftLR) {
+    // ARRANGE
+    const auto binOp = AsmBinary::Type::BINARY_BIT_RSH;
+    const auto reg = AsmReg::Type::R10;
+    addInstr(make_unique<AsmBinary>(binOp, make_unique<AsmImm>(2),
+                                    make_unique<AsmReg>(reg)));
+    auto pass = AsmInstrFixPass{getProgram(), 4};
+    
+    // ACT
+    auto ast = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(ast);
+    ASSERT_EQ(body.size(), 2);
+
+    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+
+    matchAsmBinary(body[1], [&](auto& op, auto& src, auto& dest) {
+        ASSERT_EQ(op, binOp);
+        matchAsmImm(src, 2);
+        matchAsmReg(dest, reg, AsmReg::Size::DOUBLE_WORD);
     });
 }

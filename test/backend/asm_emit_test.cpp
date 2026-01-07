@@ -1,13 +1,22 @@
+#include "asm_ast.hpp"
 #include "asm_emit.hpp"
 #include "base_test.hpp"
 #include "utils.hpp"
 
 #include <gtest/gtest.h>
+#include <memory>
 #include <vector>
 
 using wacc::back::emit::AsmEmitter;
 using wacc::utils::Platform;
 
+using wacc::back::ast::AsmFun;
+using wacc::back::ast::AsmInstrPtrs;
+using wacc::back::ast::AsmProg;
+using wacc::back::ast::AsmReg;
+using wacc::back::ast::AsmUnary;
+
+using std::make_unique;
 using std::string;
 using std::vector;
 
@@ -127,6 +136,68 @@ TEST_F(AsmEmitterTest, emitMacOS) {
     ASSERT_STREQ(lines[15].c_str(), "    movq    %rbp, %rsp");
     ASSERT_STREQ(lines[16].c_str(), "    popq    %rbp");
     ASSERT_STREQ(lines[17].c_str(), "    ret");
+    // clang-format on
+}
+
+TEST_F(AsmEmitterTest, formatAsmReg) {
+    // ARRANGE
+    using enum AsmReg::Size;
+    using enum AsmReg::Type;
+    
+    const auto sizes = vector<AsmReg::Size>{BYTE, WORD, DOUBLE_WORD, QUAD_WORD};
+    const auto registers = vector<AsmReg::Type>{AX, CX, DX, R10, R11};
+    
+    auto instructions = AsmInstrPtrs{};
+
+    const auto addInstr = [&](auto op, auto reg) {
+        for (const auto& size : sizes) {
+            instructions.emplace_back(
+                make_unique<AsmUnary>(op, std::make_unique<AsmReg>(reg, size)));
+        }
+    };
+
+    const auto op = AsmUnary::Type::UNARY_NEGATE;
+
+    for (const auto& reg : registers) {
+        addInstr(op, reg);
+    }
+
+    auto function =
+        make_unique<AsmFun>(AsmFun("main", std::move(instructions)));
+    auto program = make_unique<AsmProg>(AsmProg(std::move(function)));
+
+    auto emitter = AsmEmitter(std::move(program), getPlatform());
+
+    // ACT
+    auto lines = *emitter.emit();
+
+    // clang-format off
+    // ASSERT
+    // AX
+    ASSERT_STREQ(lines[4].c_str(),  "    negl    %al");
+    ASSERT_STREQ(lines[5].c_str(),  "    negl    %ax");
+    ASSERT_STREQ(lines[6].c_str(),  "    negl    %eax");
+    ASSERT_STREQ(lines[7].c_str(),  "    negl    %rax");
+    // CX
+    ASSERT_STREQ(lines[8].c_str(),  "    negl    %cl");
+    ASSERT_STREQ(lines[9].c_str(),  "    negl    %cx");
+    ASSERT_STREQ(lines[10].c_str(), "    negl    %ecx");
+    ASSERT_STREQ(lines[11].c_str(), "    negl    %rcx");
+    // DX
+    ASSERT_STREQ(lines[12].c_str(), "    negl    %dl");
+    ASSERT_STREQ(lines[13].c_str(), "    negl    %dx");
+    ASSERT_STREQ(lines[14].c_str(), "    negl    %edx");
+    ASSERT_STREQ(lines[15].c_str(), "    negl    %rdx");
+    // R10
+    ASSERT_STREQ(lines[16].c_str(), "    negl    %r10b");
+    ASSERT_STREQ(lines[17].c_str(), "    negl    %r10w");
+    ASSERT_STREQ(lines[18].c_str(), "    negl    %r10d");
+    ASSERT_STREQ(lines[19].c_str(), "    negl    %r10");
+    // R11
+    ASSERT_STREQ(lines[20].c_str(), "    negl    %r11b");
+    ASSERT_STREQ(lines[21].c_str(), "    negl    %r11w");
+    ASSERT_STREQ(lines[22].c_str(), "    negl    %r11d");
+    ASSERT_STREQ(lines[23].c_str(), "    negl    %r11");
     // clang-format on
 }
 

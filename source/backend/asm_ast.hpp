@@ -95,14 +95,23 @@ class AsmReg : public AsmOperand {
 public:
     enum class Type : std::uint8_t {
         AX = 1,
+        CX,
         DX,
         R10,
         R11,
     };
 
-    AsmReg(Type reg);
+    enum class Size: std::uint8_t {
+        BYTE = 1,
+        WORD,
+        DOUBLE_WORD,
+        QUAD_WORD,
+    };
+
+    AsmReg(Type reg, Size size = Size::DOUBLE_WORD);
 
     Type reg;
+    Size size;
 };
 
 // AsmPseudo

@@ -29,7 +29,7 @@ using AsmAllocStackMatcher = std::function<void(const unsigned int&)>;
 const AsmInstrPtrs& matchAsmProg(const AsmNodePtr& ptr);
 // AsmOperand matchers
 void matchAsmImm(const AsmOperandPtr& ptr, int value);
-void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type);
+void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type, AsmReg::Size size = AsmReg::Size::DOUBLE_WORD);
 void matchAsmPseudo(const AsmOperandPtr& ptr, const string& value);
 void matchAsmStack(const AsmOperandPtr& ptr, signed value);
 // AsmInstr matchers

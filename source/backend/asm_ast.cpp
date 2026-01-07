@@ -14,7 +14,7 @@ AsmImm::AsmImm(int value) : AsmOperand(OP_IMM), value{value} {
 }
 
 // AsmReg
-AsmReg::AsmReg(Type reg) : AsmOperand(OP_REG), reg{reg} {
+AsmReg::AsmReg(Type reg, Size size) : AsmOperand(OP_REG), reg{reg}, size{size} {
 }
 
 // AsmPseudo

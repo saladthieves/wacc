@@ -15,9 +15,10 @@ void matchAsmImm(const AsmOperandPtr& ptr, int value) {
     ASSERT_EQ(imm->value, value);
 }
 
-void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type) {
+void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type, AsmReg::Size size) {
     auto reg = as<AsmReg>(ptr);
     ASSERT_EQ(reg->reg, type);
+    ASSERT_EQ(reg->size, size);
 }
 
 void matchAsmPseudo(const AsmOperandPtr& ptr, const string& value) {

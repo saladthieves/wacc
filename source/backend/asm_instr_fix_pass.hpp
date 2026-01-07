@@ -30,6 +30,8 @@ private:
 
     void fixAsmBinaryMult(AsmInstrPtr ptr); 
 
+    void fixAsmBinaryShift(AsmInstrPtr ptr);
+
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
                            T&&... args) const {

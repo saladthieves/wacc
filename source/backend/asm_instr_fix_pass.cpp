@@ -94,14 +94,18 @@ void AsmInstrFixPass::fixAsmIdiv(AsmInstrPtr ptr) {
 
 void AsmInstrFixPass::fixAsmBinary(AsmInstrPtr ptr) {
     auto& bin = static_cast<AsmBinary&>(*ptr);
-    if (bin.op == AsmBinary::Type::BINARY_MULT) {
-        fixAsmBinaryMult(std::move(ptr));
-        return;
+    using enum AsmBinary::Type;
+    if (bin.op == BINARY_MULT) {
+        return fixAsmBinaryMult(std::move(ptr));
+    }
+
+    if (bin.op == BINARY_BIT_LSH || bin.op == BINARY_BIT_RSH) {
+        return fixAsmBinaryShift(std::move(ptr));
     }
 
     // [add|sub] [-x(%rbp)], [-y(%rbp)]
     if (bin.src->type == OP_STACK && bin.dest->type == OP_STACK) {
-        // copy all needed by value first before overwriting via *pos++
+        // copy all needed by value first
         const auto src = static_cast<AsmStack&>(*bin.src).value;
         const auto dest = static_cast<AsmStack&>(*bin.dest).value;
         const auto reg = AsmReg::Type::R10;
@@ -145,6 +149,27 @@ void AsmInstrFixPass::fixAsmBinaryMult(AsmInstrPtr ptr) {
             std::make_unique<AsmMov>(std::make_unique<AsmReg>(reg),
                                      std::make_unique<AsmStack>(stackValue));
         fixed.push_back(std::move(mov2));
+    } else {
+        fixed.push_back(std::move(ptr));
+    }
+}
+
+void AsmInstrFixPass::fixAsmBinaryShift(AsmInstrPtr ptr) {
+    // [sar|sal] ![$imm], dest
+    auto& bin = static_cast<AsmBinary&>(*ptr);
+    if (bin.src->type != OP_IMM) {
+        const auto reg = AsmReg::Type::CX;
+
+        // mov src, %ecx
+        auto mov = std::make_unique<AsmMov>(std::move(bin.src),
+                                            std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(mov));
+
+        // [sar|sal] %cl, dest
+        auto shift = std::make_unique<AsmBinary>(
+            bin.op, std::make_unique<AsmReg>(reg, AsmReg::Size::BYTE),
+            std::move(bin.dest));
+        fixed.push_back(std::move(shift));
     } else {
         fixed.push_back(std::move(ptr));
     }
