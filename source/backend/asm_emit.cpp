@@ -237,6 +237,9 @@ std::string AsmEmitter::formatAsmBinaryOp(const AsmBinary::Type& type) const {
         case BINARY_MULT:    return "imull";
         case BINARY_BIT_LSH: return "sall";
         case BINARY_BIT_RSH: return "sarl";
+        case BINARY_BIT_AND: return "andl";
+        case BINARY_BIT_XOR: return "xorl";
+        case BINARY_BIT_OR:  return "orl";
         default:             fail("Failed to format AsmBinary::Type::[type = {}]", type);
     }
 }
