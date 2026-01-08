@@ -13,7 +13,7 @@ CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 2"
 eval ${CMD}
 
 echo "🧪 - Testing Chapter 3..."
-CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 3"
+CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 3 --bitwise"
 eval ${CMD}
 
 # echo "🧪 - Testing compiler..."
