@@ -20,7 +20,7 @@ public:
     void write();
 
     template <typename... T>
-    [[noreturn]] void fail(std::format_string<T...> str, T&&... args) const {
+    [[noreturn]] static void fail(std::format_string<T...> str, T&&... args) {
         const auto message = std::format(str, std::forward<T>(args)...);
         throw std::runtime_error(std::format("AsmWriterError: {}", message));
     }

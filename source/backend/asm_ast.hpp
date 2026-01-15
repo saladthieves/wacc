@@ -101,11 +101,11 @@ public:
         R11,
     };
 
-    enum class Size: std::uint8_t {
+    enum class Size : std::uint8_t {
         BYTE = 1,
-        WORD,
-        DOUBLE_WORD,
-        QUAD_WORD,
+        WORD = 2,
+        DOUBLE_WORD = 4,
+        QUAD_WORD = 8,
     };
 
     explicit AsmReg(Type reg, Size size = Size::DOUBLE_WORD);

@@ -143,7 +143,7 @@ TackyLitInt TackyGenerator::genForAstLitInt(const AstLitInt& obj)  {
 }
 
 TackyUnary::Type
-TackyGenerator::genForAstUnaryOp(const AstUnary::Type& type) const {
+TackyGenerator::genForAstUnaryOp(const AstUnary::Type& type)  {
     switch (type) {
         using enum AstUnary::Type;
         case UNARY_COMPLEMENT: return TackyUnary::Type::UNARY_COMPLEMENT;
@@ -156,7 +156,7 @@ TackyGenerator::genForAstUnaryOp(const AstUnary::Type& type) const {
 }
 
 TackyBinary::Type
-TackyGenerator::genForAstBinaryOp(const AstBinary::Type& type) const {
+TackyGenerator::genForAstBinaryOp(const AstBinary::Type& type)  {
     switch (type) {
         using enum AstBinary::Type;
         case BINARY_ADD:       return TackyBinary::Type::BINARY_ADD;

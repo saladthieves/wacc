@@ -142,7 +142,7 @@ void AsmEmitter::emitAsmAllocStack(const AsmAllocStack& obj) {
     pushLine("{}subq{}${}, %rsp", INDENT, INDENT, obj.value);
 }
 
-std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) const {
+std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) {
     const auto& type = obj.type;
     switch (type) {
         using enum AsmNode::Type;
@@ -165,7 +165,7 @@ std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) const {
     }
 }
 
-std::string AsmEmitter::formatAsmReg(const AsmReg& obj) const {
+std::string AsmEmitter::formatAsmReg(const AsmReg& obj) {
     using enum AsmReg::Type;
     using enum AsmReg::Size;
 
@@ -220,7 +220,7 @@ std::string AsmEmitter::formatAsmReg(const AsmReg& obj) const {
     fail("Failed to format AsmReg::Type::[{}]", std::to_underlying(type));
 }
 
-std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) const {
+std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) {
     switch (type) {
         using enum AsmUnary::Type;
         case UNARY_NEGATE: return "negl";
@@ -229,7 +229,7 @@ std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) const {
     }
 }
 
-std::string AsmEmitter::formatAsmBinaryOp(const AsmBinary::Type& type) const {
+std::string AsmEmitter::formatAsmBinaryOp(const AsmBinary::Type& type) {
     switch (type) {
         using enum AsmBinary::Type;
         case BINARY_ADD:     return "addl";

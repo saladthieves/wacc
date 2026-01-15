@@ -36,7 +36,7 @@ private:
     void emitAsmMov(const AsmMov& obj);
 
     void emitAsmRet(const AsmRet& obj);
-    
+
     void emitAsmUnary(const AsmUnary& obj);
 
     void emitAsmBinary(const AsmBinary& obj);
@@ -47,13 +47,13 @@ private:
 
     void emitAsmAllocStack(const AsmAllocStack& obj);
 
-    std::string formatAsmOperand(const AsmOperand& obj) const;
+    static std::string formatAsmOperand(const AsmOperand& obj);
 
-    std::string formatAsmReg(const AsmReg& obj) const;
+    static std::string formatAsmReg(const AsmReg& obj);
 
-    std::string formatAsmUnaryOp(const AsmUnary::Type& type) const;
+    static std::string formatAsmUnaryOp(const AsmUnary::Type& type);
 
-    std::string formatAsmBinaryOp(const AsmBinary::Type& type) const;
+    static std::string formatAsmBinaryOp(const AsmBinary::Type& type);
 
     template <typename... T>
     void pushLine(std::format_string<T...> str, T&&... args) {
@@ -71,8 +71,8 @@ private:
     }
 
     template <typename... T>
-    [[noreturn]] void fail(std::format_string<T...> str = "",
-                           T&&... args) const {
+    [[noreturn]] static void fail(std::format_string<T...> str = "",
+                                  T&&... args) {
         const auto message = std::format(str, std::forward<T>(args)...);
         throw std::runtime_error(std::format("AsmEmitterError: {}", message));
     }

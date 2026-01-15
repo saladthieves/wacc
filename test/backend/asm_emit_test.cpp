@@ -146,7 +146,7 @@ TEST_F(AsmEmitterTest, formatAsmReg) {
         make_unique<AsmFun>(AsmFun("main", std::move(instructions)));
     auto program = make_unique<AsmProg>(AsmProg(std::move(function)));
 
-    auto emitter = AsmEmitter(std::move(program), getPlatform());
+    auto emitter = AsmEmitter{std::move(program), getPlatform()};
 
     // ACT
     auto lines = *emitter.emit();
