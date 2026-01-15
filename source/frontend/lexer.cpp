@@ -37,20 +37,20 @@ Lexer::TokensPtr Lexer::scan() {
             case '/': makeToken(OP_DIVIDE); break;
             case '%': makeToken(OP_REMAINDER); break;
             case '<': {
-                const auto& next = peekNext();
-                if (next == '<' || next == '=') {
+                const auto& nextChar = peekNext();
+                if (nextChar == '<' || nextChar == '=') {
                     advance();
-                    makeToken(next == '<' ? OP_BIT_LSH : OP_LESS_EQUAL);
+                    makeToken(nextChar == '<' ? OP_BIT_LSH : OP_LESS_EQUAL);
                     break;
                 }
                 makeToken(OP_LESS_THAN);
                 break;
             }
             case '>': {
-                const auto& next = peekNext();
-                if (next == '>' || next == '=') {
+                const auto& nextChar = peekNext();
+                if (nextChar == '>' || nextChar == '=') {
                     advance();
-                    makeToken(next == '>' ? OP_BIT_RSH : OP_GREATER_EQUAL);
+                    makeToken(nextChar == '>' ? OP_BIT_RSH : OP_GREATER_EQUAL);
                     break;
                 }
                 makeToken(OP_GREATER_THAN);

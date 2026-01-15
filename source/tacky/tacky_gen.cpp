@@ -15,7 +15,7 @@ void VariableGenerator::reset() {
     count = 0;
 }
 
-void VariableGenerator::resetSession(std::string session) {
+void VariableGenerator::resetSession(std::string_view session) {
     std::string value{"S"};
     if (session.empty()) {
         constexpr auto letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -29,7 +29,7 @@ void VariableGenerator::resetSession(std::string session) {
     this->session = value;
 }
 
-void VariableGenerator::resetFunction(std::string function) {
+void VariableGenerator::resetFunction(std::string_view function) {
     std::string upper{};
     for (const auto& c : function) upper += std::toupper(c);
     this->function = upper;
@@ -138,8 +138,8 @@ TackyValPtr TackyGenerator::genForAstBinary(const AstBinary& obj,
     return std::make_unique<TackyVariable>(name);
 }
 
-TackyLitInt TackyGenerator::genForAstLitInt(const AstLitInt& obj) const {
-    return {obj.value};
+TackyLitInt TackyGenerator::genForAstLitInt(const AstLitInt& obj)  {
+    return TackyLitInt{obj.value};
 }
 
 TackyUnary::Type

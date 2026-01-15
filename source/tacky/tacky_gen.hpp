@@ -18,9 +18,9 @@ public:
 
     void reset();
 
-    void resetSession(std::string session = "");
+    void resetSession(std::string_view session = "");
 
-    void resetFunction(std::string function);
+    void resetFunction(std::string_view function);
 
     std::string generate();
 
@@ -33,7 +33,7 @@ private:
 // TackyGenerator
 class TackyGenerator {
 public:
-    TackyGenerator(AstNodePtr ptr);
+    explicit TackyGenerator(AstNodePtr ptr);
 
     TackyNodePtr generate() const;
 
@@ -53,7 +53,7 @@ private:
     TackyValPtr genForAstBinary(const AstBinary& obj,
                                 TackyInstrPtrs& body) const;
 
-    TackyLitInt genForAstLitInt(const AstLitInt& obj) const;
+    static TackyLitInt genForAstLitInt(const AstLitInt& obj);
 
     TackyUnary::Type genForAstUnaryOp(const AstUnary::Type& type) const;
 

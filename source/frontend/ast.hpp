@@ -47,7 +47,7 @@ public:
         PROGRAM
     };
 
-    AstNode(Type type);
+    explicit AstNode(Type type);
 
     virtual ~AstNode() = default;
 
@@ -62,7 +62,7 @@ using enum AstNode::Type;
 // AstExpr
 class AstExpr : public AstNode {
 public:
-    AstExpr(Type type);
+    explicit AstExpr(Type type);
 };
 
 // AstLitInt
@@ -123,13 +123,13 @@ public:
 // AstStmt
 class AstStmt : public AstNode {
 public:
-    AstStmt(Type type);
+    explicit AstStmt(Type type);
 };
 
 // AstReturn
 class AstReturn : public AstStmt {
 public:
-    AstReturn(AstExprPtr expr);
+    explicit AstReturn(AstExprPtr expr);
 
     AstExprPtr expr;
 };
@@ -146,7 +146,7 @@ public:
 // AstProg
 class AstProg : public AstNode {
 public:
-    AstProg(AstFunPtr function);
+    explicit AstProg(AstFunPtr function);
 
     AstFunPtr function;
 };
@@ -176,11 +176,11 @@ using wacc::front::ast::AstNode;
 template <>
 class formatter<AstNode::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AstNode::Type& type, format_context& context) const {
+    static auto format(const AstNode::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {
@@ -206,11 +206,11 @@ using wacc::front::ast::AstUnary;
 template <>
 class formatter<AstUnary::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AstUnary::Type& type, format_context& context) const {
+    static auto format(const AstUnary::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {
@@ -231,11 +231,11 @@ using wacc::front::ast::AstBinary;
 template <>
 class formatter<AstBinary::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AstBinary::Type& type, format_context& context) const {
+    static auto format(const AstBinary::Type& type, format_context& context) {
         string value{};
 
         switch (type) {
@@ -266,11 +266,11 @@ using namespace wacc::front::ast;
 template <>
 class formatter<AstNodePtr> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    std::string formatNode(const AstNode& node, unsigned level) const {
+    static std::string formatNode(const AstNode& node, unsigned level) {
         const auto indent = [](unsigned level) -> std::string {
             std::string output = "";
             for (auto i = 0; i < level; ++i) output += "  ";
@@ -336,7 +336,7 @@ public:
         }
     }
 
-    auto format(const AstNodePtr& ptr, format_context& context) const {
+    static auto format(const AstNodePtr& ptr, format_context& context) {
         return std::format_to(context.out(), "{}", formatNode(*ptr, 0));
     }
 };

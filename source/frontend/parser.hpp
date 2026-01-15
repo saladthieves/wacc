@@ -27,7 +27,7 @@ public:
     ast::AstNodePtr parse();
 
 private:
-    bool isAtEnd() const { return next == end; }
+    bool isAtEnd() const { return next == last; }
 
     const Token& peek() const { return *current; }
 
@@ -61,9 +61,9 @@ private:
 
     bool isFactor(const TokenType& type) const;
 
-    bool isBinaryOp(const TokenType& type) const;
+    static bool isBinaryOp(const TokenType& type);
 
-    unsigned int getPrecedence(const TokenType& type) const;
+    static unsigned int getPrecedence(const TokenType& type);
 
     const Token& expect(std::initializer_list<const TokenType> types);
 
@@ -89,7 +89,7 @@ private:
     src::Source src;
     ConstIter current;
     ConstIter next;
-    ConstIter end;
+    ConstIter last;
 
     static const PrecedenceMap precedences;
 };

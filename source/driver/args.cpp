@@ -39,10 +39,13 @@ DriverArgs parseDriverArgs(std::vector<std::string>& args) {
 
     const bool skipCleanup = findFlag(FLAG_SKIP_CLEANUP);
 
-    for (const auto& flag : args) {
-        if (flag.starts_with("-")) {
-            throw std::runtime_error("Multiple flags provided instead of one.");
-        }
+    const auto hasMultiple =
+        std::any_of(args.begin(), args.end(), [](const auto& flag) {
+            return flag.starts_with("-"); //
+        });
+
+    if (hasMultiple) {
+        throw std::runtime_error("Multiple flags provided instead of one.");
     }
 
     if (args.empty()) {

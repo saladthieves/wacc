@@ -14,7 +14,7 @@ TackyLitInt::TackyLitInt(int value) : TackyVal(LITERAL_INT), value{value} {
 }
 
 // TackyVariable
-TackyVariable::TackyVariable(std::string identifier) :
+TackyVariable::TackyVariable(std::string_view identifier) :
     TackyVal(VARIABLE), identifier{identifier} {
 }
 

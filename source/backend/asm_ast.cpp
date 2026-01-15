@@ -18,7 +18,7 @@ AsmReg::AsmReg(Type reg, Size size) : AsmOperand(OP_REG), reg{reg}, size{size} {
 }
 
 // AsmPseudo
-AsmPseudo::AsmPseudo(std::string identifier) :
+AsmPseudo::AsmPseudo(std::string_view identifier) :
     AsmOperand(OP_PSEUDO), identifier{identifier} {
 }
 

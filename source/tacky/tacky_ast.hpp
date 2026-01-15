@@ -47,7 +47,7 @@ public:
         FUNCTION,
         PROGRAM,
     };
-    TackyNode(Type type);
+    explicit TackyNode(Type type);
 
     virtual ~TackyNode() = default;
 
@@ -61,13 +61,13 @@ using enum TackyNode::Type;
 // TackyVal
 class TackyVal : public TackyNode {
 public:
-    TackyVal(Type type);
+    explicit TackyVal(Type type);
 };
 
 // TackyLitInt
 class TackyLitInt : public TackyVal {
 public:
-    TackyLitInt(int value);
+    explicit TackyLitInt(int value);
 
     int value;
 };
@@ -75,7 +75,7 @@ public:
 // TackyVariable
 class TackyVariable : public TackyVal {
 public:
-    TackyVariable(std::string identifier);
+    explicit TackyVariable(std::string_view identifier);
 
     std::string identifier;
 };
@@ -83,13 +83,13 @@ public:
 // TackyInstr
 class TackyInstr : public TackyNode {
 public:
-    TackyInstr(Type type);
+    explicit TackyInstr(Type type);
 };
 
 // TackyReturn
 class TackyReturn : public TackyInstr {
 public:
-    TackyReturn(TackyValPtr val);
+    explicit TackyReturn(TackyValPtr val);
 
     TackyValPtr val;
 };
@@ -145,7 +145,7 @@ public:
 // TackyProg
 class TackyProg : public TackyNode {
 public:
-    TackyProg(TackyFunPtr function);
+    explicit TackyProg(TackyFunPtr function);
 
     TackyFunPtr function;
 };
@@ -161,11 +161,11 @@ using wacc::tacky::ast::TackyNode;
 template <>
 class formatter<TackyNode::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const TackyNode::Type& type, format_context& context) const {
+    static auto format(const TackyNode::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {
@@ -192,11 +192,11 @@ using wacc::tacky::ast::TackyUnary;
 template <>
 class formatter<TackyUnary::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const TackyUnary::Type& type, format_context& context) const {
+    static auto format(const TackyUnary::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {
@@ -218,11 +218,11 @@ using wacc::tacky::ast::TackyBinary;
 template <>
 class formatter<TackyBinary::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const TackyBinary::Type& type, format_context& context) const {
+    static auto format(const TackyBinary::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {

@@ -73,7 +73,7 @@ void AsmInstrFixPass::fixAsmMov(AsmInstrPtr ptr) {
 }
 
 void AsmInstrFixPass::fixAsmIdiv(AsmInstrPtr ptr) {
-    auto& idiv = static_cast<AsmIdiv&>(*ptr);
+    const auto& idiv = static_cast<AsmIdiv&>(*ptr);
 
     // mov [$x]
     if (idiv.operand->type == OP_IMM) {
@@ -94,7 +94,7 @@ void AsmInstrFixPass::fixAsmIdiv(AsmInstrPtr ptr) {
 
 void AsmInstrFixPass::fixAsmBinary(AsmInstrPtr ptr) {
     // idiv [-x(%rbp)]
-    auto& bin = static_cast<AsmBinary&>(*ptr);
+    const auto& bin = static_cast<AsmBinary&>(*ptr);
     using enum AsmBinary::Type;
     if (bin.op == BINARY_MULT) {
         return fixAsmBinaryMult(std::move(ptr));
@@ -185,7 +185,7 @@ void AsmInstrFixPass::fixAsmBinaryShift(AsmInstrPtr ptr) {
 
 void AsmInstrFixPass::fixAsmBinaryAndXorOr(AsmInstrPtr ptr) {
     // [and|xor|or] [-x(%src)] [-y(%dest)]
-    auto& bin = static_cast<AsmBinary&>(*ptr);
+    const auto& bin = static_cast<AsmBinary&>(*ptr);
     
     if (bin.src->type == OP_STACK && bin.dest->type == OP_STACK) {
         // copy all needed by value first

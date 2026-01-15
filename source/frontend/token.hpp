@@ -71,11 +71,11 @@ using wacc::front::token::TokenType;
 template <>
 class formatter<TokenType> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const TokenType& type, format_context& context) const {
+    static auto format(const TokenType& type, format_context& context) {
         std::string value{};
 
         switch (type) {

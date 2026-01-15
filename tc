@@ -2,7 +2,7 @@
 
 TEST_ROOT="$HOME/dev/projects/cpp/personal/writing-a-c-compiler-tests"
 TEST_SCRIPT="test_compiler"
-TEST_CHAPTER="--chapter 3"
+TEST_CHAPTER="--chapter 4"
 
 echo "🧪 - Testing Chapter 1..."
 CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) --chapter 1"

@@ -13,7 +13,6 @@ protected:
 
 TEST_F(Chapter3Test, chapter3e2eArith) {
     // ARRANGE
-    // ARRANGE
     vector<pair<string, int>> tests{
         {"{ return 0 + 0; }",                         0 },
         {"{ return 1 + 2; }",                         3 },

@@ -16,20 +16,20 @@ public:
     using Tokens = std::vector<token::Token>;
     using TokensPtr = std::unique_ptr<Tokens>;
 
-    Lexer(src::Source source);
+    explicit Lexer(src::Source source);
 
     TokensPtr scan();
 
 private:
     bool isAtEnd() const { return next == end; }
 
-    bool isNumeric(const char& c) const { return c >= '0' && c <= '9'; }
+    static bool isNumeric(const char& c) { return c >= '0' && c <= '9'; }
 
-    bool isAlpha(const char& c) const {
+    static bool isAlpha(const char& c) {
         return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
     }
 
-    bool isAlphaNumeric(const char& c) const {
+    static bool isAlphaNumeric(const char& c) {
         return isAlpha(c) || isNumeric(c);
     }
 

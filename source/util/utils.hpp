@@ -33,7 +33,7 @@ class Platform {
 public:
     Platform();
 
-    Platform(PlatformType type);
+    explicit Platform(PlatformType type);
 
     bool isMacOS() const { return type == PlatformType::MACOS; }
 

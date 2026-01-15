@@ -65,7 +65,7 @@ public:
         PROGRAM,
     };
 
-    AsmNode(Type type);
+    explicit AsmNode(Type type);
 
     virtual ~AsmNode() = default;
 
@@ -79,13 +79,13 @@ using enum AsmNode::Type;
 // AsmOperand
 class AsmOperand : public AsmNode {
 public:
-    AsmOperand(Type type);
+    explicit AsmOperand(Type type);
 };
 
 // AsmImm
 class AsmImm : public AsmOperand {
 public:
-    AsmImm(int value);
+    explicit AsmImm(int value);
 
     int value;
 };
@@ -108,7 +108,7 @@ public:
         QUAD_WORD,
     };
 
-    AsmReg(Type reg, Size size = Size::DOUBLE_WORD);
+    explicit AsmReg(Type reg, Size size = Size::DOUBLE_WORD);
 
     Type reg;
     Size size;
@@ -117,7 +117,7 @@ public:
 // AsmPseudo
 class AsmPseudo : public AsmOperand {
 public:
-    AsmPseudo(std::string identifier);
+    explicit AsmPseudo(std::string_view identifier);
 
     std::string identifier;
 };
@@ -125,7 +125,7 @@ public:
 // AsmStack
 class AsmStack : public AsmOperand {
 public:
-    AsmStack(signed value);
+    explicit AsmStack(signed value);
 
     signed value;
 };
@@ -133,7 +133,7 @@ public:
 // AsmInstr
 class AsmInstr : public AsmNode {
 public:
-    AsmInstr(Type type);
+    explicit AsmInstr(Type type);
 };
 
 // AsmMov
@@ -183,7 +183,7 @@ public:
 // AsmIdiv
 class AsmIdiv : public AsmInstr {
 public:
-    AsmIdiv(AsmOperandPtr operand);
+    explicit AsmIdiv(AsmOperandPtr operand);
 
     AsmOperandPtr operand;
 };
@@ -197,7 +197,7 @@ public:
 // AsmAllocStack
 class AsmAllocStack : public AsmInstr {
 public:
-    AsmAllocStack(unsigned value);
+    explicit AsmAllocStack(unsigned value);
 
     unsigned value;
 };
@@ -220,7 +220,7 @@ public:
 // AsmProg
 class AsmProg : public AsmNode {
 public:
-    AsmProg(AsmFunPtr function);
+    explicit AsmProg(AsmFunPtr function);
 
     AsmFunPtr function;
 };
@@ -236,11 +236,11 @@ using wacc::back::ast::AsmNode;
 template <>
 class formatter<AsmNode::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AsmNode::Type& type, format_context& context) const {
+    static auto format(const AsmNode::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {
@@ -272,11 +272,11 @@ using wacc::back::ast::AsmUnary;
 template <>
 class formatter<AsmUnary::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AsmUnary::Type& type, format_context& context) const {
+    static auto format(const AsmUnary::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {
@@ -297,11 +297,11 @@ using wacc::back::ast::AsmBinary;
 template <>
 class formatter<AsmBinary::Type> {
 public:
-    constexpr auto parse(format_parse_context& context) {
+    static constexpr auto parse(format_parse_context& context) {
         return context.begin();
     }
 
-    auto format(const AsmBinary::Type& type, format_context& context) const {
+    static auto format(const AsmBinary::Type& type, format_context& context) {
         std::string value{};
 
         switch (type) {

@@ -143,8 +143,7 @@ AsmOperandPtr AsmGenerator::genForTackyVal(const TackyVal& tacky) const {
     }
 }
 
-AsmUnary::Type
-AsmGenerator::genForTackyUnaryOp(const TackyUnary::Type& type) const {
+AsmUnary::Type AsmGenerator::genForTackyUnaryOp(const TackyUnary::Type& type) {
     switch (type) {
         using enum TackyUnary::Type;
         case UNARY_COMPLEMENT: return AsmUnary::Type::UNARY_NOT;
@@ -153,7 +152,7 @@ AsmGenerator::genForTackyUnaryOp(const TackyUnary::Type& type) const {
 }
 
 AsmBinary::Type
-AsmGenerator::genForTackyBinaryOp(const TackyBinary::Type& type) const {
+AsmGenerator::genForTackyBinaryOp(const TackyBinary::Type& type) {
     switch (type) {
         using enum TackyBinary::Type;
         case BINARY_ADD:       return AsmBinary::Type::BINARY_ADD;

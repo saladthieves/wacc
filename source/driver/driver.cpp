@@ -26,7 +26,7 @@ void runDriver(std::vector<std::string>& arguments) {
         cleanUp(args, info, false);
     } catch (const std::runtime_error& ex) {
         cleanUp(args, info, true);
-        throw ex;
+        throw std::runtime_error(ex);
     }
 }
 

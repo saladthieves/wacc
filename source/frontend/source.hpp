@@ -14,7 +14,7 @@ public:
     using ConstIter = std::string_view::const_iterator;
     using Size = unsigned int;
 
-    Source(std::string_view source);
+    explicit Source(std::string_view source);
 
     const ConstIter& cbegin() const { return begin; }
 

@@ -16,7 +16,7 @@ using namespace wacc::back::ast;
 
 class AsmGenerator {
 public:
-    AsmGenerator(TackyNodePtr ptr);
+    explicit AsmGenerator(TackyNodePtr ptr);
 
     AsmNodePtr generate() const;
 
@@ -42,13 +42,13 @@ private:
 
     AsmOperandPtr genForTackyVal(const TackyVal& tacky) const;
 
-    AsmUnary::Type genForTackyUnaryOp(const TackyUnary::Type& type) const;
+    static AsmUnary::Type genForTackyUnaryOp(const TackyUnary::Type& type);
 
-    AsmBinary::Type genForTackyBinaryOp(const TackyBinary::Type& type) const;
+    static AsmBinary::Type genForTackyBinaryOp(const TackyBinary::Type& type);
 
     template <typename... T>
-    [[noreturn]] void fail(std::format_string<T...> str = "",
-                           T&&... args) const {
+    [[noreturn]] static void fail(std::format_string<T...> str = "",
+                                  T&&... args) {
         const auto message = std::format(str, std::forward<T>(args)...);
         throw std::runtime_error(std::format("AsmGeneratorError: {}", message));
     }

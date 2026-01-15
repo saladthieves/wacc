@@ -6,7 +6,7 @@
 namespace wacc::front::parse {
 Parser::Parser(TokensPtr ptr, src::Source source) :
     tokens{std::move(ptr)}, src{source}, current{tokens->cbegin()},
-    next{tokens->cbegin()}, end{tokens->cbegin()} {
+    next{tokens->cbegin()}, last{tokens->cend()} {
 }
 
 ast::AstNodePtr Parser::parse() {
@@ -146,7 +146,7 @@ ast::AstBinary::Type Parser::parseBinaryOperator() {
     }
 }
 
-bool Parser::isBinaryOp(const TokenType& type) const {
+bool Parser::isBinaryOp(const TokenType& type) {
     using enum TokenType;
     switch (type) {
         case OP_ADDITION:
@@ -163,7 +163,7 @@ bool Parser::isBinaryOp(const TokenType& type) const {
     }
 }
 
-unsigned int Parser::getPrecedence(const TokenType& type) const {
+unsigned int Parser::getPrecedence(const TokenType& type) {
     for (const auto& entry : precedences) {
         if (entry.first == type) return entry.second;
     }

@@ -17,7 +17,7 @@ using StackMap = std::map<Key, Value>;
 
 class AsmPseudoPass {
 public:
-    AsmPseudoPass(AsmNodePtr ptr);
+    explicit AsmPseudoPass(AsmNodePtr ptr);
 
     AsmNodePtr run();
 
