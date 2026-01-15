@@ -7,6 +7,8 @@ AccessModifierOffset: -4
 AlignArrayOfStructures: Left
 AlignConsecutiveShortCaseStatements:
   Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
 AlignOperands: Align
 AlignTrailingComments:
   Kind: Always
@@ -16,17 +18,20 @@ AllowShortCaseLabelsOnASingleLine: true
 AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: InlineOnly
 AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLambdasOnASingleLine: false
 AllowShortLoopsOnASingleLine: true
+BreakAfterAttributes: Never
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
 BreakTemplateDeclarations: Yes
-PointerAlignment: Left
 DerivePointerAlignment: false
+EmptyLineBeforeAccessModifier: Always
 IncludeBlocks: Preserve
 IndentCaseLabels: true
 IndentExternBlock: true
 IndentPPDirectives: AfterHash
+PointerAlignment: Left
 PPIndentWidth: 2
 QualifierAlignment: Left
 SeparateDefinitionBlocks: Always
