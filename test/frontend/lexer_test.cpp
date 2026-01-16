@@ -99,7 +99,7 @@ TEST_F(LexerTest, scanNumberConstantInvalidAlpha) {
 
 TEST_F(LexerTest, scanNumberConstantInvalidChar) {
     // ARRANGE
-    auto tests = vector<string>{"29!", "38@", "2`92", "28'", "1\"2"};
+    auto tests = vector<string>{"29'", "38@", "2`92", "28'", "1\"2"};
 
     for (const auto& source : tests) {
         // ACT
@@ -150,7 +150,7 @@ TEST_F(LexerTest, scanIdentifier) {
 
 TEST_F(LexerTest, scanIdentifierInvalid) {
     // ARRANGE
-    auto tests = vector<string>{"some@ne", "may?be", "no!w",   "fi#st",
+    auto tests = vector<string>{"some@ne", "may?be", "no$w",   "fi#st",
                                 "noun`s",  "adv'",   "sha``e!"};
 
     for (const auto& source : tests) {
@@ -247,6 +247,12 @@ TEST_F(LexerTest, scanSingleToken) {
         {"<=", OP_LESS_EQUAL    },
         {">",  OP_GREATER_THAN  },
         {">=", OP_GREATER_EQUAL },
+        {"!",  OP_LOG_NOT       },
+        {"&&", OP_LOG_AND       },
+        {"||", OP_LOG_OR        },
+        {"==", OP_EQUAL         },
+        {"!=", OP_NOT_EQUAL     },
+        {"=",  OP_ASSIGN        },
     };
 
     for (const auto& test : tests) {
@@ -272,7 +278,7 @@ TEST_F(LexerTest, scanSingleToken) {
 
 TEST_F(LexerTest, scanSingleTokenInvalid) {
     // ARRANGE
-    auto tests = vector<string>{"@", "?", "!", "`", "``", "#"};
+    auto tests = vector<string>{"@", "?", "\\", "`", "``", "#"};
 
     for (const auto& test : tests) {
         // ACT
@@ -295,7 +301,8 @@ TEST_F(LexerTest, scanSource) {
     // ARRANGE
     const auto source =
         R"(int main(void) {
-            return (-1 + 2) * ~3 - 4 / 5 % (--6) < > <= >= << >> & | ^;
+            return (-1 + 2) * ~3 - 4 / 5 % (--6) < > <= >= << >> &| ^!&& ||
+            == != = ;
         })";
 
     auto lexer = getLexer(source);
@@ -317,7 +324,7 @@ TEST_F(LexerTest, scanSource) {
 
     // ASSERT
     ASSERT_TRUE(error.empty());
-    ASSERT_EQ(tokens.size(), 37);
+    ASSERT_EQ(tokens.size(), 43);
     // clang-format off
     ASSERT_TRUE(check(tokens[0],  KEYWORD_INT,       "int",    1));
     ASSERT_TRUE(check(tokens[1],  IDENTIFIER,        "main",   1));
@@ -353,8 +360,14 @@ TEST_F(LexerTest, scanSource) {
     ASSERT_TRUE(check(tokens[31], OP_BIT_AND,        "&",      2));
     ASSERT_TRUE(check(tokens[32], OP_BIT_OR,         "|",      2));
     ASSERT_TRUE(check(tokens[33], OP_BIT_XOR,        "^",      2));
-    ASSERT_TRUE(check(tokens[34], SEMICOLON,         ";",      2));
-    ASSERT_TRUE(check(tokens[35], CLOSE_BRACE,       "}",      3));
-    ASSERT_TRUE(check(tokens[36], END,               "END",    3));
+    ASSERT_TRUE(check(tokens[34], OP_LOG_NOT,        "!",      2));
+    ASSERT_TRUE(check(tokens[35], OP_LOG_AND,        "&&",     2));
+    ASSERT_TRUE(check(tokens[36], OP_LOG_OR,         "||",     2));
+    ASSERT_TRUE(check(tokens[37], OP_EQUAL,          "==",     3));
+    ASSERT_TRUE(check(tokens[38], OP_NOT_EQUAL,      "!=",     3));
+    ASSERT_TRUE(check(tokens[39], OP_ASSIGN,         "=",      3));
+    ASSERT_TRUE(check(tokens[40], SEMICOLON,         ";",      3));
+    ASSERT_TRUE(check(tokens[41], CLOSE_BRACE,       "}",      4));
+    ASSERT_TRUE(check(tokens[42], END,               "END",    4));
     // clang-format on
 }

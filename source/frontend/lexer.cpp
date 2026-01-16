@@ -29,9 +29,43 @@ Lexer::TokensPtr Lexer::scan() {
             case '{': makeToken(OPEN_BRACE); break;
             case '}': makeToken(CLOSE_BRACE); break;
             case '~': makeToken(OP_BIT_COMPLEMENT); break;
-            case '&': makeToken(OP_BIT_AND); break;
-            case '|': makeToken(OP_BIT_OR); break;
+            case '&': {
+                if (peekNext() == '&') {
+                    advance();
+                    makeToken(OP_LOG_AND);
+                } else {
+                    makeToken(OP_BIT_AND);
+                }
+                break;
+            }
+            case '|': {
+                if (peekNext() == '|') {
+                    advance();
+                    makeToken(OP_LOG_OR);
+                } else {
+                    makeToken(OP_BIT_OR);
+                }
+                break;
+            }
             case '^': makeToken(OP_BIT_XOR); break;
+            case '=': {
+                if (peekNext() == '=') {
+                    advance();
+                    makeToken(OP_EQUAL);
+                } else {
+                    makeToken(OP_ASSIGN);
+                }
+                break;
+            }
+            case '!': {
+                if (peekNext() == '=') {
+                    advance();
+                    makeToken(OP_NOT_EQUAL);
+                } else {
+                    makeToken(OP_LOG_NOT);
+                }
+                break;
+            }
             case '+': makeToken(OP_ADDITION); break;
             case '*': makeToken(OP_MULTIPLY); break;
             case '/': makeToken(OP_DIVIDE); break;
@@ -41,9 +75,9 @@ Lexer::TokensPtr Lexer::scan() {
                 if (nextChar == '<' || nextChar == '=') {
                     advance();
                     makeToken(nextChar == '<' ? OP_BIT_LSH : OP_LESS_EQUAL);
-                    break;
+                } else {
+                    makeToken(OP_LESS_THAN);
                 }
-                makeToken(OP_LESS_THAN);
                 break;
             }
             case '>': {
@@ -67,7 +101,7 @@ Lexer::TokensPtr Lexer::scan() {
             }
             case ';': makeToken(SEMICOLON); break;
 
-            default: fail("Unexpected token character: [{}]", c);
+            default:  fail("Unexpected token character: [{}]", c);
         }
     }
 
