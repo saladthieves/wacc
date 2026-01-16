@@ -48,22 +48,31 @@ std::string formatAstUnaryOp(const AstUnary::Type& type) {
         using enum AstUnary::Type;
         case UNARY_COMPLEMENT: return "~";
         case UNARY_NEGATE:     return "-";
+        case UNARY_NOT:        return "!";
     }
 }
 
 std::string formatAstBinaryOp(const AstBinary::Type& type) {
     switch (type) {
         using enum AstBinary::Type;
-        case BINARY_ADD:       return "+";
-        case BINARY_SUBTRACT:  return "-";
-        case BINARY_MULTIPLY:  return "*";
-        case BINARY_DIVIDE:    return "/";
-        case BINARY_REMAINDER: return "%";
-        case BINARY_BIT_AND:   return "&";
-        case BINARY_BIT_OR:    return "|";
-        case BINARY_BIT_XOR:   return "^";
-        case BINARY_BIT_LSH:   return "<<";
-        case BINARY_BIT_RSH:   return ">>";
+        case BINARY_ADD:           return "+";
+        case BINARY_SUBTRACT:      return "-";
+        case BINARY_MULTIPLY:      return "*";
+        case BINARY_DIVIDE:        return "/";
+        case BINARY_REMAINDER:     return "%";
+        case BINARY_BIT_AND:       return "&";
+        case BINARY_BIT_OR:        return "|";
+        case BINARY_BIT_XOR:       return "^";
+        case BINARY_BIT_LSH:       return "<<";
+        case BINARY_BIT_RSH:       return ">>";
+        case BINARY_LOG_AND:       return "&&";
+        case BINARY_LOG_OR:        return "||";
+        case BINARY_EQUAL:         return "==";
+        case BINARY_NOT_EQUAL:     return "!=";
+        case BINARY_LESS:          return "<";
+        case BINARY_LESS_EQUAL:    return "<=";
+        case BINARY_GREATER:       return ">";
+        case BINARY_GREATER_EQUAL: return ">=";
     }
 }
 } // namespace

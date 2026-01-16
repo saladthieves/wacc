@@ -3,6 +3,7 @@
 #include <format>
 #include <map>
 #include <string_view>
+#include <utility>
 
 namespace wacc {
 namespace front {
@@ -99,6 +100,10 @@ public:
             case OP_BIT_LSH:        value = "OP_BIT_LSH"; break;
             case OP_BIT_RSH:        value = "OP_BIT_RSH"; break;
             case OP_BIT_COMPLEMENT: value = "OP_BIT_COMPLEMENT"; break;
+            case OP_LOG_AND:        value = "OP_LOG_AND"; break;
+            case OP_LOG_OR:         value = "OP_LOG_OR"; break;
+            case OP_LOG_NOT:        value = "OP_LOG_NOT"; break;
+            case OP_EQUAL:          value = "OP_EQUAL"; break;
             case OP_NEGATE:         value = "OP_NEGATE"; break;
             case OP_ADDITION:       value = "OP_ADDITION"; break;
             case OP_MULTIPLY:       value = "OP_MULTIPLY"; break;
@@ -113,7 +118,11 @@ public:
             case SEMICOLON:         value = "SEMICOLON"; break;
             case INVALID_TOKEN:     value = "INVALID_TOKEN"; break;
             case END:               value = "END"; break;
-            default:                throw std::format_error("Unhandled token::TokenType enum");
+            default:                {
+                throw std::format_error(
+                    std::format("Unhandled token::TokenType::[{}] enum",
+                                std::to_underlying(type)));
+            }
         }
         return std::format_to(context.out(), "{}", value);
     }

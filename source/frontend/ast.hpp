@@ -80,6 +80,7 @@ public:
     enum class Type : std::uint8_t {
         UNARY_COMPLEMENT = 1,
         UNARY_NEGATE,
+        UNARY_NOT,
     };
 
     AstUnary(Type op, AstExprPtr expr);
@@ -102,6 +103,14 @@ public:
         BINARY_BIT_XOR,
         BINARY_BIT_LSH,
         BINARY_BIT_RSH,
+        BINARY_LOG_AND,
+        BINARY_LOG_OR,
+        BINARY_EQUAL,
+        BINARY_NOT_EQUAL,
+        BINARY_LESS,
+        BINARY_LESS_EQUAL,
+        BINARY_GREATER,
+        BINARY_GREATER_EQUAL,
     };
 
     AstBinary(Type op, AstExprPtr left, AstExprPtr right);
@@ -217,6 +226,7 @@ public:
             using enum AstUnary::Type;
             case UNARY_COMPLEMENT: value = "UNARY_COMPLEMENT"; break;
             case UNARY_NEGATE:     value = "UNARY_NEGATE"; break;
+            case UNARY_NOT:        value = "UNARY_NOT"; break;
             default:               throw std::format_error("Unhandled AstUnary::Type enum");
         }
 
@@ -240,17 +250,25 @@ public:
 
         switch (type) {
             using enum AstBinary::Type;
-            case BINARY_ADD:       value = "BINARY_ADD"; break;
-            case BINARY_SUBTRACT:  value = "BINARY_SUBTRACT"; break;
-            case BINARY_MULTIPLY:  value = "BINARY_MULTIPLY"; break;
-            case BINARY_DIVIDE:    value = "BINARY_DIVIDE"; break;
-            case BINARY_REMAINDER: value = "BINARY_REMAINDER"; break;
-            case BINARY_BIT_AND:   value = "BINARY_BIT_AND"; break;
-            case BINARY_BIT_OR:    value = "BINARY_BIT_OR"; break;
-            case BINARY_BIT_XOR:   value = "BINARY_BIT_XOR"; break;
-            case BINARY_BIT_LSH:   value = "BINARY_BIT_LSH"; break;
-            case BINARY_BIT_RSH:   value = "BINARY_BIT_RSH"; break;
-            default:               {
+            case BINARY_ADD:           value = "BINARY_ADD"; break;
+            case BINARY_SUBTRACT:      value = "BINARY_SUBTRACT"; break;
+            case BINARY_MULTIPLY:      value = "BINARY_MULTIPLY"; break;
+            case BINARY_DIVIDE:        value = "BINARY_DIVIDE"; break;
+            case BINARY_REMAINDER:     value = "BINARY_REMAINDER"; break;
+            case BINARY_BIT_AND:       value = "BINARY_BIT_AND"; break;
+            case BINARY_BIT_OR:        value = "BINARY_BIT_OR"; break;
+            case BINARY_BIT_XOR:       value = "BINARY_BIT_XOR"; break;
+            case BINARY_BIT_LSH:       value = "BINARY_BIT_LSH"; break;
+            case BINARY_BIT_RSH:       value = "BINARY_BIT_RSH"; break;
+            case BINARY_LOG_AND:       value = "BINARY_LOG_AND"; break;
+            case BINARY_LOG_OR:        value = "BINARY_LOG_OR"; break;
+            case BINARY_EQUAL:         value = "BINARY_EQUAL"; break;
+            case BINARY_NOT_EQUAL:     value = "BINARY_NOT_EQUAL"; break;
+            case BINARY_LESS:          value = "BINARY_LESS"; break;
+            case BINARY_LESS_EQUAL:    value = "BINARY_LESS_EQUAL"; break;
+            case BINARY_GREATER:       value = "BINARY_GREATER"; break;
+            case BINARY_GREATER_EQUAL: value = "BINARY_GREATER_EQUAL"; break;
+            default:                   {
                 throw std::format_error("Unhandled AstBinary::Type enum");
             }
         }

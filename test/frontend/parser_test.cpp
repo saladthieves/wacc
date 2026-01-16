@@ -57,29 +57,42 @@ TEST_F(ParserTest, parseMalformedExpression) {
     // ARRANGE
     const auto tests = vector<string>{
         // clang-format off
-        "int main(void) { return; }",      
-        "int main(void) { return (); }",
-        "int main(void) { return (()); }", 
-        "int main(void) { return -; }",
-        "int main(void) { return ~; }",    
-        "int main(void) { return -(); }",
-        "int main(void) { return ~(); }",  
-        "int main(void) { return --15; }",
-        "int main(void) { return 1 + ; }",
-        "int main(void) { return 2 - /; }",
-        "int main(void) { return 8 % --; }",
-        "int main(void) { return -1 / --; }",
-        "int main(void) { return (2 *); }",
-        "int main(void) { return ((8 %); }",
-        "int main(void) { return >>; }",
-        "int main(void) { return 2 <<; }",
-        "int main(void) { return & 2 ^ 33 | 9; }",
+        "{ return; }",      
+        "{ return (); }",
+        "{ return (()); }", 
+        "{ return -; }",
+        "{ return !; }",
+        "{ return ~; }",    
+        "{ return -(); }",
+        "{ return !(); }",
+        "{ return ~(); }",  
+        "{ return --15; }",
+        "{ return 1 + ; }",
+        "{ return 2 - /; }",
+        "{ return 8 % --; }",
+        "{ return -1 / --; }",
+        "{ return !23 / --; }",
+        "{ return (2 *); }",
+        "{ return ((8 %); }",
+        "{ return >>; }",
+        "{ return 2 <<; }",
+        "{ return & 2 ^ 33 | 9; }",
+        "{ return 2 &&; }",
+        "{ return || 89; }",
+        "{ return 2!; }",
+        "{ return 3 ==; }",
+        "{ return != 8; }",
+        "{ return (3) > ; }",
+        "{ return (22) >= ; }",
+        "{ return < - (-8); }",
+        "{ return <= (-28); }",
         // clang-format on
     };
 
     for (const auto& test : tests) {
         // ACT
-        auto parser = getParser(test);
+        const auto code = std::format("int main(void) {}", test);
+        auto parser = getParser(code);
         string error{};
 
         try {
@@ -130,13 +143,16 @@ TEST_F(ParserTest, parseUnary) {
     const auto tests = vector<pair<string, string>>{
         {"{ return -1; }",          "[-1]"               },
         {"{ return -23; }",         "[-23]"              },
+        {"{ return !42; }",         "[!42]"              },
         {"{ return -42; }",         "[-42]"              },
         {"{ return ~6; }",          "[~6]"               },
         {"{ return ~88; }",         "[~88]"              },
         {"{ return ~90; }",         "[~90]"              },
         {"{ return -~1; }",         "[-[~1]]"            },
+        {"{ return -!10; }",        "[-[!10]]"           },
         {"{ return ~-22; }",        "[~[-22]]"           },
         {"{ return ~~40; }",        "[~[~40]]"           },
+        {"{ return ~!(!78); }",     "[~[![!78]]]"        },
         {"{ return -(~55); }",      "[-[~55]]"           },
         {"{ return ~((-31)); }",    "[~[-31]]"           },
         {"{ return ~~(-(~~~9)); }", "[~[~[-[~[~[~9]]]]]]"},
@@ -163,20 +179,26 @@ TEST_F(ParserTest, parseUnary) {
 TEST_F(ParserTest, parseBinaryBasic) {
     // ARRANGE
     const auto tests = vector<pair<string, string>>{
-        {"{ return 1 + 1; }",       "[1 + 1]"       },
-        {"{ return 3 - 2; }",       "[3 - 2]"       },
-        {"{ return 11 * 5; }",      "[11 * 5]"      },
-        {"{ return 8 / 2; }",       "[8 / 2]"       },
-        {"{ return 11 % 3; }",      "[11 % 3]"      },
-        {"{ return -3 + 5; }",      "[[-3] + 5]"    },
-        {"{ return 8 - ~9; }",      "[8 - [~9]]"    },
-        {"{ return -72 - -9; }",    "[[-72] - [-9]]"},
-        {"{ return (~70) * (3); }", "[[~70] * 3]"   },
-        {"{ return 2 & 3; }",       "[2 & 3]"       },
-        {"{ return 3 | 4; }",       "[3 | 4]"       },
-        {"{ return 15 ^ 5; }",      "[15 ^ 5]"      },
-        {"{ return 16 << 2; }",     "[16 << 2]"     },
-        {"{ return 18 >> 1; }",     "[18 >> 1]"     },
+        {"{ return 1 + 1; }",            "[1 + 1]"                 },
+        {"{ return 3 - 2; }",            "[3 - 2]"                 },
+        {"{ return 11 * 5; }",           "[11 * 5]"                },
+        {"{ return 8 / 2; }",            "[8 / 2]"                 },
+        {"{ return 11 % 3; }",           "[11 % 3]"                },
+        {"{ return -3 + 5; }",           "[[-3] + 5]"              },
+        {"{ return 8 - ~9; }",           "[8 - [~9]]"              },
+        {"{ return -72 - -9; }",         "[[-72] - [-9]]"          },
+        {"{ return (~70) * (3); }",      "[[~70] * 3]"             },
+        {"{ return 2 & 3; }",            "[2 & 3]"                 },
+        {"{ return 3 | 4; }",            "[3 | 4]"                 },
+        {"{ return 15 ^ 5; }",           "[15 ^ 5]"                },
+        {"{ return 16 << 2; }",          "[16 << 2]"               },
+        {"{ return 18 >> 1; }",          "[18 >> 1]"               },
+        {"{ return 2 && 4; }",           "[2 && 4]"                },
+        {"{ return 33 || 0; }",          "[33 || 0]"               },
+        {"{ return 15 < 15; }",          "[15 < 15]"               },
+        {"{ return (15) <= -28; }",      "[15 <= [-28]]"           },
+        {"{ return (!34) > ~43; }",      "[[!34] > [~43]]"         },
+        {"{ return ((-15)) >= !-!~8; }", "[[-15] >= [![-[![~8]]]]]"},
     };
 
     for (const auto& pair : tests) {
@@ -199,19 +221,21 @@ TEST_F(ParserTest, parseBinaryBasic) {
 TEST_F(ParserTest, parseBinaryAssoc) {
     // ARRANGE
     const auto tests = vector<pair<string, string>>{
-        {"{ return 1 + 2 + 3; }",         "[[1 + 2] + 3]"             },
-        {"{ return 4 + 5 - 6 + 7; }",     "[[[4 + 5] - 6] + 7]"       },
-        {"{ return 1 + (3 - 5); }",       "[1 + [3 - 5]]"             },
-        {"{ return 0 + (2 + 4) - 9; }",   "[[0 + [2 + 4]] - 9]"       },
-        {"{ return (3 - (5 + 0)) - 7; }", "[[3 - [5 + 0]] - 7]"       },
-        {"{ return 2 + ((3) + 9); }",     "[2 + [3 + 9]]"             },
-        {"{ return 1 * 3; }",             "[1 * 3]"                   },
-        {"{ return 2 / -9; }",            "[2 / [-9]]"                },
-        {"{ return ~13 % (-~7); }",       "[[~13] % [-[~7]]]"         },
-        {"{ return 3 << 2 << 1; }",       "[[3 << 2] << 1]"           },
-        {"{ return -15 >> 8 << ~2; }",    "[[[-15] >> 8] << [~2]]"    },
-        {"{ return -9 & ~3 & -27; }",     "[[[-9] & [~3]] & [-27]]"   },
-        {"{ return ~~2 ^ 3 ^ -(-48); }",  "[[[~[~2]] ^ 3] ^ [-[-48]]]"},
+        {"{ return 1 + 2 + 3; }",             "[[1 + 2] + 3]"                },
+        {"{ return 4 + 5 - 6 + 7; }",         "[[[4 + 5] - 6] + 7]"          },
+        {"{ return 1 + (3 - 5); }",           "[1 + [3 - 5]]"                },
+        {"{ return 0 + (2 + 4) - 9; }",       "[[0 + [2 + 4]] - 9]"          },
+        {"{ return (3 - (5 + 0)) - 7; }",     "[[3 - [5 + 0]] - 7]"          },
+        {"{ return 2 + ((3) + 9); }",         "[2 + [3 + 9]]"                },
+        {"{ return 1 * 3; }",                 "[1 * 3]"                      },
+        {"{ return 2 / -9; }",                "[2 / [-9]]"                   },
+        {"{ return ~13 % (-~7); }",           "[[~13] % [-[~7]]]"            },
+        {"{ return 3 << 2 << 1; }",           "[[3 << 2] << 1]"              },
+        {"{ return -15 >> 8 << ~2; }",        "[[[-15] >> 8] << [~2]]"       },
+        {"{ return -9 & ~3 & -27; }",         "[[[-9] & [~3]] & [-27]]"      },
+        {"{ return ~~2 ^ 3 ^ -(-48); }",      "[[[~[~2]] ^ 3] ^ [-[-48]]]"   },
+        {"{ return 2 < 3 >= 28 <= 9 < 15; }", "[[[[2 < 3] >= 28] <= 9] < 15]"},
+        {"{ return ~25 == !99 != -87; }",     "[[[~25] == [!99]] != [-87]]"  },
     };
 
     for (const auto& pair : tests) {
@@ -245,6 +269,10 @@ TEST_F(ParserTest, parseBinPrecedence) {
         {"{ return 2 % 5 | 9 << 3; }",            "[[2 % 5] | [9 << 3]]"      },
         {"{ return 8 - ~3 << 2 & -9 * 8; }",      "[[[8 - [~3]] << 2] & [[-9] * 8]]"      },
         {"{ return ~33 + 7 * -9 ^ 9 & 3 >> 2; }", "[[[~33] + [7 * [-9]]] ^ [9 & [3 >> 2]]]" },
+        {"{ return 2 < 8 == 15 <= 20; }",         "[[2 < 8] == [15 <= 20]]"},
+        {"{ return -15 != 22 >= !9; }",           "[[-15] != [22 >= [!9]]]"},
+        {"{ return -3 * 9 != ~22 > (8 + 15); }",  "[[[-3] * 9] != [[~22] > [8 + 15]]]"},
+        {"{ return (8 & 3) != (15 << 8) * 9; }",  "[[8 & 3] != [[15 << 8] * 9]]"},
         // clang-format on
     };
 
