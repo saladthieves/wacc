@@ -104,54 +104,57 @@ ast::AstUnaryPtr Parser::parseUnaryExpression() {
 
 ast::AstUnary::Type Parser::parseUnaryOperator() {
     using enum TokenType;
-    using ast::AstUnary;
-    const auto& type =
-        expectAny({OP_BIT_COMPLEMENT, OP_NEGATE, OP_LOG_NOT}).type;
 
-    switch (type) {
-        case OP_BIT_COMPLEMENT: return AstUnary::Type::UNARY_COMPLEMENT;
-        case OP_NEGATE:         return AstUnary::Type::UNARY_NEGATE;
-        case OP_LOG_NOT:        return AstUnary::Type::UNARY_NOT;
+    const auto& token = advance();
+    ast::AstUnary::Type type{};
+
+    switch (token.type) {
+        using enum ast::AstUnary::Type;
+        case OP_BIT_COMPLEMENT: type = UNARY_COMPLEMENT; break;
+        case OP_NEGATE:         type = UNARY_NEGATE; break;
+        case OP_LOG_NOT:        type = UNARY_NOT; break;
         default:
             fail("Cannot parse AstUnaryOpType from ast::TokenType[{}]", type);
     }
+    
+    sync();
+    
+    return type;
 }
 
 ast::AstBinary::Type Parser::parseBinaryOperator() {
     using enum TokenType;
-    // clang-format off
-    const auto& token = expectAny({
-        OP_ADDITION, OP_NEGATE, OP_MULTIPLY, OP_DIVIDE,
-        OP_REMAINDER, OP_BIT_AND, OP_BIT_OR, OP_BIT_XOR,
-        OP_BIT_LSH, OP_BIT_RSH, OP_LOG_AND, OP_LOG_OR,
-        OP_EQUAL, OP_NOT_EQUAL, OP_LESS_THAN, OP_LESS_EQUAL,
-        OP_GREATER_THAN, OP_GREATER_EQUAL,
-    });
-    // clang-format on
+
+    const auto& token = advance();
+    ast::AstBinary::Type type{};
 
     switch (token.type) {
         using enum ast::AstBinary::Type;
-        case OP_ADDITION:      return BINARY_ADD;
-        case OP_NEGATE:        return BINARY_SUBTRACT;
-        case OP_MULTIPLY:      return BINARY_MULTIPLY;
-        case OP_DIVIDE:        return BINARY_DIVIDE;
-        case OP_REMAINDER:     return BINARY_REMAINDER;
-        case OP_BIT_AND:       return BINARY_BIT_AND;
-        case OP_BIT_OR:        return BINARY_BIT_OR;
-        case OP_BIT_XOR:       return BINARY_BIT_XOR;
-        case OP_BIT_LSH:       return BINARY_BIT_LSH;
-        case OP_BIT_RSH:       return BINARY_BIT_RSH;
-        case OP_LOG_AND:       return BINARY_LOG_AND;
-        case OP_LOG_OR:        return BINARY_LOG_OR;
-        case OP_EQUAL:         return BINARY_EQUAL;
-        case OP_NOT_EQUAL:     return BINARY_NOT_EQUAL;
-        case OP_LESS_THAN:     return BINARY_LESS;
-        case OP_LESS_EQUAL:    return BINARY_LESS_EQUAL;
-        case OP_GREATER_THAN:  return BINARY_GREATER;
-        case OP_GREATER_EQUAL: return BINARY_GREATER_EQUAL;
+        case OP_ADDITION:      type = BINARY_ADD; break;
+        case OP_NEGATE:        type = BINARY_SUBTRACT; break;
+        case OP_MULTIPLY:      type = BINARY_MULTIPLY; break;
+        case OP_DIVIDE:        type = BINARY_DIVIDE; break;
+        case OP_REMAINDER:     type = BINARY_REMAINDER; break;
+        case OP_BIT_AND:       type = BINARY_BIT_AND; break;
+        case OP_BIT_OR:        type = BINARY_BIT_OR; break;
+        case OP_BIT_XOR:       type = BINARY_BIT_XOR; break;
+        case OP_BIT_LSH:       type = BINARY_BIT_LSH; break;
+        case OP_BIT_RSH:       type = BINARY_BIT_RSH; break;
+        case OP_LOG_AND:       type = BINARY_LOG_AND; break;
+        case OP_LOG_OR:        type = BINARY_LOG_OR; break;
+        case OP_EQUAL:         type = BINARY_EQUAL; break;
+        case OP_NOT_EQUAL:     type = BINARY_NOT_EQUAL; break;
+        case OP_LESS_THAN:     type = BINARY_LESS; break;
+        case OP_LESS_EQUAL:    type = BINARY_LESS_EQUAL; break;
+        case OP_GREATER_THAN:  type = BINARY_GREATER; break;
+        case OP_GREATER_EQUAL: type = BINARY_GREATER_EQUAL; break;
         default:
             fail("Cannot parse AstBinaryOpType from TokenType[{}]", token.type);
     }
+
+    sync();
+
+    return type;
 }
 
 bool Parser::isBinaryOp(const TokenType& type) {
@@ -205,29 +208,6 @@ auto Parser::expect(const TokenType& type) -> const Token& {
     }
 
     fail("Expected [{}] but got [{}] instead:", type, token.type);
-}
-
-auto Parser::expectAny(std::initializer_list<const TokenType> types)
-    -> const Token& { // TODO: Remove this
-    const auto& token = advance();
-    for (const auto& type : types) {
-        if (token.type == type) {
-            sync();
-            return token;
-        }
-    }
-
-    std::string output{};
-    auto begin = types.begin();
-    auto end = types.end();
-    for (; begin != end; ++begin) {
-        output += std::format("{}", *begin);
-        if (begin != end - 1) {
-            output += ", ";
-        }
-    }
-
-    fail("Exected any of [{}] but got [{}] instead:", output, token.type);
 }
 
 const Parser::PrecedenceMap Parser::precedences{

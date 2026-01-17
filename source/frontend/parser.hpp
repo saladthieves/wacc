@@ -69,8 +69,6 @@ private:
 
     const Token& expect(const TokenType& type);
 
-    const Token& expectAny(std::initializer_list<const TokenType> types);
-
     template <typename... T>
     [[noreturn]] void fail(std::format_string<T...> str = "",
                            T&&... args) const {
