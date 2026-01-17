@@ -1,5 +1,6 @@
 #include "tacky_formatters.hpp"
 #include "tacky_ast.hpp"
+#include <stdexcept>
 
 namespace wacc::test::fmt {
 std::string formatTackyInstr(const TackyInstrPtr& ptr) {
@@ -123,18 +124,21 @@ std::string formatTackyUnaryOp(const TackyUnary::Type& type) {
 std::string formatTackyBinaryOp(const TackyBinary::Type& type) {
     switch (type) {
         using enum TackyBinary::Type;
-        case BINARY_ADD:           return "+";
-        case BINARY_SUBTRACT:      return "-";
-        case BINARY_MULTIPLY:      return "*";
-        case BINARY_DIVIDE:        return "/";
-        case BINARY_REMAINDER:     return "%";
-        case BINARY_BIT_AND:       return "&";
-        case BINARY_BIT_OR:        return "|";
-        case BINARY_BIT_XOR:       return "^";
-        case BINARY_BIT_LSH:       return "<<";
-        case BINARY_BIT_RSH:       return ">>";
-        case BINARY_LOG_AND:       return "&&"; // TODO: Check on this
-        case BINARY_LOG_OR:        return "||"; // TODO: Check on this
+        case BINARY_ADD:       return "+";
+        case BINARY_SUBTRACT:  return "-";
+        case BINARY_MULTIPLY:  return "*";
+        case BINARY_DIVIDE:    return "/";
+        case BINARY_REMAINDER: return "%";
+        case BINARY_BIT_AND:   return "&";
+        case BINARY_BIT_OR:    return "|";
+        case BINARY_BIT_XOR:   return "^";
+        case BINARY_BIT_LSH:   return "<<";
+        case BINARY_BIT_RSH:   return ">>";
+        case BINARY_LOG_AND:
+        case BINARY_LOG_OR:    {
+            throw std::runtime_error("BINARY_LOG_AND / BINARY_LOG_OR used "
+                                     "directly in a TackyBinary.");
+        }
         case BINARY_EQUAL:         return "==";
         case BINARY_NOT_EQUAL:     return "!=";
         case BINARY_LESS:          return "<";

@@ -240,7 +240,7 @@ TEST_F(TackyGeneratorTest, generateUnary) {
     }
 }
 
-TEST_F(TackyGeneratorTest, generateBinary) {
+TEST_F(TackyGeneratorTest, generateBinarySimple) {
     // ARRANGE
     const auto tests = vector<pair<string, vector<string>>>{
         // clang-format off
@@ -248,90 +248,80 @@ TEST_F(TackyGeneratorTest, generateBinary) {
             "[1 + 2 -> MAIN.TEMP.0]",
             "[R:MAIN.TEMP.0]",
          }},
-        {"{ return 1 + 2 + 3; }", {
-            "[1 + 2 -> MAIN.TEMP.0]",
-            "[MAIN.TEMP.0 + 3 -> MAIN.TEMP.1]",
+        {"{ return 2 - -3; }", {
+            "[-3 -> MAIN.TEMP.0]",
+            "[2 - MAIN.TEMP.0 -> MAIN.TEMP.1]",
             "[R:MAIN.TEMP.1]",
          }},
-        {"{ return 1 - (2 + 3); }", {
-            "[2 + 3 -> MAIN.TEMP.0]",
-            "[1 - MAIN.TEMP.0 -> MAIN.TEMP.1]",
-            "[R:MAIN.TEMP.1]",
-         }},
-        {"{ return 1 * 2 + 3; }", {
-            "[1 * 2 -> MAIN.TEMP.0]",
-            "[MAIN.TEMP.0 + 3 -> MAIN.TEMP.1]",
-            "[R:MAIN.TEMP.1]",
-         }},
-        {"{ return 3 - 2 % 1; }", {
-            "[2 % 1 -> MAIN.TEMP.0]",
-            "[3 - MAIN.TEMP.0 -> MAIN.TEMP.1]",
-            "[R:MAIN.TEMP.1]",
-         }},
-        {"{ return 3 - 2 % 1; }", {
-            "[2 % 1 -> MAIN.TEMP.0]",
-            "[3 - MAIN.TEMP.0 -> MAIN.TEMP.1]",
-            "[R:MAIN.TEMP.1]",
-         }},
-        {"{ return 1 * 2 + 3 / 4; }", {
-            "[1 * 2 -> MAIN.TEMP.0]",
-            "[3 / 4 -> MAIN.TEMP.1]",
-            "[MAIN.TEMP.0 + MAIN.TEMP.1 -> MAIN.TEMP.2]",
+        {"{ return ~4 * (!6); }", {
+            "[~4 -> MAIN.TEMP.0]",
+            "[!6 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.0 * MAIN.TEMP.1 -> MAIN.TEMP.2]",
             "[R:MAIN.TEMP.2]",
          }},
-        {"{ return (5 + -8) / ~3; }", {
+        {"{ return (-8) / (~~2); }", {
             "[-8 -> MAIN.TEMP.0]",
-            "[5 + MAIN.TEMP.0 -> MAIN.TEMP.1]",
-            "[~3 -> MAIN.TEMP.2]",
-            "[MAIN.TEMP.1 / MAIN.TEMP.2 -> MAIN.TEMP.3]",
+            "[~2 -> MAIN.TEMP.1]",
+            "[~MAIN.TEMP.1 -> MAIN.TEMP.2]",
+            "[MAIN.TEMP.0 / MAIN.TEMP.2 -> MAIN.TEMP.3]",
             "[R:MAIN.TEMP.3]",
          }},
-        {"{ return 33 == 87; }", {
-            "[33 == 87 -> MAIN.TEMP.0]",
-            "[R:MAIN.TEMP.0]",
-         }},
-        {"{ return 1 == 2 != 9; }", {
-            "[1 == 2 -> MAIN.TEMP.0]",
-            "[MAIN.TEMP.0 != 9 -> MAIN.TEMP.1]",
-            "[R:MAIN.TEMP.1]",
-         }},
-        {"{ return 1 << 2 == 9 >> !9; }", {
-            "[1 << 2 -> MAIN.TEMP.0]",
-            "[!9 -> MAIN.TEMP.1]",
-            "[9 >> MAIN.TEMP.1 -> MAIN.TEMP.2]",
-            "[MAIN.TEMP.0 == MAIN.TEMP.2 -> MAIN.TEMP.3]",
-            "[R:MAIN.TEMP.3]",
-         }},
-        {"{ return 7 * -5 != 9; }", {
+        {"{ return -5 % (~5); }", {
             "[-5 -> MAIN.TEMP.0]",
-            "[7 * MAIN.TEMP.0 -> MAIN.TEMP.1]",
-            "[MAIN.TEMP.1 != 9 -> MAIN.TEMP.2]",
+            "[~5 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.0 % MAIN.TEMP.1 -> MAIN.TEMP.2]",
             "[R:MAIN.TEMP.2]",
          }},
-         {"{ return 8 << 2; }", {
-            "[8 << 2 -> MAIN.TEMP.0]",
+        {"{ return 2 & 4; }", {
+            "[2 & 4 -> MAIN.TEMP.0]",
             "[R:MAIN.TEMP.0]",
          }},
-         {"{ return 1 >> 2 << 3; }", {
-            "[1 >> 2 -> MAIN.TEMP.0]",
-            "[MAIN.TEMP.0 << 3 -> MAIN.TEMP.1]",
+        {"{ return 15 | !(3); }", {
+            "[!3 -> MAIN.TEMP.0]",
+            "[15 | MAIN.TEMP.0 -> MAIN.TEMP.1]",
             "[R:MAIN.TEMP.1]",
          }},
-         {"{ return 2 & -32 | 3; }", {
-            "[-32 -> MAIN.TEMP.0]",
-            "[2 & MAIN.TEMP.0 -> MAIN.TEMP.1]",
-            "[MAIN.TEMP.1 | 3 -> MAIN.TEMP.2]",
+        {"{ return -23 ^ !24; }", {
+            "[-23 -> MAIN.TEMP.0]",
+            "[!24 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.0 ^ MAIN.TEMP.1 -> MAIN.TEMP.2]",
             "[R:MAIN.TEMP.2]",
          }},
-         {"{ return 15 * (8 + 9) >> -1 + ~5 / 8; }", {
-             "[8 + 9 -> MAIN.TEMP.0]",
-             "[15 * MAIN.TEMP.0 -> MAIN.TEMP.1]",
-             "[-1 -> MAIN.TEMP.2]",
-             "[~5 -> MAIN.TEMP.3]",
-             "[MAIN.TEMP.3 / 8 -> MAIN.TEMP.4]",
-             "[MAIN.TEMP.2 + MAIN.TEMP.4 -> MAIN.TEMP.5]",
-             "[MAIN.TEMP.1 >> MAIN.TEMP.5 -> MAIN.TEMP.6]",
-             "[R:MAIN.TEMP.6]",
+        {"{ return 16 << 1; }", {
+            "[16 << 1 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return !!32 >> ~~2; }", {
+            "[!32 -> MAIN.TEMP.0]",
+            "[!MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[~2 -> MAIN.TEMP.2]",
+            "[~MAIN.TEMP.2 -> MAIN.TEMP.3]",
+            "[MAIN.TEMP.1 >> MAIN.TEMP.3 -> MAIN.TEMP.4]",
+            "[R:MAIN.TEMP.4]",
+         }},
+        {"{ return 0 == 1; }", {
+            "[0 == 1 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return 15 != 3; }", {
+            "[15 != 3 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return 2 < 3; }", {
+            "[2 < 3 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return 3 <= 5; }", {
+            "[3 <= 5 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return 8 > 9; }", {
+            "[8 > 9 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
+         }},
+        {"{ return 11 >= 2; }", {
+            "[11 >= 2 -> MAIN.TEMP.0]",
+            "[R:MAIN.TEMP.0]",
          }},
         // clang-format on
     };
@@ -349,6 +339,75 @@ TEST_F(TackyGeneratorTest, generateBinary) {
             auto actual = std::get<1>(test)[i];
             auto expected = formatTackyInstr(body[i]);
             ASSERT_STREQ(actual.c_str(), expected.c_str());
+        }
+    }
+}
+
+TEST_F(TackyGeneratorTest, generateBinaryAssoc) {
+    // ARRANGE
+    const auto tests = vector<pair<string, vector<string>>>{
+        // clang-format off
+        {"{ return 1 + 2 - 3; }", {
+            "[1 + 2 -> MAIN.TEMP.0]",
+            "[MAIN.TEMP.0 - 3 -> MAIN.TEMP.1]",
+            "[R:MAIN.TEMP.1]",
+         }},
+        {"{ return -3 * 4 / 2 % 5; }", {
+            "[-3 -> MAIN.TEMP.0]",
+            "[MAIN.TEMP.0 * 4 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.1 / 2 -> MAIN.TEMP.2]",
+            "[MAIN.TEMP.2 % 5 -> MAIN.TEMP.3]",
+            "[R:MAIN.TEMP.3]",
+         }},
+        {"{ return 2 >> (3 + 4) << 9; }", {
+            "[3 + 4 -> MAIN.TEMP.0]",
+            "[2 >> MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.1 << 9 -> MAIN.TEMP.2]",
+            "[R:MAIN.TEMP.2]",
+         }},
+        {"{ return 15 > 22 <= -19 < (15 >= 9); }", {
+            "[15 > 22 -> MAIN.TEMP.0]",
+            "[-19 -> MAIN.TEMP.1]",
+            "[MAIN.TEMP.0 <= MAIN.TEMP.1 -> MAIN.TEMP.2]",
+            "[15 >= 9 -> MAIN.TEMP.3]",
+            "[MAIN.TEMP.2 < MAIN.TEMP.3 -> MAIN.TEMP.4]",
+            "[R:MAIN.TEMP.4]",
+         }},
+        {"{ return 38 != -99 == (!15 + 8); }", {
+            "[-99 -> MAIN.TEMP.0]",
+            "[38 != MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[!15 -> MAIN.TEMP.2]",
+            "[MAIN.TEMP.2 + 8 -> MAIN.TEMP.3]",
+            "[MAIN.TEMP.1 == MAIN.TEMP.3 -> MAIN.TEMP.4]",
+            "[R:MAIN.TEMP.4]",
+         }},
+        {"{ return 8 & !15 | 2 ^ 29 & (-16) | ~17; }", {
+            "[!15 -> MAIN.TEMP.0]",
+            "[8 & MAIN.TEMP.0 -> MAIN.TEMP.1]",
+            "[-16 -> MAIN.TEMP.2]",
+            "[29 & MAIN.TEMP.2 -> MAIN.TEMP.3]",
+            "[2 ^ MAIN.TEMP.3 -> MAIN.TEMP.4]",
+            "[MAIN.TEMP.1 | MAIN.TEMP.4 -> MAIN.TEMP.5]",
+            "[~17 -> MAIN.TEMP.6]",
+            "[MAIN.TEMP.5 | MAIN.TEMP.6 -> MAIN.TEMP.7]",
+            "[R:MAIN.TEMP.7]",
+         }},
+        // clang-format on
+    };
+
+    for (const auto& test : tests) {
+        auto code = std::format("int main(void) {}", std::get<0>(test));
+        auto generator = getTackyGenerator(code);
+
+        // ACT
+        auto node = generator.generate();
+
+        // ASSERT
+        const auto& body = matchTackyProg(node);
+        for (auto i = 0; i < std::get<1>(test).size(); ++i) {
+            auto expected = std::get<1>(test)[i];
+            auto actual = formatTackyInstr(body[i]);
+            ASSERT_STREQ(expected.c_str(), actual.c_str());
         }
     }
 }
