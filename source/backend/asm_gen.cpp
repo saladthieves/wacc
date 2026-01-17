@@ -144,10 +144,12 @@ AsmOperandPtr AsmGenerator::genForTackyVal(const TackyVal& tacky) const {
 }
 
 AsmUnary::Type AsmGenerator::genForTackyUnaryOp(const TackyUnary::Type& type) {
+    using Tacky = TackyUnary::Type;
+    using Asm = AsmUnary::Type;
     switch (type) {
-        using enum TackyUnary::Type;
-        case UNARY_COMPLEMENT: return AsmUnary::Type::UNARY_NOT;
-        case UNARY_NEGATE:     return AsmUnary::Type::UNARY_NEGATE;
+        case Tacky::UNARY_COMPLEMENT: return Asm::UNARY_NOT;
+        case Tacky::UNARY_NEGATE:     return Asm::UNARY_NEGATE;
+        case Tacky::UNARY_NOT:        return Asm::UNARY_NOT;
     }
 }
 
@@ -167,6 +169,7 @@ AsmGenerator::genForTackyBinaryOp(const TackyBinary::Type& type) {
         case BINARY_REMAINDER: {
             fail("Division and remainder should be handled with AsmIdiv.");
         }
+        default: fail("Unimplemented."); // TODO: Remove this
     }
 }
 

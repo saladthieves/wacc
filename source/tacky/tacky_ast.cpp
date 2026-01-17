@@ -40,8 +40,36 @@ TackyBinary::TackyBinary(Type op, TackyValPtr src1, TackyValPtr src2,
     src2{std::move(src2)}, dest{std::move(dest)} {
 }
 
+// TackyCopy
+TackyCopy::TackyCopy(TackyValPtr src, TackyValPtr dest) :
+    TackyInstr(INSTR_COPY), src{std::move(src)}, dest{std::move(dest)} {
+}
+
+// TackyJump
+TackyJump::TackyJump(std::string_view target) :
+    TackyInstr(INSTR_JUMP), target{target} {
+}
+
+// TackyJumpZero
+TackyJumpZero::TackyJumpZero(TackyValPtr condition, std::string_view target) :
+    TackyInstr(INSTR_JUMP_ZERO), condition{std::move(condition)},
+    target{target} {
+}
+
+// TackyJumpNotZero
+TackyJumpNotZero::TackyJumpNotZero(TackyValPtr condition,
+                                   std::string_view target) :
+    TackyInstr(INSTR_JUMP_NOT_ZERO), condition{std::move(condition)},
+    target{target} {
+}
+
+// TackyLabel
+TackyLabel::TackyLabel(std::string_view identifier) :
+    TackyInstr(INSTR_LABEL), identifier{identifier} {
+}
+
 // TackyFun
-TackyFun::TackyFun(std::string identifier, TackyInstrPtrs body) :
+TackyFun::TackyFun(std::string_view identifier, TackyInstrPtrs body) :
     TackyNode(FUNCTION), identifier{identifier}, body{std::move(body)} {
 }
 

@@ -1,3 +1,3 @@
 int main(void) {
-    return 5 / 2;
+    return 1 > 2 || 2 < 3 && 3 != 4;
 }

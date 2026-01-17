@@ -10,11 +10,16 @@ namespace gen {
 namespace {
 using namespace wacc::front::ast;
 using namespace wacc::tacky::ast;
+using namespace std::string_view_literals;
+
+static constexpr auto labelTrue = "L_TRUE"sv;
+static constexpr auto labelFalse = "L_FALSE"sv;
+static constexpr auto labelEnd = "L_END"sv;
 } // namespace
 
-class VariableGenerator {
+class IdentifierGenerator {
 public:
-    VariableGenerator();
+    IdentifierGenerator();
 
     void reset();
 
@@ -22,12 +27,19 @@ public:
 
     void resetFunction(std::string_view function);
 
-    std::string generate();
+    std::string generateVariable();
+
+    std::string generateLabel(const TackyBinary::Type& op,
+                              std::string_view extra);
+
+    std::string generate(unsigned int length, std::string_view pre = "",
+                         std::string_view post = "");
 
 private:
-    std::string session{};
-    std::string function{};
-    unsigned int count{0};
+    std::string session;
+    std::string function;
+    unsigned int variableCount;
+    unsigned int labelCount;
 };
 
 // TackyGenerator
@@ -53,6 +65,22 @@ private:
     TackyValPtr genForAstBinary(const AstBinary& obj,
                                 TackyInstrPtrs& body) const;
 
+    TackyValPtr genForAstBinaryLogAndOr(const AstBinary& obj,
+                                        TackyInstrPtrs& body) const;
+
+    void tackyJumpZero(TackyValPtr val, std::string_view target,
+                       TackyInstrPtrs& body) const;
+
+    void tackyJumpNotZero(TackyValPtr val, std::string_view target,
+                          TackyInstrPtrs& body) const;
+
+    void tackyJump(std::string_view label, TackyInstrPtrs& body) const;
+
+    void tackyCopy(TackyValPtr src, TackyValPtr dest,
+                   TackyInstrPtrs& body) const;
+
+    void tackyLabel(std::string_view identifier, TackyInstrPtrs& body) const;
+
     static TackyLitInt genForAstLitInt(const AstLitInt& obj);
 
     static TackyUnary::Type genForAstUnaryOp(const AstUnary::Type& type);
@@ -68,7 +96,7 @@ private:
     }
 
     AstNodePtr ast{nullptr};
-    mutable VariableGenerator generator{};
+    mutable IdentifierGenerator generator{};
 };
 } // namespace gen
 } // namespace tacky
