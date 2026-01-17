@@ -252,5 +252,7 @@ const Parser::PrecedenceMap Parser::precedences{
     {TokenType::OP_BIT_AND,       75 },
     {TokenType::OP_BIT_XOR,       70 },
     {TokenType::OP_BIT_OR,        65 },
+    {TokenType::OP_LOG_AND,       60 },
+    {TokenType::OP_LOG_OR,        55 },
 };
 } // namespace wacc::front::parse
