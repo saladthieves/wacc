@@ -64,7 +64,9 @@ TEST_F(AsmInstrFixPassTest, genAsmAllocStack) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -85,7 +87,9 @@ TEST_F(AsmInstrFixPassTest, fixAsmMov) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 3);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -111,7 +115,9 @@ TEST_F(AsmInstrFixPassTest, noFixAsmMov) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -132,14 +138,18 @@ TEST_F(AsmInstrFixPassTest, fixAsmIdiv) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 3);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmImm(src, 15);
         matchAsmReg(dest, AsmReg::Type::R10);
     });
 
-    matchAsmIdiv(body[2], [](auto& op) { matchAsmReg(op, AsmReg::Type::R10); });
+    matchAsmIdiv(body[2], [](auto& op) {
+        matchAsmReg(op, AsmReg::Type::R10);
+    });
 }
 
 TEST_F(AsmInstrFixPassTest, noFixAsmIdiv) {
@@ -155,7 +165,9 @@ TEST_F(AsmInstrFixPassTest, noFixAsmIdiv) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmIdiv(body[1], [](auto& op) {
         matchAsmReg(op, AsmReg::Type::R11); //
@@ -176,7 +188,9 @@ TEST_F(AsmInstrFixPassTest, fixAsmBinaryMult) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 4);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -209,7 +223,9 @@ TEST_F(AsmInstrFixPassTest, noFixAsmBinaryMult) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmBinary(body[1], [](auto& op, auto& src, auto& dest) {
         ASSERT_EQ(op, AsmBinary::Type::BINARY_MULT);
@@ -232,7 +248,9 @@ TEST_F(AsmInstrFixPassTest, fixAsmBinaryAddSub) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 3);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -260,7 +278,9 @@ TEST_F(AsmInstrFixPassTest, noFixAsmBinaryAddSub) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmBinary(body[1], [](auto& op, auto& src, auto& dest) {
         ASSERT_EQ(op, AsmBinary::Type::BINARY_SUB);
@@ -283,7 +303,9 @@ TEST_F(AsmInstrFixPassTest, fixAsmBinaryShiftLR) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 3);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -312,7 +334,9 @@ TEST_F(AsmInstrFixPassTest, noFixAsmBinaryShiftLR) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmBinary(body[1], [&](auto& op, auto& src, auto& dest) {
         ASSERT_EQ(op, binOp);
@@ -335,7 +359,9 @@ TEST_F(AsmInstrFixPassTest, fixAsmBinaryAndXorOr) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 3);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmMov(body[1], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
@@ -363,11 +389,90 @@ TEST_F(AsmInstrFixPassTest, noFixAsmBinaryAndXorOr) {
     const auto& body = matchAsmProg(ast);
     ASSERT_EQ(body.size(), 2);
 
-    matchAsmAllocStack(body[0], [](auto& value) { ASSERT_EQ(value, 4); });
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
 
     matchAsmBinary(body[1], [&](auto& op, auto& src, auto& dest) {
         ASSERT_EQ(op, binOp);
         matchAsmStack(src, -4);
         matchAsmReg(dest, AsmReg::Type::R10);
+    });
+}
+
+TEST_F(AsmInstrFixPassTest, fixAsmBinaryCmpBothStack) {
+    // ARRANGE
+    addInstr(make_unique<AsmCmp>(make_unique<AsmStack>(-4),
+                                 make_unique<AsmStack>(-8)));
+
+    auto pass = AsmInstrFixPass{getProgram(), 4};
+
+    // ACT
+    auto ast = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(ast);
+    ASSERT_EQ(body.size(), 3);
+
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 4);
+    });
+
+    matchAsmMov(body[1], [](auto& src, auto& dest) {
+        matchAsmStack(src, -4);
+        matchAsmReg(dest, AsmReg::Type::R10);
+    });
+
+    matchAsmCmp(body[2], [](auto& left, auto& right) {
+        matchAsmReg(left, AsmReg::Type::R10);
+        matchAsmStack(right, -8);
+    });
+}
+
+TEST_F(AsmInstrFixPassTest, fixAsmBinaryCmpRightImm) {
+    // ARRANGE
+    addInstr(make_unique<AsmCmp>(make_unique<AsmStack>(-8),
+                                 make_unique<AsmImm>(29)));
+
+    auto pass = AsmInstrFixPass{getProgram(), 8};
+
+    // ACT
+    auto ast = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(ast);
+    ASSERT_EQ(body.size(), 3);
+
+    matchAsmAllocStack(body[0], [](auto& value) {
+        ASSERT_EQ(value, 8);
+    });
+
+    matchAsmMov(body[1], [](auto& src, auto& dest) {
+        matchAsmImm(src, 29);
+        matchAsmReg(dest, AsmReg::Type::R11);
+    });
+
+    matchAsmCmp(body[2], [](auto& left, auto& right) {
+        matchAsmStack(left, -8);
+        matchAsmReg(right, AsmReg::Type::R11);
+    });
+}
+
+TEST_F(AsmInstrFixPassTest, noFixAsmBinaryCmp) {
+    // ARRANGE
+    addInstr(make_unique<AsmCmp>(make_unique<AsmReg>(AsmReg::Type::R10),
+                                 make_unique<AsmReg>(AsmReg::Type::R11)));
+    auto pass = AsmInstrFixPass{getProgram(), 8};
+    
+    // ACT
+    auto ast = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(ast);
+    ASSERT_EQ(body.size(), 2);
+    
+    matchAsmCmp(body[1], [](auto& left, auto& right) {
+        matchAsmReg(left, AsmReg::Type::R10);
+        matchAsmReg(right, AsmReg::Type::R11);
     });
 }

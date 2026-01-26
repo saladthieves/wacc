@@ -40,6 +40,10 @@ void AsmInstrFixPass::runPass(AsmInstrPtrs& instructions) {
                 fixAsmBinary(std::move(instruction));
                 continue;
             }
+            case INSTR_CMP: {
+                fixAsmCmp(std::move(instruction));
+                continue;
+            }
             default: {
                 fixed.push_back(std::move(instruction));
             }
@@ -186,7 +190,7 @@ void AsmInstrFixPass::fixAsmBinaryShift(AsmInstrPtr ptr) {
 void AsmInstrFixPass::fixAsmBinaryAndXorOr(AsmInstrPtr ptr) {
     // [and|xor|or] [-x(%src)] [-y(%dest)]
     const auto& bin = static_cast<AsmBinary&>(*ptr);
-    
+
     if (bin.src->type == OP_STACK && bin.dest->type == OP_STACK) {
         // copy all needed by value first
         const auto src = static_cast<AsmStack&>(*bin.src).value;
@@ -207,5 +211,47 @@ void AsmInstrFixPass::fixAsmBinaryAndXorOr(AsmInstrPtr ptr) {
     } else {
         fixed.push_back(std::move(ptr));
     }
+}
+
+void AsmInstrFixPass::fixAsmCmp(AsmInstrPtr ptr) {
+    auto& cmp = static_cast<AsmCmp&>(*ptr);
+
+    // cmp [-x(%left)] [-y(%right)]
+    if (cmp.left->type == OP_STACK && cmp.right->type == OP_STACK) {
+        // copy all needed by value first
+        const auto left = static_cast<AsmStack&>(*cmp.left).value;
+        const auto right = static_cast<AsmStack&>(*cmp.right).value;
+        const auto reg = AsmReg::Type::R10;
+
+        // mov -x(%left), %r10d
+        auto fixedMov = std::make_unique<AsmMov>(
+            std::make_unique<AsmStack>(left), std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(fixedMov));
+
+        // cmp %r10, -y(%right)
+        auto fixedCmpl = std::make_unique<AsmCmp>(
+            std::make_unique<AsmReg>(reg), std::make_unique<AsmStack>(right));
+        fixed.push_back(std::move(fixedCmpl));
+        return;
+    }
+
+    // cmp [-x(%left)], $right
+    if (cmp.right->type == OP_IMM) {
+        const auto value = static_cast<AsmImm&>(*cmp.right).value;
+        const auto reg = AsmReg::Type::R11;
+
+        // mov $right, %r11d
+        auto fixedMov = std::make_unique<AsmMov>(
+            std::make_unique<AsmImm>(value), std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(fixedMov));
+
+        // cmp -x(%left), %r11d
+        auto fixedCmpl = std::make_unique<AsmCmp>(
+            std::move(cmp.left), std::make_unique<AsmReg>(reg));
+        fixed.push_back(std::move(fixedCmpl));
+        return;
+    }
+
+    fixed.push_back(std::move(ptr));
 }
 } // namespace wacc::back::pass

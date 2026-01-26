@@ -17,5 +17,5 @@ TEST_CHAPTER="--chapter 4"
 # eval ${CMD}
 
 echo "🧪 - Testing compiler..."
-CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage tacky"
+CMD="$TEST_ROOT/$TEST_SCRIPT $(which wacc) $TEST_CHAPTER --stage codegen"
 eval ${CMD}

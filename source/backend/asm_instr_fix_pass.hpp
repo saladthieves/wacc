@@ -33,6 +33,8 @@ private:
     void fixAsmBinaryShift(AsmInstrPtr ptr);
 
     void fixAsmBinaryAndXorOr(AsmInstrPtr ptr);
+    
+    void fixAsmCmp(AsmInstrPtr ptr);
 
     template <typename... T>
     [[noreturn]] static void fail(std::format_string<T...> str = "",
