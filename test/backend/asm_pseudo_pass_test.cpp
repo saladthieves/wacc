@@ -31,7 +31,6 @@ protected:
     AsmInstrPtrs instructions{};
 };
 
-// TODO: Add ignore tests
 TEST_F(AsmPseudoPassTest, throwOnNull) {
     // ARRANGE
     auto pass = AsmPseudoPass{nullptr};
@@ -51,9 +50,9 @@ TEST_F(AsmPseudoPassTest, throwOnNull) {
 TEST_F(AsmPseudoPassTest, runAsmMovPass) {
     // ARRANGE
     const auto identifier = "MAIN.TEMP.0";
-    auto src = make_unique<AsmPseudo>(identifier);
     auto dest = make_unique<AsmPseudo>(identifier);
-    addInstr(make_unique<AsmMov>(std::move(src), std::move(dest)));
+    addInstr(make_unique<AsmMov>(make_unique<AsmPseudo>(identifier),
+                                 make_unique<AsmPseudo>(identifier)));
 
     auto pass = AsmPseudoPass{getProgram()};
 
@@ -67,6 +66,27 @@ TEST_F(AsmPseudoPassTest, runAsmMovPass) {
     matchAsmMov(body[0], [](auto& src, auto& dest) {
         matchAsmStack(src, -4);
         matchAsmStack(dest, -4);
+    });
+}
+
+TEST_F(AsmPseudoPassTest, noRunAsmMovPass) {
+    // ARRANGE
+    addInstr(make_unique<AsmMov>(make_unique<AsmReg>(AsmReg::Type::AX),
+                                 make_unique<AsmReg>(AsmReg::Type::CX)));
+
+    // ACT
+    auto pass = AsmPseudoPass{getProgram()};
+
+    // ACT
+    auto node = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(node);
+    ASSERT_EQ(body.size(), 1);
+
+    matchAsmMov(body[0], [](auto& src, auto& dest) {
+        matchAsmReg(src, AsmReg::Type::AX);
+        matchAsmReg(dest, AsmReg::Type::CX);
     });
 }
 
@@ -123,6 +143,26 @@ TEST_F(AsmPseudoPassTest, runAsmUnaryPassMultiIdent) {
     });
 }
 
+TEST_F(AsmPseudoPassTest, noRunAsmUnaryPass) {
+    // ARRANGE
+    addInstr(make_unique<AsmUnary>(AsmUnary::Type::UNARY_COMPLEMENT,
+                                   make_unique<AsmImm>(15)));
+
+    auto pass = AsmPseudoPass{getProgram()};
+
+    // ACT
+    auto node = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(node);
+    ASSERT_EQ(body.size(), 1);
+
+    matchAsmUnary(body[0], [](auto& op, auto& operand) {
+        ASSERT_EQ(op, AsmUnary::Type::UNARY_COMPLEMENT);
+        matchAsmImm(operand, 15);
+    });
+}
+
 TEST_F(AsmPseudoPassTest, runAsmBinaryPassSingleIdent) {
     // ARRANGE
     const auto identifier = "MAIN.TEMP.0";
@@ -148,10 +188,9 @@ TEST_F(AsmPseudoPassTest, runAsmBinaryPassSingleIdent) {
 
 TEST_F(AsmPseudoPassTest, runAsmBinaryPassMultiIdent) {
     // ARRANGE
-    auto src = make_unique<AsmPseudo>("MAIN.TEMP.0");
-    auto dest = make_unique<AsmPseudo>("MAIN.TEMP.1");
-    addInstr(make_unique<AsmBinary>(AsmBinary::Type::BINARY_ADD, std::move(src),
-                                    std::move(dest)));
+    addInstr(make_unique<AsmBinary>(AsmBinary::Type::BINARY_ADD,
+                                    make_unique<AsmPseudo>("MAIN.TEMP.0"),
+                                    make_unique<AsmPseudo>("MAIN.TEMP.1")));
 
     auto pass = AsmPseudoPass{getProgram()};
 
@@ -165,6 +204,26 @@ TEST_F(AsmPseudoPassTest, runAsmBinaryPassMultiIdent) {
         ASSERT_EQ(op, AsmBinary::Type::BINARY_ADD);
         matchAsmStack(src, -4);
         matchAsmStack(dest, -8);
+    });
+}
+
+TEST_F(AsmPseudoPassTest, noRunAsmBinaryPass) {
+    // ARRANGE
+    addInstr(make_unique<AsmBinary>(AsmBinary::Type::BINARY_SUB,
+                                    make_unique<AsmReg>(AsmReg::Type::AX),
+                                    make_unique<AsmReg>(AsmReg::Type::CX)));
+
+    auto pass = AsmPseudoPass{getProgram()};
+
+    // ACT
+    auto node = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(node);
+    matchAsmBinary(body[0], [](auto& op, auto& src, auto& dest) {
+        ASSERT_EQ(op, AsmBinary::Type::BINARY_SUB);
+        matchAsmReg(src, AsmReg::Type::AX);
+        matchAsmReg(dest, AsmReg::Type::CX);
     });
 }
 
@@ -218,6 +277,23 @@ TEST_F(AsmPseudoPassTest, runAsmIdivPassMultiIdent) {
     });
 }
 
+TEST_F(AsmPseudoPassTest, noRunAsmIdivPass) {
+    // ARRANGE
+    addInstr(make_unique<AsmIdiv>(std::make_unique<AsmReg>(AsmReg::Type::R10)));
+
+    auto pass = AsmPseudoPass{getProgram()};
+
+    // ACT
+    auto node = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(node);
+
+    matchAsmIdiv(body[0], [](auto& operand) {
+        matchAsmReg(operand, AsmReg::Type::R10);
+    });
+}
+
 TEST_F(AsmPseudoPassTest, runAsmCmpPassSingleIdent) {
     // ARRANGE
     const auto identifier = "MAIN.TEMP.0";
@@ -254,6 +330,25 @@ TEST_F(AsmPseudoPassTest, runAsmCmpPassMultiIdent) {
     matchAsmCmp(body[0], [](auto& left, auto& right) {
         matchAsmStack(left, -4);
         matchAsmStack(right, -8);
+    });
+}
+
+TEST_F(AsmPseudoPassTest, noRunAsmCmpPass) {
+    // ARRANGE
+    addInstr(make_unique<AsmCmp>(make_unique<AsmImm>(15), //
+                                 make_unique<AsmImm>(30)));
+
+    auto pass = AsmPseudoPass{getProgram()};
+
+    // ACT
+    auto node = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(node);
+
+    matchAsmCmp(body[0], [](auto& left, auto& right) {
+        matchAsmImm(left, 15);
+        matchAsmImm(right, 30);
     });
 }
 
@@ -299,5 +394,24 @@ TEST_F(AsmPseudoPassTest, runAsmSetCondPassMultiIdent) {
     matchAsmSetCond(body[1], [](auto& condition, auto& operand) {
         ASSERT_EQ(condition, AsmSetCond::Code::NOT_EQUAL);
         matchAsmStack(operand, -8);
+    });
+}
+
+TEST_F(AsmPseudoPassTest, noRunAsmSetCondPass) {
+    // ARRANGE
+    addInstr(make_unique<AsmSetCond>(AsmSetCond::Code::GREATER_EQUAL,
+                                     make_unique<AsmImm>(99)));
+
+    auto pass = AsmPseudoPass{getProgram()};
+
+    // ACT
+    auto node = pass.run();
+
+    // ASSERT
+    const auto& body = matchAsmProg(node);
+
+    matchAsmSetCond(body[0], [](auto& condition, auto& operand) {
+        ASSERT_EQ(condition, AsmSetCond::Code::GREATER_EQUAL);
+        matchAsmImm(operand, 99);
     });
 }
