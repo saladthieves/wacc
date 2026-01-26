@@ -223,9 +223,9 @@ std::string AsmEmitter::formatAsmReg(const AsmReg& obj) {
 std::string AsmEmitter::formatAsmUnaryOp(const AsmUnary::Type& type) {
     switch (type) {
         using enum AsmUnary::Type;
-        case UNARY_NEGATE: return "negl";
-        case UNARY_NOT:    return "notl";
-        default:           fail("Failed to format AsmUnary::Type::[type = {}]", type);
+        case UNARY_NEGATE:     return "negl";
+        case UNARY_COMPLEMENT: return "notl";
+        default:               fail("Failed to format AsmUnary::Type::[type = {}]", type);
     }
 }
 

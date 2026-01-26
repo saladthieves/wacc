@@ -19,8 +19,13 @@ class AsmInstr;
 class AsmMov;
 class AsmUnary;
 class AsmBinary;
+class AsmCmp;
 class AsmIdiv;
 class AsmCdq;
+class AsmJmp;
+class AsmJmpCond;
+class AsmSetCond;
+class AsmLabel;
 class AsmAllocStack;
 class AsmRet;
 class AsmFun;
@@ -37,8 +42,13 @@ using AsmInstrPtr = std::unique_ptr<AsmInstr>;
 using AsmMovPtr = std::unique_ptr<AsmMov>;
 using AsmUnaryPtr = std::unique_ptr<AsmUnary>;
 using AsmBinaryPtr = std::unique_ptr<AsmBinary>;
+using AsmCmpPtr = std::unique_ptr<AsmCmp>;
 using AsmIdivPtr = std::unique_ptr<AsmIdiv>;
 using AsmCdqPtr = std::unique_ptr<AsmCdq>;
+using AsmJmpPtr = std::unique_ptr<AsmJmp>;
+using AsmJmpCondPtr = std::unique_ptr<AsmJmpCond>;
+using AsmSetCondPtr = std::unique_ptr<AsmSetCond>;
+using AsmLabelPtr = std::unique_ptr<AsmLabel>;
 using AsmAllocStackPtr = std::unique_ptr<AsmAllocStack>;
 using AsmRetPtr = std::unique_ptr<AsmRet>;
 using AsmFunPtr = std::unique_ptr<AsmFun>;
@@ -57,8 +67,13 @@ public:
         INSTR_MOV,
         INSTR_UNARY,
         INSTR_BINARY,
+        INSTR_CMP,
         INSTR_IDIV,
         INSTR_CDQ,
+        INSTR_JMP,
+        INSTR_JMP_COND,
+        INSTR_SET_COND,
+        INSTR_LABEL,
         INSTR_ALLOC,
         INSTR_RET,
         FUNCTION,
@@ -74,7 +89,16 @@ public:
 
 namespace {
 using enum AsmNode::Type;
-}
+} // namespace
+
+enum class CondCode : std::uint8_t {
+    EQUAL = 1,
+    NOT_EQUAL,
+    LESS,
+    LESS_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+};
 
 // AsmOperand
 class AsmOperand : public AsmNode {
@@ -150,7 +174,7 @@ class AsmUnary : public AsmInstr {
 public:
     enum class Type : std::uint8_t {
         UNARY_NEGATE = 1,
-        UNARY_NOT,
+        UNARY_COMPLEMENT,
     };
 
     AsmUnary(Type op, AsmOperandPtr operand);
@@ -171,6 +195,8 @@ public:
         BINARY_BIT_XOR,
         BINARY_BIT_LSH,
         BINARY_BIT_RSH,
+        BINARY_LOG_AND,
+        BINARY_LOG_OR,
     };
 
     AsmBinary(Type op, AsmOperandPtr src, AsmOperandPtr dest);
@@ -178,6 +204,15 @@ public:
     Type op;
     AsmOperandPtr src;
     AsmOperandPtr dest;
+};
+
+// AsmCmp
+class AsmCmp : public AsmInstr {
+public:
+    AsmCmp(AsmOperandPtr left, AsmOperandPtr right);
+
+    AsmOperandPtr left;
+    AsmOperandPtr right;
 };
 
 // AsmIdiv
@@ -192,6 +227,44 @@ public:
 class AsmCdq : public AsmInstr {
 public:
     AsmCdq();
+};
+
+// AsmJmp
+class AsmJmp : public AsmInstr {
+public:
+    explicit AsmJmp(std::string_view label);
+
+    std::string label;
+};
+
+// AsmJmpCond
+class AsmJmpCond : public AsmInstr {
+public:
+    using Code = CondCode;
+
+    AsmJmpCond(Code condition, std::string_view label);
+
+    Code condition;
+    std::string label;
+};
+
+// AsmSetCond
+class AsmSetCond : public AsmInstr {
+public:
+    using Code = CondCode;
+
+    AsmSetCond(Code condition, AsmOperandPtr operand);
+
+    Code condition;
+    AsmOperandPtr operand;
+};
+
+// AsmLabel
+class AsmLabel : public AsmInstr {
+public:
+    explicit AsmLabel(std::string_view value);
+
+    std::string value;
 };
 
 // AsmAllocStack
@@ -245,20 +318,25 @@ public:
 
         switch (type) {
             using enum AsmNode::Type;
-            case OP_IMM:       value = "OP_IMM"; break;
-            case OP_REG:       value = "OP_REG"; break;
-            case OP_PSEUDO:    value = "OP_PSEUDO"; break;
-            case OP_STACK:     value = "OP_STACK"; break;
-            case INSTR_MOV:    value = "INSTR_MOV"; break;
-            case INSTR_UNARY:  value = "INSTR_UNARY"; break;
-            case INSTR_BINARY: value = "INSTR_BINARY"; break;
-            case INSTR_IDIV:   value = "INSTR_IDIV"; break;
-            case INSTR_CDQ:    value = "INSTR_CDQ"; break;
-            case INSTR_ALLOC:  value = "INSTR_ALLOC"; break;
-            case INSTR_RET:    value = "INSTR_RET"; break;
-            case FUNCTION:     value = "FUNCTION"; break;
-            case PROGRAM:      value = "PROGRAM"; break;
-            default:           throw std::format_error("Unhandled AsmNode::Type enum");
+            case OP_IMM:         value = "OP_IMM"; break;
+            case OP_REG:         value = "OP_REG"; break;
+            case OP_PSEUDO:      value = "OP_PSEUDO"; break;
+            case OP_STACK:       value = "OP_STACK"; break;
+            case INSTR_MOV:      value = "INSTR_MOV"; break;
+            case INSTR_UNARY:    value = "INSTR_UNARY"; break;
+            case INSTR_BINARY:   value = "INSTR_BINARY"; break;
+            case INSTR_CMP:      value = "INSTR_CMP"; break;
+            case INSTR_IDIV:     value = "INSTR_IDIV"; break;
+            case INSTR_CDQ:      value = "INSTR_CDQ"; break;
+            case INSTR_JMP:      value = "INSTR_JMP"; break;
+            case INSTR_JMP_COND: value = "INSTR_JMP_COND"; break;
+            case INSTR_SET_COND: value = "INSTR_SET_COND"; break;
+            case INSTR_LABEL:    value = "INSTR_LABEL"; break;
+            case INSTR_ALLOC:    value = "INSTR_ALLOC"; break;
+            case INSTR_RET:      value = "INSTR_RET"; break;
+            case FUNCTION:       value = "FUNCTION"; break;
+            case PROGRAM:        value = "PROGRAM"; break;
+            default:             throw std::format_error("Unhandled AsmNode::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);
@@ -281,9 +359,9 @@ public:
 
         switch (type) {
             using enum AsmUnary::Type;
-            case UNARY_NEGATE: value = "UNARY_NEGATE"; break;
-            case UNARY_NOT:    value = "UNARY_NOT"; break;
-            default:           throw std::format_error("Unhandled AsmUnary::Type enum");
+            case UNARY_NEGATE:     value = "UNARY_NEGATE"; break;
+            case UNARY_COMPLEMENT: value = "UNARY_COMPLEMENT"; break;
+            default:               throw std::format_error("Unhandled AsmUnary::Type enum");
         }
 
         return std::format_to(context.out(), "{}", value);
@@ -314,6 +392,8 @@ public:
             case BINARY_BIT_XOR: value = "BINARY_BIT_XOR"; break;
             case BINARY_BIT_LSH: value = "BINARY_BIT_LSH"; break;
             case BINARY_BIT_RSH: value = "BINARY_BIT_RSH"; break;
+            case BINARY_LOG_AND: value = "BINARY_LOG_AND"; break;
+            case BINARY_LOG_OR:  value = "BINARY_LOG_OR"; break;
             default:             throw std::format_error("Unhandled AsmBinary::Type enum");
         }
 

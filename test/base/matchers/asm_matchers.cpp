@@ -1,9 +1,10 @@
 #include "asm_matchers.hpp"
+#include "asm_ast.hpp"
 
 #include <gtest/gtest.h>
 
 namespace wacc::test::match {
-    const AsmInstrPtrs& matchAsmProg(const AsmNodePtr& ptr) {
+const AsmInstrPtrs& matchAsmProg(const AsmNodePtr& ptr) {
     auto program = as<AsmProg>(ptr);
     auto function = as<AsmFun>(program->function);
     return function->instructions;
@@ -15,7 +16,8 @@ void matchAsmImm(const AsmOperandPtr& ptr, int value) {
     ASSERT_EQ(imm->value, value);
 }
 
-void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type, AsmReg::Size size) {
+void matchAsmReg(const AsmOperandPtr& ptr, AsmReg::Type type,
+                 AsmReg::Size size) {
     auto reg = as<AsmReg>(ptr);
     ASSERT_EQ(reg->reg, type);
     ASSERT_EQ(reg->size, size);
@@ -64,4 +66,31 @@ void matchAsmAllocStack(const AsmInstrPtr& ptr, AsmAllocStackMatcher matcher) {
     auto alloc = as<AsmAllocStack>(ptr);
     matcher(alloc->value);
 }
+
+void matchAsmCmp(const AsmInstrPtr& ptr, AsmCmpMatcher matcher) {
+    auto cmp = as<AsmCmp>(ptr);
+    matcher(cmp->left, cmp->right);
 }
+
+void matchAsmJmp(const AsmInstrPtr& ptr, const string& label) {
+    auto jmp = as<AsmJmp>(ptr);
+    ASSERT_TRUE(jmp->label.ends_with(label));
+}
+
+void matchAsmJmpCond(const AsmInstrPtr& ptr, const AsmJmpCond::Code& condition,
+                     const string& label) {
+    auto jmp = as<AsmJmpCond>(ptr);
+    ASSERT_EQ(condition, jmp->condition);
+    ASSERT_TRUE(jmp->label.ends_with(label));
+}
+
+void matchAsmSetCond(const AsmInstrPtr& ptr, AsmSetCondMatcher matcher) {
+    auto set = as<AsmSetCond>(ptr);
+    matcher(set->condition, set->operand);
+}
+
+void matchAsmLabel(const AsmInstrPtr& ptr, const string& value) {
+    auto label = as<AsmLabel>(ptr);
+    ASSERT_TRUE(label->value.ends_with(value));
+}
+} // namespace wacc::test::match

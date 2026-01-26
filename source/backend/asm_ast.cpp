@@ -45,6 +45,11 @@ AsmBinary::AsmBinary(Type op, AsmOperandPtr src, AsmOperandPtr dest) :
     AsmInstr(INSTR_BINARY), op{op}, src{std::move(src)}, dest{std::move(dest)} {
 }
 
+// AsmCmp
+AsmCmp::AsmCmp(AsmOperandPtr left, AsmOperandPtr right) :
+    AsmInstr(INSTR_CMP), left{std::move(left)}, right{std::move(right)} {
+}
+
 // AsmIdiv
 AsmIdiv::AsmIdiv(AsmOperandPtr operand) :
     AsmInstr(INSTR_IDIV), operand{std::move(operand)} {
@@ -52,6 +57,26 @@ AsmIdiv::AsmIdiv(AsmOperandPtr operand) :
 
 // AsmCdq
 AsmCdq::AsmCdq() : AsmInstr(INSTR_CDQ) {
+}
+
+// AsmJmp
+AsmJmp::AsmJmp(std::string_view label) : AsmInstr(INSTR_JMP), label{label} {
+}
+
+// AsmJmpCond
+AsmJmpCond::AsmJmpCond(Code condition, std::string_view label) :
+    AsmInstr(INSTR_JMP_COND), condition{condition}, label{label} {
+}
+
+// AsmSetCond
+AsmSetCond::AsmSetCond(Code condition, AsmOperandPtr operand) :
+    AsmInstr(INSTR_SET_COND), condition{condition},
+    operand{std::move(operand)} {
+}
+
+// AsmLabel
+AsmLabel::AsmLabel(std::string_view value) :
+    AsmInstr(INSTR_LABEL), value{value} {
 }
 
 // AsmAllocStack

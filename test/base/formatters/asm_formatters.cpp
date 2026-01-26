@@ -1,4 +1,5 @@
 #include "asm_formatters.hpp"
+#include "asm_ast.hpp"
 
 namespace wacc::test::fmt {
 std::string formatAsmInstr(const AsmInstrPtr& ptr) {
@@ -114,9 +115,9 @@ std::string formatAsmRet() {
 std::string formatAsmUnaryOp(const AsmUnary::Type& type) {
     switch (type) {
         using enum AsmUnary::Type;
-        case UNARY_NEGATE: return "NEG";
-        case UNARY_NOT:    return "NOT";
-        default:           throw std::runtime_error("Unimplemented formatAsmUnaryOp");
+        case UNARY_NEGATE:     return "NEG";
+        case UNARY_COMPLEMENT: return "COMPL";
+        default:               throw std::runtime_error("Unimplemented formatAsmUnaryOp");
     }
 }
 

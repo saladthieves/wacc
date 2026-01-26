@@ -23,7 +23,8 @@ using AsmUnaryMatcher = std::function<void(const AsmUnary::Type&, const AsmOpera
 using AsmBinaryMatcher = std::function<void(const AsmBinary::Type&, const AsmOperandPtr&, const AsmOperandPtr&)>;
 using AsmIdivMatcher = std::function<void(const AsmOperandPtr& operand)>;
 using AsmAllocStackMatcher = std::function<void(const unsigned int&)>;
-// clang-format on
+using AsmCmpMatcher = std::function<void(const AsmOperandPtr&, const AsmOperandPtr&)>;
+using AsmSetCondMatcher = std::function<void(AsmSetCond::Code&, const AsmOperandPtr&)>;
 } // namespace
 
 const AsmInstrPtrs& matchAsmProg(const AsmNodePtr& ptr);
@@ -40,7 +41,12 @@ void matchAsmCdq(const AsmInstrPtr& ptr);
 void matchAsmIdiv(const AsmInstrPtr& ptr, AsmIdivMatcher matcher);
 void matchAsmRet(const AsmInstrPtr& ptr);
 void matchAsmAllocStack(const AsmInstrPtr& ptr, AsmAllocStackMatcher matcher);
-
+void matchAsmCmp(const AsmInstrPtr& ptr, AsmCmpMatcher matcher);
+void matchAsmJmp(const AsmInstrPtr& ptr, const string& label);
+void matchAsmJmpCond(const AsmInstrPtr& ptr, const AsmJmpCond::Code& code, const string& label);
+void matchAsmSetCond(const AsmInstrPtr& ptr, AsmSetCondMatcher matcher);
+void matchAsmLabel(const AsmInstrPtr& ptr, const string& value);
+// clang-format on
 } // namespace match
 } // namespace test
 } // namespace wacc
