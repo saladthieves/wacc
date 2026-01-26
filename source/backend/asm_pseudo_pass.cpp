@@ -1,4 +1,5 @@
 #include "asm_pseudo_pass.hpp"
+#include "asm_ast.hpp"
 
 #include <cstdlib>
 #include <memory>
@@ -44,12 +45,22 @@ void AsmPseudoPass::runPass(AsmInstrPtrs& instructions) {
                 replace(binary.dest);
                 continue;
             }
+            case INSTR_CMP: {
+                auto& cmp = static_cast<AsmCmp&>(*instr);
+                replace(cmp.left);
+                replace(cmp.right);
+                continue;
+            }
             case INSTR_IDIV: {
                 auto& idiv = static_cast<AsmIdiv&>(*instr);
                 replace(idiv.operand);
                 continue;
             }
-
+            case INSTR_SET_COND: {
+                auto& set = static_cast<AsmSetCond&>(*instr);
+                replace(set.operand);
+                continue;
+            }
             default: continue;
         }
     }
