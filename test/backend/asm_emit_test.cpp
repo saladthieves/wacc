@@ -5,30 +5,27 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <tuple>
 #include <vector>
 
 using wacc::back::emit::AsmEmitter;
 using wacc::utils::Platform;
+using wacc::utils::PlatformType;
 
-using wacc::back::ast::AsmFun;
-using wacc::back::ast::AsmInstrPtrs;
-using wacc::back::ast::AsmProg;
-using wacc::back::ast::AsmReg;
-using wacc::back::ast::AsmUnary;
+using namespace wacc::back::ast;
 
 using std::make_unique;
+using std::pair;
 using std::string;
-using std::tuple;
 using std::vector;
 
 class AsmEmitterTest :
     public testing::Test,
+    public AsmEmitter,
     public wacc::test::base::BaseTest {};
 
 TEST_F(AsmEmitterTest, emitThrowOnUnknownPlatform) {
     // ARRANGE
-    const auto code = "int main(void) { return -15 * ~32; }";
+    const auto code = "int main(void) { return 42; }";
     auto emitter = getAsmEmitter(getUnknownPlatform(), code);
     string error{};
 
@@ -61,7 +58,7 @@ TEST_F(AsmEmitterTest, emitThrowOnNull) {
     ASSERT_TRUE(error.contains("tree is null"));
 }
 
-TEST_F(AsmEmitterTest, emitLinux) {
+TEST_F(AsmEmitterTest, emitProgLinux) {
     // ARRANGE
     const auto code = "int main(void) { return 15; }";
     auto emitter = getAsmEmitter(getLinuxPlatform(), code);
@@ -71,27 +68,26 @@ TEST_F(AsmEmitterTest, emitLinux) {
 
     // ASSERT
     auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 10);
 
     // clang-format off
-    ASSERT_STREQ(lines[0].c_str(), "    .globl main");
-    ASSERT_STREQ(lines[1].c_str(), "main:");
-    // Prologue
-    ASSERT_STREQ(lines[2].c_str(), "    pushq    %rbp");
-    ASSERT_STREQ(lines[3].c_str(), "    movq    %rsp, %rbp");
-    ASSERT_STREQ(lines[4].c_str(), "    subq    $0, %rsp");
-    // Instructions
-    ASSERT_STREQ(lines[5].c_str(), "    movl    $15, %eax");
+    ASSERT_STREQ(lines[0].c_str(),  "    .globl  main");
+    ASSERT_STREQ(lines[1].c_str(),  "main:");
+    // # Prologue
+    ASSERT_STREQ(lines[3].c_str(),  "    pushq   %rbp");
+    ASSERT_STREQ(lines[4].c_str(),  "    movq    %rsp,        %rbp");
+    ASSERT_STREQ(lines[5].c_str(),  "    subq    $0,          %rsp");
+    // Empty line
+    // # Instructions
+    // ...
     // Epilogue
-    ASSERT_STREQ(lines[6].c_str(), "    movq    %rbp, %rsp");
-    ASSERT_STREQ(lines[7].c_str(), "    popq    %rbp");
-    ASSERT_STREQ(lines[8].c_str(), "    ret");
-
-    ASSERT_STREQ(lines[9].c_str(), R"(    .section .note.GNU-stack,"",@progbits)");
+    ASSERT_STREQ(lines[11].c_str(), "    movq    %rbp,        %rsp");
+    ASSERT_STREQ(lines[12].c_str(), "    popq    %rbp");
+    ASSERT_STREQ(lines[13].c_str(), "    ret");
+    ASSERT_STREQ(lines.back().c_str(), R"(    .section .note.GNU-stack,"",@progbits)");
     // clang-format on
 }
 
-TEST_F(AsmEmitterTest, emitMacOS) {
+TEST_F(AsmEmitterTest, emitProgMacOS) {
     // ARRANGE
     const auto code = "int main(void) { return 21; }";
     auto emitter = getAsmEmitter(getMacOSPlatform(), code);
@@ -101,22 +97,208 @@ TEST_F(AsmEmitterTest, emitMacOS) {
 
     // ASSERT
     auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 9);
 
-    // clang-format off
-    ASSERT_STREQ(lines[0].c_str(), "    .globl _main");
-    ASSERT_STREQ(lines[1].c_str(), "_main:");
-    // Prologue
-    ASSERT_STREQ(lines[2].c_str(), "    pushq    %rbp");
-    ASSERT_STREQ(lines[3].c_str(), "    movq    %rsp, %rbp");
-    ASSERT_STREQ(lines[4].c_str(), "    subq    $0, %rsp");
-    // Instructions
-    ASSERT_STREQ(lines[5].c_str(), "    movl    $21, %eax");
+    ASSERT_STREQ(lines[0].c_str(),  "    .globl  _main");
+    ASSERT_STREQ(lines[1].c_str(),  "_main:");
+    // # Prologue
+    ASSERT_STREQ(lines[3].c_str(),  "    pushq   %rbp");
+    ASSERT_STREQ(lines[4].c_str(),  "    movq    %rsp,        %rbp");
+    ASSERT_STREQ(lines[5].c_str(),  "    subq    $0,          %rsp");
+    // Empty line
+    // # Instructions
+    // ...
     // Epilogue
-    ASSERT_STREQ(lines[6].c_str(), "    movq    %rbp, %rsp");
-    ASSERT_STREQ(lines[7].c_str(), "    popq    %rbp");
-    ASSERT_STREQ(lines[8].c_str(), "    ret");
-    // clang-format on
+    ASSERT_STREQ(lines[11].c_str(), "    movq    %rbp,        %rsp");
+    ASSERT_STREQ(lines[12].c_str(), "    popq    %rbp");
+    ASSERT_STREQ(lines.back().c_str(), "    ret");
+}
+
+TEST_F(AsmEmitterTest, emitAsmAllocStack) {
+    // ARRANGE
+    const auto value = 16;
+    const auto alloc = AsmAllocStack(value);
+
+    // ACT
+    emitAsmInstr(alloc);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    subq    $16,         %rsp");
+}
+
+TEST_F(AsmEmitterTest, emitAsmMov) {
+    // ARRANGE
+    auto mov = AsmMov(make_unique<AsmStack>(-4),
+                      make_unique<AsmReg>(AsmReg::Type::AX));
+
+    // ACT
+    emitAsmInstr(mov);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    movl    -4(%rbp),    %eax");
+}
+
+TEST_F(AsmEmitterTest, emitAsmRet) {
+    // ARRANGE
+    auto ret = AsmRet();
+
+    // ACT
+    emitAsmInstr(ret);
+
+    // ASSERT
+    // Empty line
+    // # Epilogue
+    ASSERT_STREQ((*lines)[2].c_str(), "    movq    %rbp,        %rsp");
+    ASSERT_STREQ((*lines)[3].c_str(), "    popq    %rbp");
+    ASSERT_STREQ((*lines)[4].c_str(), "    ret");
+}
+
+TEST_F(AsmEmitterTest, emitAsmUnary) {
+    // ARRANGE
+    auto unary = AsmUnary(AsmUnary::Type::UNARY_COMPLEMENT, //
+                          make_unique<AsmStack>(-8));
+
+    // ACT
+    emitAsmInstr(unary);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    notl    -8(%rbp)");
+}
+
+TEST_F(AsmEmitterTest, emitAsmBinary) {
+    // ARRANGE
+    auto binary = AsmBinary(AsmBinary::Type::BINARY_BIT_LSH,
+                            make_unique<AsmReg>(AsmReg::Type::CX),
+                            make_unique<AsmStack>(-8));
+
+    // ACT
+    emitAsmInstr(binary);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    sall    %ecx,        -8(%rbp)");
+}
+
+TEST_F(AsmEmitterTest, emitAsmIdiv) {
+    // ARRANGE
+    auto idiv = AsmIdiv(make_unique<AsmStack>(-16));
+
+    // ACT
+    emitAsmInstr(idiv);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    idivl   -16(%rbp)");
+}
+
+TEST_F(AsmEmitterTest, emitAsmCdq) {
+    // ARRANGE
+    auto cdq = AsmCdq();
+
+    // ACT
+    emitAsmInstr(cdq);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    cdq");
+}
+
+TEST_F(AsmEmitterTest, emitAsmCmp) {
+    // ARRANGE
+    auto cmp = AsmCmp(make_unique<AsmReg>(AsmReg::Type::AX),
+                      make_unique<AsmReg>(AsmReg::Type::CX));
+
+    // ACT
+    emitAsmInstr(cmp);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    cmpl    %eax,        %ecx");
+}
+
+TEST_F(AsmEmitterTest, emitAsmJmp) {
+    // ARRANGE
+    const auto label = "BINARY_AND.0.L_END";
+    auto jmp = AsmJmp(label);
+
+    // ACT
+    emitAsmInstr(jmp);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    jmp     LBINARY_AND.0.L_END");
+}
+
+TEST_F(AsmEmitterTest, emitAsmJmpCond) {
+    // ARRANGE
+    const auto label = "BINARY_OR.0.L_TRUE";
+    auto jmpCond = AsmJmpCond(AsmJmpCond::Code::EQUAL, label);
+
+    // ACT
+    emitAsmInstr(jmpCond);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    je      LBINARY_OR.0.L_TRUE");
+}
+
+TEST_F(AsmEmitterTest, emitAsmSetCond) {
+    // ARRANGE
+    auto cond = AsmSetCond(AsmSetCond::Code::LESS_EQUAL,
+                           make_unique<AsmReg>(AsmReg::Type::CX));
+
+    // ACT
+    emitAsmInstr(cond);
+
+    // ASSERT
+    ASSERT_STREQ(lines->front().c_str(), "    setle   %ecx");
+}
+
+TEST_F(AsmEmitterTest, emitAsmLabel) {
+    // ARRANGE
+    const auto value = "BINARY_OR.0.L_TRUE";
+    auto label = AsmLabel(value);
+
+    // ACT
+    emitAsmInstr(label);
+
+    // ASSERT
+    // Empty line
+    ASSERT_STREQ((*lines)[1].c_str(), "LBINARY_OR.0.L_TRUE:");
+}
+
+TEST_F(AsmEmitterTest, formatLabelLinux) {
+    // ARRANGE
+    platform = Platform{PlatformType::LINUX};
+    const auto label = "SOME_LABEL";
+
+    // ACT
+    auto formatted = formatLabel(label);
+
+    // ASSERT
+    ASSERT_STREQ(formatted.c_str(), ".LSOME_LABEL");
+}
+
+TEST_F(AsmEmitterTest, formatLabelMacOS) {
+    // ARRANGE
+    platform = Platform{PlatformType::MACOS};
+    const auto label = "SOME_LABEL";
+
+    // ACT
+    auto formatted = formatLabel(label);
+
+    // ASSERT
+    ASSERT_STREQ(formatted.c_str(), "LSOME_LABEL");
+}
+
+TEST_F(AsmEmitterTest, formatAsmOperand) {
+    // ARRANGE
+    auto reg = AsmReg(AsmReg::Type::R11);
+    auto stack = AsmStack(-16);
+    auto imm = AsmImm(29);
+
+    // ACT
+    auto regStr = formatAsmOperand(reg);
+    auto stackStr = formatAsmOperand(stack);
+    auto immStr = formatAsmOperand(imm);
+
+    // ASSERT
+    ASSERT_STREQ(regStr.c_str(), "%r11d");
+    ASSERT_STREQ(stackStr.c_str(), "-16(%rbp)");
+    ASSERT_STREQ(immStr.c_str(), "$29");
 }
 
 TEST_F(AsmEmitterTest, formatAsmReg) {
@@ -124,292 +306,108 @@ TEST_F(AsmEmitterTest, formatAsmReg) {
     using enum AsmReg::Size;
     using enum AsmReg::Type;
 
+    const auto types = vector<AsmReg::Type>{AX, CX, DX, R10, R11};
     const auto sizes = vector<AsmReg::Size>{BYTE, WORD, DOUBLE_WORD, QUAD_WORD};
-    const auto registers = vector<AsmReg::Type>{AX, CX, DX, R10, R11};
 
-    auto instructions = AsmInstrPtrs{};
+    vector<AsmReg> registers{};
+    vector<string> output{};
 
-    const auto addInstr = [&](auto op, auto reg) {
+    for (const auto& type : types) {
         for (const auto& size : sizes) {
-            instructions.emplace_back(
-                make_unique<AsmUnary>(op, std::make_unique<AsmReg>(reg, size)));
+            registers.emplace_back(AsmReg(type, size));
         }
-    };
+    }
 
-    const auto op = AsmUnary::Type::UNARY_NEGATE;
-
+    // ACT
     for (const auto& reg : registers) {
-        addInstr(op, reg);
+        output.emplace_back(formatAsmReg(reg));
     }
 
-    auto function =
-        make_unique<AsmFun>(AsmFun("main", std::move(instructions)));
-    auto program = make_unique<AsmProg>(AsmProg(std::move(function)));
-
-    auto emitter = AsmEmitter{std::move(program), getPlatform()};
-
-    // ACT
-    auto lines = *emitter.emit();
-
-    // clang-format off
     // ASSERT
+    // clang-format off
     // AX
-    ASSERT_STREQ(lines[4].c_str(),  "    negl    %al");
-    ASSERT_STREQ(lines[5].c_str(),  "    negl    %ax");
-    ASSERT_STREQ(lines[6].c_str(),  "    negl    %eax");
-    ASSERT_STREQ(lines[7].c_str(),  "    negl    %rax");
+    ASSERT_STREQ(output[0].c_str(),  "%al");
+    ASSERT_STREQ(output[1].c_str(),  "%ax");
+    ASSERT_STREQ(output[2].c_str(),  "%eax");
+    ASSERT_STREQ(output[3].c_str(),  "%rax");
     // CX
-    ASSERT_STREQ(lines[8].c_str(),  "    negl    %cl");
-    ASSERT_STREQ(lines[9].c_str(),  "    negl    %cx");
-    ASSERT_STREQ(lines[10].c_str(), "    negl    %ecx");
-    ASSERT_STREQ(lines[11].c_str(), "    negl    %rcx");
+    ASSERT_STREQ(output[4].c_str(),  "%cl");
+    ASSERT_STREQ(output[5].c_str(),  "%cx");
+    ASSERT_STREQ(output[6].c_str(),  "%ecx");
+    ASSERT_STREQ(output[7].c_str(),  "%rcx");
     // DX
-    ASSERT_STREQ(lines[12].c_str(), "    negl    %dl");
-    ASSERT_STREQ(lines[13].c_str(), "    negl    %dx");
-    ASSERT_STREQ(lines[14].c_str(), "    negl    %edx");
-    ASSERT_STREQ(lines[15].c_str(), "    negl    %rdx");
+    ASSERT_STREQ(output[8].c_str(),  "%dl");
+    ASSERT_STREQ(output[9].c_str(),  "%dx");
+    ASSERT_STREQ(output[10].c_str(), "%edx");
+    ASSERT_STREQ(output[11].c_str(), "%rdx");
     // R10
-    ASSERT_STREQ(lines[16].c_str(), "    negl    %r10b");
-    ASSERT_STREQ(lines[17].c_str(), "    negl    %r10w");
-    ASSERT_STREQ(lines[18].c_str(), "    negl    %r10d");
-    ASSERT_STREQ(lines[19].c_str(), "    negl    %r10");
+    ASSERT_STREQ(output[12].c_str(), "%r10b");
+    ASSERT_STREQ(output[13].c_str(), "%r10w");
+    ASSERT_STREQ(output[14].c_str(), "%r10d");
+    ASSERT_STREQ(output[15].c_str(), "%r10");
     // R11
-    ASSERT_STREQ(lines[20].c_str(), "    negl    %r11b");
-    ASSERT_STREQ(lines[21].c_str(), "    negl    %r11w");
-    ASSERT_STREQ(lines[22].c_str(), "    negl    %r11d");
-    ASSERT_STREQ(lines[23].c_str(), "    negl    %r11");
+    ASSERT_STREQ(output[16].c_str(), "%r11b");
+    ASSERT_STREQ(output[17].c_str(), "%r11w");
+    ASSERT_STREQ(output[18].c_str(), "%r11d");
+    ASSERT_STREQ(output[19].c_str(), "%r11");
     // clang-format on
 }
 
-TEST_F(AsmEmitterTest, emitInstrIndent) {
+TEST_F(AsmEmitterTest, formatAsmUnaryOp) {
     // ARRANGE
-    const auto code = "int main(void) { return -15 * ~32; }";
-    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
-    auto locations = vector<std::size_t>{};
-
-    // ACT
-    auto ptr = emitter.emit();
-    const auto& lines = *ptr;
-
-    for (std::size_t i = 0; i != lines.size(); ++i) {
-        const auto& line = lines[i];
-        if (line.starts_with("_") && line.ends_with(":")) {
-            locations.push_back(i);
-        }
-    }
-
-    const auto validate = [&](auto& start, const int& stop) {
-        for (auto i = start + 1; i < stop; ++i) {
-            const auto& line = lines[i];
-            ASSERT_TRUE(line.starts_with("    "));
-        }
+    const auto tests = vector<pair<AsmUnary::Type, string>>{
+        {AsmUnary::Type::UNARY_NEGATE,     "negl"},
+        {AsmUnary::Type::UNARY_COMPLEMENT, "notl"},
     };
 
-    // ASSERT
-    ASSERT_FALSE(locations.empty());
-
-    for (auto i = 0; i < locations.size(); ++i) {
-        auto& start = locations[i];
-        auto stop = i == locations.size() - 1 ? lines.size() : locations[i + 1];
-        validate(start, stop);
-    }
-}
-
-TEST_F(AsmEmitterTest, emitAsmMov) {
-    // ARRANGE
-    const auto code = "int main(void) { return 28; }";
-    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
-
     // ACT
-    auto ptr = emitter.emit();
-
-    // ASSERT
-    auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 9);
-
-    ASSERT_STREQ(lines[0].c_str(), "    .globl _main");
-    ASSERT_STREQ(lines[1].c_str(), "_main:");
-    // Prologue
-    ASSERT_STREQ(lines[2].c_str(), "    pushq    %rbp");
-    ASSERT_STREQ(lines[3].c_str(), "    movq    %rsp, %rbp");
-    ASSERT_STREQ(lines[4].c_str(), "    subq    $0, %rsp");
-    // Instructions
-    ASSERT_STREQ(lines[5].c_str(), "    movl    $28, %eax");
-    // Epilogue
-    ASSERT_STREQ(lines[6].c_str(), "    movq    %rbp, %rsp");
-    ASSERT_STREQ(lines[7].c_str(), "    popq    %rbp");
-    ASSERT_STREQ(lines[8].c_str(), "    ret");
-}
-
-TEST_F(AsmEmitterTest, emitAsmUnary) {
-    // ARRANGE
-    const auto code = "int main(void) { return -2; }";
-    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
-
-    // ACT
-    auto ptr = emitter.emit();
-
-    // ASSERT
-    auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 11);
-
-    // clang-format off
-    ASSERT_STREQ(lines[0].c_str(),  "    .globl _main");
-    ASSERT_STREQ(lines[1].c_str(),  "_main:");
-    // Prologue
-    ASSERT_STREQ(lines[2].c_str(),  "    pushq    %rbp");
-    ASSERT_STREQ(lines[3].c_str(),  "    movq    %rsp, %rbp");
-    ASSERT_STREQ(lines[4].c_str(),  "    subq    $4, %rsp");
-    // Instructions
-    ASSERT_STREQ(lines[5].c_str(),  "    movl    $2, -4(%rbp)");
-    ASSERT_STREQ(lines[6].c_str(),  "    negl    -4(%rbp)");
-    ASSERT_STREQ(lines[7].c_str(),  "    movl    -4(%rbp), %eax");
-    // Epilogue
-    ASSERT_STREQ(lines[8].c_str(),  "    movq    %rbp, %rsp");
-    ASSERT_STREQ(lines[9].c_str(),  "    popq    %rbp");
-    ASSERT_STREQ(lines[10].c_str(), "    ret");
-    // clang-format on
-}
-
-TEST_F(AsmEmitterTest, emitAsmBinaryMul) {
-    // ARRANGE
-    const auto code = "int main(void) { return 2 * 3; }";
-    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
-
-    // ACT
-    auto ptr = emitter.emit();
-
-    // ASSERT
-    auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 13);
-
-    // clang-format off
-    ASSERT_STREQ(lines[0].c_str(),   "    .globl _main");
-    ASSERT_STREQ(lines[1].c_str(),   "_main:");
-    // Prologue
-    ASSERT_STREQ(lines[2].c_str(),   "    pushq    %rbp");
-    ASSERT_STREQ(lines[3].c_str(),   "    movq    %rsp, %rbp");
-    ASSERT_STREQ(lines[4].c_str(),   "    subq    $4, %rsp");
-    // Instructions
-    ASSERT_STREQ(lines[5].c_str(),   "    movl    $2, -4(%rbp)");
-    ASSERT_STREQ(lines[6].c_str(),   "    movl    -4(%rbp), %r11d");
-    ASSERT_STREQ(lines[7].c_str(),   "    imull    $3, %r11d");
-    ASSERT_STREQ(lines[8].c_str(),   "    movl    %r11d, -4(%rbp)");
-    ASSERT_STREQ(lines[9].c_str(),   "    movl    -4(%rbp), %eax");
-    // Epilogue
-    ASSERT_STREQ(lines[10].c_str(),  "    movq    %rbp, %rsp");
-    ASSERT_STREQ(lines[11].c_str(),  "    popq    %rbp");
-    ASSERT_STREQ(lines[12].c_str(),  "    ret");
-    // clang-format on
-}
-
-TEST_F(AsmEmitterTest, emitAsmBinary) {
-    // ARRANGE
-    const auto tests = vector<tuple<string, string, string, string>>{
-        {"{ return 1 + 2; }",   "$1",  "addl", "$2"},
-        {"{ return 3 - 1; }",   "$3",  "subl", "$1"},
-        {"{ return 4 << 1; }",  "$4",  "sall", "$1"},
-        {"{ return 16 >> 2; }", "$16", "sarl", "$2"},
-        {"{ return 0 & 1; }",   "$0",  "andl", "$1"},
-        {"{ return 14 ^ 2; }",  "$14", "xorl", "$2"},
-        {"{ return 3 | 3; }",   "$3",  "orl",  "$3"},
-    };
-    for (const auto& [main, src, op, dest] : tests) {
-        const auto code = std::format("int main(void) {}", main);
-        auto emitter = getAsmEmitter(getMacOSPlatform(), code);
-
-        // ACT
-        auto ptr = emitter.emit();
+    for (const auto& test : tests) {
+        auto expected = std::get<string>(test);
+        auto actual = formatAsmUnaryOp(std::get<0>(test));
 
         // ASSERT
-        auto lines = *ptr;
-        ASSERT_EQ(lines.size(), 11);
-
-        // clang-format off
-        ASSERT_STREQ(lines[0].c_str(),  "    .globl _main");
-        ASSERT_STREQ(lines[1].c_str(),  "_main:");
-        // Prologue
-        ASSERT_STREQ(lines[2].c_str(),  "    pushq    %rbp");
-        ASSERT_STREQ(lines[3].c_str(),  "    movq    %rsp, %rbp");
-        ASSERT_STREQ(lines[4].c_str(),  "    subq    $4, %rsp");
-        // Instructions
-        ASSERT_STREQ(lines[5].c_str(),  
-                            std::format("    movl    {}, -4(%rbp)", 
-                            src).c_str());
-        ASSERT_STREQ(lines[6].c_str(),  
-                            std::format("    {}    {}, -4(%rbp)", 
-                            op, dest).c_str());
-        ASSERT_STREQ(lines[7].c_str(),  "    movl    -4(%rbp), %eax");
-        // Epilogue
-        ASSERT_STREQ(lines[8].c_str(),  "    movq    %rbp, %rsp");
-        ASSERT_STREQ(lines[9].c_str(),  "    popq    %rbp");
-        ASSERT_STREQ(lines[10].c_str(), "    ret");
-        // clang-format on
+        ASSERT_STREQ(expected.c_str(), actual.c_str());
     }
 }
 
-TEST_F(AsmEmitterTest, emitAsmBinaryIdivDiv) {
+TEST_F(AsmEmitterTest, formatAsmBinaryOp) {
     // ARRANGE
-    const auto code = "int main(void) { return 5 / 2; }";
-    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
+    const auto tests = vector<pair<AsmBinary::Type, string>>{
+        {AsmBinary::Type::BINARY_ADD,     "addl" },
+        {AsmBinary::Type::BINARY_SUB,     "subl" },
+        {AsmBinary::Type::BINARY_MULT,    "imull"},
+        {AsmBinary::Type::BINARY_BIT_LSH, "sall" },
+        {AsmBinary::Type::BINARY_BIT_RSH, "sarl" },
+        {AsmBinary::Type::BINARY_BIT_AND, "andl" },
+        {AsmBinary::Type::BINARY_BIT_XOR, "xorl" },
+        {AsmBinary::Type::BINARY_BIT_OR,  "orl"  },
+    };
 
-    // ACT
-    auto ptr = emitter.emit();
+    for (const auto& test : tests) {
+        auto expected = std::get<string>(test);
+        auto actual = formatAsmBinaryOp(std::get<0>(test));
 
-    // ASSERT
-    auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 14);
-
-    // clang-format off
-    ASSERT_STREQ(lines[0].c_str(),   "    .globl _main");
-    ASSERT_STREQ(lines[1].c_str(),   "_main:");
-    // Prologue
-    ASSERT_STREQ(lines[2].c_str(),   "    pushq    %rbp");
-    ASSERT_STREQ(lines[3].c_str(),   "    movq    %rsp, %rbp");
-    ASSERT_STREQ(lines[4].c_str(),   "    subq    $4, %rsp");
-    // Instructions
-    ASSERT_STREQ(lines[5].c_str(),   "    movl    $5, %eax");
-    ASSERT_STREQ(lines[6].c_str(),   "    cdq");
-    ASSERT_STREQ(lines[7].c_str(),   "    movl    $2, %r10d");
-    ASSERT_STREQ(lines[8].c_str(),   "    idivl    %r10d");
-    ASSERT_STREQ(lines[9].c_str(),   "    movl    %eax, -4(%rbp)");
-    ASSERT_STREQ(lines[10].c_str(),  "    movl    -4(%rbp), %eax");
-    // Epilogue
-    ASSERT_STREQ(lines[11].c_str(),  "    movq    %rbp, %rsp");
-    ASSERT_STREQ(lines[12].c_str(),  "    popq    %rbp");
-    ASSERT_STREQ(lines[13].c_str(),  "    ret");
-    // clang-format on
+        // ASSERT
+        ASSERT_STREQ(expected.c_str(), actual.c_str());
+    }
 }
 
-TEST_F(AsmEmitterTest, emitAsmBinaryIdivMod) {
+TEST_F(AsmEmitterTest, formatAsmCondCode) {
     // ARRANGE
-    const auto code = "int main(void) { return 4 % 1; }";
-    auto emitter = getAsmEmitter(getMacOSPlatform(), code);
+    const auto tests = vector<pair<CondCode, string>>{
+        {CondCode::EQUAL,         "e" },
+        {CondCode::NOT_EQUAL,     "ne"},
+        {CondCode::LESS,          "l" },
+        {CondCode::LESS_EQUAL,    "le"},
+        {CondCode::GREATER,       "g" },
+        {CondCode::GREATER_EQUAL, "ge"},
+    };
 
-    // ACT
-    auto ptr = emitter.emit();
+    for (const auto& test : tests) {
+        auto expected = std::get<string>(test);
+        auto actual = formatAsmCondCode(std::get<0>(test));
 
-    // ASSERT
-    auto lines = *ptr;
-    ASSERT_EQ(lines.size(), 14);
-
-    // clang-format off
-    ASSERT_STREQ(lines[0].c_str(),   "    .globl _main");
-    ASSERT_STREQ(lines[1].c_str(),   "_main:");
-    // Prologue
-    ASSERT_STREQ(lines[2].c_str(),   "    pushq    %rbp");
-    ASSERT_STREQ(lines[3].c_str(),   "    movq    %rsp, %rbp");
-    ASSERT_STREQ(lines[4].c_str(),   "    subq    $4, %rsp");
-    // Instructions
-    ASSERT_STREQ(lines[5].c_str(),   "    movl    $4, %eax");
-    ASSERT_STREQ(lines[6].c_str(),   "    cdq");
-    ASSERT_STREQ(lines[7].c_str(),   "    movl    $1, %r10d");
-    ASSERT_STREQ(lines[8].c_str(),   "    idivl    %r10d");
-    ASSERT_STREQ(lines[9].c_str(),   "    movl    %edx, -4(%rbp)");
-    ASSERT_STREQ(lines[10].c_str(),  "    movl    -4(%rbp), %eax");
-    // Epilogue
-    ASSERT_STREQ(lines[11].c_str(),  "    movq    %rbp, %rsp");
-    ASSERT_STREQ(lines[12].c_str(),  "    popq    %rbp");
-    ASSERT_STREQ(lines[13].c_str(),  "    ret");
-    // clang-format on
+        // ASSERT
+        ASSERT_STREQ(expected.c_str(), actual.c_str());
+    }
 }
