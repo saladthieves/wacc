@@ -6,6 +6,11 @@
 #include <utility>
 
 namespace wacc::back::emit {
+AsmEmitter::AsmEmitter() :
+    ast{nullptr}, lines{std::make_unique<Lines>()},
+    platform{utils::Platform{utils::PlatformType::MACOS}} {
+}
+
 AsmEmitter::AsmEmitter(AsmNodePtr ptr, utils::Platform platform) :
     ast{std::move(ptr)}, lines{std::make_unique<Lines>()}, platform{platform} {
 }
@@ -30,24 +35,20 @@ void AsmEmitter::emitAsmProg(const AsmProg& obj) {
     emitAsmFun(fun);
 
     if (platform.isLinux()) {
-        pushLine("{}{}", INDENT, R"(.section .note.GNU-stack,"",@progbits)");
+        pushLine("{}", fmtInstr(R"(.section .note.GNU-stack,"",@progbits)"));
     }
 }
 
 void AsmEmitter::emitAsmFun(const AsmFun& obj) {
     std::string name{};
-    if (platform.isMacOS()) {
-        name = std::format("_{}", obj.name);
-    }
+    if (platform.isMacOS()) name = std::format("_{}", obj.name);
+    if (platform.isLinux()) name = obj.name;
 
-    if (platform.isLinux()) {
-        name = obj.name;
-    }
-
-    pushLine("{}.globl {}", INDENT, name);
+    pushLine("{}", fmtInstr(".globl", name));
     pushLine("{}:", name);
-    pushLine("{0}pushq{0}%rbp", INDENT);
-    pushLine("{0}movq{0}%rsp, %rbp", INDENT);
+    pushComment("Prologue");
+    pushLine("{}", fmtInstr("pushq", "%rbp"));
+    pushLine("{}", fmtInstr("movq", "%rsp", "%rbp"));
 
     for (const auto& ptr : obj.instructions) {
         emitAsmInstr(*ptr);
@@ -60,41 +61,50 @@ void AsmEmitter::emitAsmInstr(const AsmInstr& obj) {
         using enum AsmNode::Type;
         case INSTR_ALLOC: {
             auto& alloc = static_cast<const AsmAllocStack&>(obj);
-            emitAsmAllocStack(alloc);
-            break;
+            return emitAsmAllocStack(alloc);
         }
         case INSTR_MOV: {
             auto& mov = static_cast<const AsmMov&>(obj);
-            emitAsmMov(mov);
-            break;
+            return emitAsmMov(mov);
         }
         case INSTR_RET: {
             auto& ret = static_cast<const AsmRet&>(obj);
-            emitAsmRet(ret);
-            break;
+            return emitAsmRet(ret);
         }
-
         case INSTR_UNARY: {
             auto& unary = static_cast<const AsmUnary&>(obj);
-            emitAsmUnary(unary);
-            break;
+            return emitAsmUnary(unary);
         }
-
         case INSTR_BINARY: {
             auto& binary = static_cast<const AsmBinary&>(obj);
-            emitAsmBinary(binary);
-            break;
+            return emitAsmBinary(binary);
         }
-
         case INSTR_IDIV: {
             auto& idiv = static_cast<const AsmIdiv&>(obj);
-            emitAsmIdiv(idiv);
-            break;
+            return emitAsmIdiv(idiv);
         }
-
         case INSTR_CDQ: {
-            emitAsmCdq();
-            break;
+            return emitAsmCdq();
+        }
+        case INSTR_CMP: {
+            auto& cmp = static_cast<const AsmCmp&>(obj);
+            return emitAsmCmp(cmp);
+        }
+        case INSTR_JMP: {
+            auto& jmp = static_cast<const AsmJmp&>(obj);
+            return emitAsmJmp(jmp);
+        }
+        case INSTR_JMP_COND: {
+            auto& jmpCond = static_cast<const AsmJmpCond&>(obj);
+            return emitAsmJmpCond(jmpCond);
+        }
+        case INSTR_SET_COND: {
+            auto& setCond = static_cast<const AsmSetCond&>(obj);
+            return emitAsmSetCond(setCond);
+        }
+        case INSTR_LABEL: {
+            auto& label = static_cast<const AsmLabel&>(obj);
+            return emitAsmLabel(label);
         }
 
         default: fail("Failed to emit AsmInst::[type = {}]", type);
@@ -102,44 +112,85 @@ void AsmEmitter::emitAsmInstr(const AsmInstr& obj) {
 }
 
 void AsmEmitter::emitAsmMov(const AsmMov& obj) {
-    pushLine("{0}movl{0}", INDENT);
-
-    const auto src = formatAsmOperand(*obj.src);
-    const auto dest = formatAsmOperand(*obj.dest);
-
-    appendLine("{}, {}", src, dest);
+    auto src = formatAsmOperand(*obj.src);
+    auto dest = formatAsmOperand(*obj.dest);
+    pushLine("{}", fmtInstr("movl", src, dest));
 }
 
 void AsmEmitter::emitAsmRet(const AsmRet& obj) {
-    pushLine("{0}movq{0}%rbp, %rsp", INDENT);
-    pushLine("{0}popq{0}%rbp", INDENT);
-    pushLine("{}ret", INDENT);
+    pushLine("");
+    pushComment("Epilogue");
+    pushLine("{}", fmtInstr("movq", "%rbp", "%rsp"));
+    pushLine("{}", fmtInstr("popq", "%rbp"));
+    pushLine("{}", fmtInstr("ret"));
 }
 
 void AsmEmitter::emitAsmUnary(const AsmUnary& obj) {
-    const auto op = formatAsmUnaryOp(obj.op);
-    const auto operand = formatAsmOperand(*obj.operand);
-    pushLine("{}{}{}{}", INDENT, op, INDENT, operand);
+    auto op = formatAsmUnaryOp(obj.op);
+    auto operand = formatAsmOperand(*obj.operand);
+    pushLine("{}", fmtInstr(op, operand));
 }
 
 void AsmEmitter::emitAsmBinary(const AsmBinary& obj) {
-    const auto op = formatAsmBinaryOp(obj.op);
-    const auto src = formatAsmOperand(*obj.src);
-    const auto dest = formatAsmOperand(*obj.dest);
-    pushLine("{}{}{}{}, {}", INDENT, op, INDENT, src, dest);
+    auto op = formatAsmBinaryOp(obj.op);
+    auto src = formatAsmOperand(*obj.src);
+    auto dest = formatAsmOperand(*obj.dest);
+    pushLine("{}", fmtInstr(op, src, dest));
 }
 
 void AsmEmitter::emitAsmIdiv(const AsmIdiv& obj) {
-    const auto operand = formatAsmOperand(*obj.operand);
-    pushLine("{}idivl{}{}", INDENT, INDENT, operand);
+    auto operand = formatAsmOperand(*obj.operand);
+    pushLine("{}", fmtInstr("idivl", operand));
 }
 
 void AsmEmitter::emitAsmCdq() {
-    pushLine("{}cdq", INDENT);
+    pushLine("{}", fmtInstr("cdq"));
 }
 
 void AsmEmitter::emitAsmAllocStack(const AsmAllocStack& obj) {
-    pushLine("{}subq{}${}, %rsp", INDENT, INDENT, obj.value);
+    auto value = std::format("${}", obj.value);
+    pushLine("{}", fmtInstr("subq", value, "%rsp"));
+    pushLine("");
+    pushComment("Instructions");
+}
+
+void AsmEmitter::emitAsmCmp(const AsmCmp& obj) {
+    auto left = formatAsmOperand(*obj.left);
+    auto right = formatAsmOperand(*obj.right);
+    pushLine("{}", fmtInstr("cmpl", left, right));
+}
+
+void AsmEmitter::emitAsmJmp(const AsmJmp& obj) {
+    auto label = formatLabel(obj.label);
+    pushLine("{}", fmtInstr("jmp", label));
+}
+
+void AsmEmitter::emitAsmJmpCond(const AsmJmpCond& obj) {
+    auto code = formatAsmCondCode(obj.condition);
+    code = 'j' + code;
+    auto label = formatLabel(obj.label);
+    pushLine("{}", fmtInstr(code, label));
+}
+
+void AsmEmitter::emitAsmSetCond(const AsmSetCond& obj) {
+    auto code = formatAsmCondCode(obj.condition);
+    code = "set" + code;
+    auto operand = formatAsmOperand(*obj.operand);
+    pushLine("{}", fmtInstr(code, operand));
+}
+
+void AsmEmitter::emitAsmLabel(const AsmLabel& obj) {
+    auto label = formatLabel(obj.value);
+    pushLine("");
+    pushLine("{}:", label);
+}
+
+std::string AsmEmitter::formatLabel(std::string_view value) const {
+    std::string label{};
+    if (platform.isMacOS()) label = std::format("L{}", value);
+    if (platform.isLinux()) label = std::format(".L{}", value);
+
+    return label;
 }
 
 std::string AsmEmitter::formatAsmOperand(const AsmOperand& obj) {
@@ -241,6 +292,18 @@ std::string AsmEmitter::formatAsmBinaryOp(const AsmBinary::Type& type) {
         case BINARY_BIT_XOR: return "xorl";
         case BINARY_BIT_OR:  return "orl";
         default:             fail("Failed to format AsmBinary::Type::[type = {}]", type);
+    }
+}
+
+std::string AsmEmitter::formatAsmCondCode(const CondCode& code) {
+    switch (code) {
+        using enum CondCode;
+        case EQUAL:         return "e";
+        case NOT_EQUAL:     return "ne";
+        case LESS:          return "l";
+        case LESS_EQUAL:    return "le";
+        case GREATER:       return "g";
+        case GREATER_EQUAL: return "ge";
     }
 }
 } // namespace wacc::back::emit
