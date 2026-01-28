@@ -1,6 +1,7 @@
 #include "tacky_gen.hpp"
 #include "ast.hpp"
 #include "tacky_ast.hpp"
+#include "utils.hpp"
 
 #include <memory>
 #include <stdexcept>
@@ -49,7 +50,7 @@ std::string IdentifierGenerator::generate(unsigned int length,
     constexpr auto letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     std::string value{};
     for (unsigned int i = 0; i < length; ++i) {
-        value += letters[std::rand() % 36];
+        value += letters[utils::generateRandom(0, 35)];
     }
 
     return std::format("{}{}{}", pre, value, post);

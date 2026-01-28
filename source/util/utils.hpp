@@ -1,5 +1,6 @@
 #pragma once
 
+#include <random>
 #include <string>
 
 namespace wacc {
@@ -22,6 +23,14 @@ using ConstIter = std::string_view::const_iterator;
 }
 
 unsigned int getLineStop(ConstIter next, ConstIter begin, ConstIter end);
+
+template <typename T = unsigned int>
+T generateRandom(T first, T last) {
+    std::random_device device{};
+    auto engine = std::mt19937{device()};
+    auto distribution = std::uniform_int_distribution<T>{first, last};
+    return distribution(engine);
+}
 
 enum class PlatformType : std::uint8_t {
     MACOS = 1,

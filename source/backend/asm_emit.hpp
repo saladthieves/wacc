@@ -19,9 +19,9 @@ using LinesPtr = std::unique_ptr<Lines>;
 
 using Str = std::string_view;
 
-static constexpr auto INSTR_INDENT = 4;
-static constexpr auto INSTR_WIDTH = 7;
-static constexpr auto OP_WIDTH = 13;
+static constexpr unsigned INSTR_INDENT = 4;
+static constexpr unsigned INSTR_WIDTH = 7;
+static constexpr unsigned OP_WIDTH = 13;
 } // namespace
 
 class AsmEmitter {
